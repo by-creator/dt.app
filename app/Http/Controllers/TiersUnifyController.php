@@ -103,9 +103,9 @@ class TiersUnifyController extends Controller
         $file = $validated['file'];
 
         try {
-            $count = $this->service->importCsvWithLocalInfile($file);
+            $count = $this->service->importCsv($file);
 
-            return response('Import effectue via LOAD DATA LOCAL INFILE : '.$count.' tiers.');
+            return response('Import effectue avec succes : '.$count.' tiers.');
         } catch (\Throwable $exception) {
             return response('Erreur lors de l\'import: '.$exception->getMessage(), 400);
         }

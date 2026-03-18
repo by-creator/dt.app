@@ -180,7 +180,7 @@
                         </div>
                         <div class="unify-admin-card">
                             <h5>Import / Export tiers</h5>
-                            <p class="muted">Importer un gros fichier CSV via LOAD DATA LOCAL INFILE puis exporter les donnees en XLSX.</p>
+                            <p class="muted">Importer un fichier CSV de tiers puis exporter les donnees en XLSX.</p>
                             <input type="file" id="admin-import-file" accept=".csv" class="form-control-custom" style="height:auto; padding:8px;">
                             <div class="card-actions">
                                 <button type="button" id="admin-import-btn" class="btn-gfa btn-primary-gfa">Importer</button>

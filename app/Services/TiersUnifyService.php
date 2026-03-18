@@ -6,7 +6,6 @@ use App\Models\TiersUnify;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 
 class TiersUnifyService
 {
@@ -55,7 +54,7 @@ class TiersUnifyService
         }
     }
 
-    public function importCsvWithLocalInfile(UploadedFile $file): int
+    public function importCsv(UploadedFile $file): int
     {
         $extension = strtolower($file->getClientOriginalExtension());
 
@@ -63,39 +62,80 @@ class TiersUnifyService
             throw new \InvalidArgumentException('Format non supporte. Utilisez un fichier .csv pour l\'import massif.');
         }
 
-        $delimiter = $this->detectCsvDelimiter($file->getRealPath());
-        $temporaryDirectory = storage_path('app/unify-imports');
-        File::ensureDirectoryExists($temporaryDirectory);
+        $path = $file->getRealPath();
+        if (! $path) {
+            throw new \RuntimeException('Impossible de lire le fichier importe.');
+        }
 
-        $temporaryPath = $temporaryDirectory.'/'.uniqid('tiers-unify-', true).'.csv';
-        File::copy($file->getRealPath(), $temporaryPath);
+        $delimiter = $this->detectCsvDelimiter($path);
+        $handle = fopen($path, 'rb');
+
+        if (! is_resource($handle)) {
+            throw new \RuntimeException('Impossible d\'ouvrir le fichier CSV.');
+        }
+
+        $header = fgetcsv($handle, 0, $delimiter);
+        if (! is_array($header) || $header === []) {
+            fclose($handle);
+            throw new \InvalidArgumentException('Le fichier CSV est vide ou invalide.');
+        }
+
+        $columns = collect($header)
+            ->map(fn ($value) => $this->normalizeHeader((string) $value))
+            ->values()
+            ->all();
+
+        $requiredColumns = ['raisonsociale', 'compteipaki'];
+        foreach ($requiredColumns as $requiredColumn) {
+            if (! in_array($requiredColumn, $columns, true)) {
+                fclose($handle);
+                throw new \InvalidArgumentException('Colonnes attendues : raisonSociale, compteIpaki et compteNeptune.');
+            }
+        }
+
+        $now = now();
+        $rows = [];
+        $count = 0;
 
         try {
-            $path = str_replace('\\', '\\\\', $temporaryPath);
-            $separator = $delimiter === ',' ? ',' : ';';
+            while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
+                if ($this->rowIsEmpty($data)) {
+                    continue;
+                }
 
-            $sql = <<<SQL
-LOAD DATA LOCAL INFILE '{$path}'
-INTO TABLE tiers_unify
-CHARACTER SET utf8mb4
-FIELDS TERMINATED BY '{$separator}'
-OPTIONALLY ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES
-(@raison_sociale, @compte_ipaki, @compte_neptune)
-SET
-    raison_sociale = UPPER(TRIM(REPLACE(@raison_sociale, '\r', ''))),
-    compte_ipaki = TRIM(REPLACE(@compte_ipaki, '\r', '')),
-    compte_neptune = NULLIF(TRIM(REPLACE(@compte_neptune, '\r', '')), ''),
-    created_at = NOW()
-SQL;
+                $row = array_pad($data, count($columns), null);
+                $mapped = array_combine($columns, array_slice($row, 0, count($columns)));
 
-            DB::connection()->getPdo()->exec($sql);
+                $raisonSociale = strtoupper(trim((string) ($mapped['raisonsociale'] ?? '')));
+                $compteIpaki = trim((string) ($mapped['compteipaki'] ?? ''));
 
-            return (int) (DB::selectOne('SELECT ROW_COUNT() AS count')->count ?? 0);
+                if ($raisonSociale === '' || $compteIpaki === '') {
+                    continue;
+                }
+
+                $rows[] = [
+                    'raison_sociale' => $raisonSociale,
+                    'compte_ipaki' => $compteIpaki,
+                    'compte_neptune' => $this->nullableString($mapped['compteneptune'] ?? null),
+                    'created_at' => $now,
+                ];
+
+                if (count($rows) >= 500) {
+                    TiersUnify::query()->insert($rows);
+                    $count += count($rows);
+                    $rows = [];
+                }
+            }
+
+            if ($rows !== []) {
+                TiersUnify::query()->insert($rows);
+                $count += count($rows);
+            }
         } finally {
-            File::delete($temporaryPath);
+            fclose($handle);
         }
+
+        return $count;
     }
 
     private function nullableString(mixed $value): ?string
@@ -114,5 +154,24 @@ SQL;
         }
 
         return substr_count($header, ';') >= substr_count($header, ',') ? ';' : ',';
+    }
+
+    private function normalizeHeader(string $value): string
+    {
+        $value = preg_replace('/^\xEF\xBB\xBF/', '', $value) ?? $value;
+        $value = trim($value);
+
+        return strtolower(str_replace([' ', '_', '-'], '', $value));
+    }
+
+    private function rowIsEmpty(array $row): bool
+    {
+        foreach ($row as $value) {
+            if (trim((string) $value) !== '') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
