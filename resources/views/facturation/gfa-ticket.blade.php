@@ -356,6 +356,8 @@
     <script>
         const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
         const months = ['janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'];
+        const scanTokenElement = document.getElementById('scan-token');
+        const currentToken = scanTokenElement?.dataset.token || '';
 
         history.replaceState(null, '', location.href);
         window.addEventListener('popstate', () => history.go(1));
@@ -370,10 +372,59 @@
             document.getElementById('error-box').style.display = 'none';
         }
 
+        function tokenStorageKey(token) {
+            return 'gfa-ticket-used:' + token;
+        }
+
+        function markTokenAsUsed(token, ticket) {
+            if (!token) return;
+            sessionStorage.setItem(tokenStorageKey(token), JSON.stringify(ticket));
+        }
+
+        function getUsedTokenTicket(token) {
+            if (!token) return null;
+            const raw = sessionStorage.getItem(tokenStorageKey(token));
+            if (!raw) return null;
+
+            try {
+                return JSON.parse(raw);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function renderTicketReceipt(ticket, serviceName = null) {
+            const now = new Date();
+
+            document.getElementById('receipt-number').textContent = ticket.numero || '???';
+            document.getElementById('receipt-service').textContent = ticket.serviceNom || serviceName || '-';
+            document.getElementById('receipt-date').textContent =
+                days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+            document.getElementById('receipt-time').textContent =
+                String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('receipt-rank').textContent = '#' + (ticket.id ?? '-');
+
+            document.getElementById('view-select').style.display = 'none';
+            document.getElementById('view-ticket').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function lockTicketSelection() {
+            document.querySelectorAll('.service-btn').forEach((item) => { item.disabled = true; });
+        }
+
+        function initializeUsedTokenState() {
+            const usedTicket = getUsedTokenTicket(currentToken);
+            if (!usedTicket) return;
+
+            lockTicketSelection();
+            renderTicketReceipt(usedTicket);
+        }
+
         async function takeTicket(button) {
             const serviceId = Number(button.dataset.id);
             const serviceName = button.dataset.nom;
-            const scanToken = document.getElementById('scan-token').dataset.token;
+            const scanToken = currentToken;
             const buttons = document.querySelectorAll('.service-btn');
 
             hideError();
@@ -402,24 +453,15 @@
                 }
 
                 const ticket = await response.json();
-                const now = new Date();
-
-                document.getElementById('receipt-number').textContent = ticket.numero || '???';
-                document.getElementById('receipt-service').textContent = ticket.serviceNom || serviceName;
-                document.getElementById('receipt-date').textContent =
-                    days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
-                document.getElementById('receipt-time').textContent =
-                    String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-                document.getElementById('receipt-rank').textContent = '#' + (ticket.id ?? '-');
-
-                document.getElementById('view-select').style.display = 'none';
-                document.getElementById('view-ticket').style.display = 'block';
-                window.scrollTo(0, 0);
+                markTokenAsUsed(scanToken, ticket);
+                renderTicketReceipt(ticket, serviceName);
             } catch (error) {
                 buttons.forEach((item) => { item.disabled = false; });
                 showError('Impossible de creer le ticket. Veuillez reessayer.');
             }
         }
+
+        initializeUsedTokenState();
     </script>
 </body>
 </html>

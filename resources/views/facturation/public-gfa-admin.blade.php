@@ -169,7 +169,7 @@
 
         function announce(numero, guichet, recalled = false) {
             const prefix = recalled ? 'Rappel du ticket' : 'Ticket';
-            speak(`${prefix} ${numero}, veuillez vous presenter au guichet ${guichet}.`);
+            speak(`${prefix} ${numero}, vous êtes attendu au guichet ${guichet}.`);
         }
 
         function updateDisplay(ticket) {

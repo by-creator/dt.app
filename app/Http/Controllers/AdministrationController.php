@@ -23,6 +23,10 @@ class AdministrationController extends Controller
             'activeTab' => $request->query('tab', 'admin-roles'),
             'roles' => Role::query()
                 ->withCount('users')
+                ->when(
+                    filled($request->string('role_search')->toString()),
+                    fn ($query) => $query->where('name', 'like', '%'.$request->string('role_search')->toString().'%')
+                )
                 ->orderBy('name')
                 ->paginate(3, ['*'], 'roles_page')
                 ->withQueryString(),
@@ -31,6 +35,18 @@ class AdministrationController extends Controller
                 ->get(),
             'users' => User::query()
                 ->with('role')
+                ->when(
+                    filled($request->string('user_search')->toString()),
+                    function ($query) use ($request) {
+                        $term = '%'.$request->string('user_search')->toString().'%';
+
+                        $query->where(function ($builder) use ($term) {
+                            $builder->where('name', 'like', $term)
+                                ->orWhere('email', 'like', $term)
+                                ->orWhereHas('role', fn ($roleQuery) => $roleQuery->where('name', 'like', $term));
+                        });
+                    }
+                )
                 ->orderBy('name')
                 ->paginate(3, ['*'], 'users_page')
                 ->withQueryString(),

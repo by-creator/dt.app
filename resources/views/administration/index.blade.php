@@ -39,12 +39,19 @@
             .admin-page .stack { display:grid; gap:10px; }
             .admin-page .list-card { min-height:100%; }
             .admin-page .list-scroll { overflow-x:auto; }
+            .admin-page .search-toolbar { margin:18px 0 14px; }
+            .admin-page .inline-user-form { display:grid; grid-template-columns:minmax(170px,1.1fr) minmax(200px,1.4fr) minmax(150px,.9fr) minmax(240px,1.5fr) auto; gap:10px; align-items:start; }
+            .admin-page .inline-user-form .password-stack { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .admin-page .inline-user-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
             @media (max-width: 768px) {
                 .admin-page .admin-grid,
                 .admin-page .form-grid-layout,
                 .admin-page .split-grid { grid-template-columns:1fr; }
                 .admin-page .actions { flex-direction:column; }
+                .admin-page .inline-user-form { grid-template-columns:1fr; }
+                .admin-page .inline-user-form .password-stack { grid-template-columns:1fr; }
+                .admin-page .inline-user-actions { flex-direction:column; }
             }
         </style>
 
@@ -81,11 +88,10 @@
                     <h3 class="unify-section-title"><i class="fas fa-list" style="color:#4B49AC"></i> Liste des roles</h3>
                     <p class="muted" style="margin-bottom:16px;">Consultez et mettez a jour les roles existants.</p>
 
-                    <div class="admin-card">
-                        <h5 style="margin-bottom:14px;">Apercu</h5>
-                        <p class="muted">Total des roles : <strong style="color:#191C24">{{ $roles->total() }}</strong></p>
-                        <p class="muted" style="margin-top:8px;">Les roles utilises ne peuvent pas etre supprimes.</p>
-                    </div>
+                    <form method="GET" action="{{ route('administration.index') }}" class="search-toolbar">
+                        <input type="hidden" name="tab" value="admin-roles">
+                        <input type="search" name="role_search" value="{{ request('role_search') }}" class="form-control-custom" placeholder="Rechercher un role...">
+                    </form>
 
                     <div class="list-scroll" style="margin-top:18px;">
                         <table class="table-unify">
@@ -130,7 +136,7 @@
                     </div>
 
                     <div style="margin-top:18px;">
-                        {{ $roles->appends(['tab' => 'admin-roles'])->links() }}
+                        {{ $roles->appends(['tab' => 'admin-roles', 'role_search' => request('role_search')])->links() }}
                     </div>
                 </div>
             </div>
@@ -184,11 +190,17 @@
                     <h3 class="unify-section-title"><i class="fas fa-users-cog" style="color:#4B49AC"></i> Liste des utilisateurs</h3>
                     <p class="muted" style="margin-bottom:16px;">Mettez a jour les comptes existants et leurs permissions.</p>
 
+                    <form method="GET" action="{{ route('administration.index') }}" class="search-toolbar">
+                        <input type="hidden" name="tab" value="admin-users">
+                        <input type="search" name="user_search" value="{{ request('user_search') }}" class="form-control-custom" placeholder="Rechercher un utilisateur, email ou role...">
+                    </form>
+
                     <div class="list-scroll">
                         <table class="table-unify">
                             <thead>
                                 <tr>
                                     <th>Utilisateur</th>
+                                    <th>Email</th>
                                     <th>Role</th>
                                     <th>Mot de passe</th>
                                     <th>Actions</th>
@@ -198,10 +210,10 @@
                                 @forelse ($users as $user)
                                     <tr>
                                         <td>
-                                            <div class="stack">
-                                                <input form="user-update-{{ $user->id }}" name="name" value="{{ $user->name }}" class="form-control-custom" required>
-                                                <input form="user-update-{{ $user->id }}" name="email" type="email" value="{{ $user->email }}" class="form-control-custom" required>
-                                            </div>
+                                            <input form="user-update-{{ $user->id }}" name="name" value="{{ $user->name }}" class="form-control-custom" required>
+                                        </td>
+                                        <td>
+                                            <input form="user-update-{{ $user->id }}" name="email" type="email" value="{{ $user->email }}" class="form-control-custom" required>
                                         </td>
                                         <td>
                                             <select form="user-update-{{ $user->id }}" name="role_id" class="form-control-custom" required>
@@ -211,13 +223,13 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <div class="stack">
+                                            <div class="password-stack">
                                                 <input form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
                                                 <input form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="actions">
+                                            <div class="inline-user-actions">
                                                 <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}">
                                                     @csrf
                                                     @method('PUT')
@@ -235,7 +247,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="muted">Aucun utilisateur disponible.</td>
+                                        <td colspan="5" class="muted">Aucun utilisateur disponible.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -243,7 +255,7 @@
                     </div>
 
                     <div style="margin-top:18px;">
-                        {{ $users->appends(['tab' => 'admin-users'])->links() }}
+                        {{ $users->appends(['tab' => 'admin-users', 'user_search' => request('user_search')])->links() }}
                     </div>
                 </div>
             </div>

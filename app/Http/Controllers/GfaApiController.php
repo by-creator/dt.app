@@ -365,8 +365,14 @@ class GfaApiController extends Controller
 
         $isAnonymous = $request->user() === null;
 
-        if ($isAnonymous && filled($validated['scanToken'] ?? null) && ! $this->scanTokenGfaService->useToken($validated['scanToken'])) {
-            return response()->json(['error' => 'Token invalide ou expire.'], 403);
+        if ($isAnonymous) {
+            if (blank($validated['scanToken'] ?? null)) {
+                return response()->json(['error' => 'Token requis pour prendre un ticket.'], 403);
+            }
+
+            if (! $this->scanTokenGfaService->useToken($validated['scanToken'])) {
+                return response()->json(['error' => 'Token invalide ou expire.'], 403);
+            }
         }
 
         return response()->json(
