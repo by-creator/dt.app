@@ -6,35 +6,35 @@
         <style>
             .admin-page { overflow: visible; min-height: max-content; }
             .admin-page .page-header { text-align:center; margin-bottom:20px; }
-            .admin-page .page-header h1 { margin:0; display:flex; align-items:center; justify-content:center; gap:10px; }
-            .admin-page .module-tabs { display:flex; justify-content:center; gap:6px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; border-bottom:2px solid #e8e8f0; margin-bottom:22px; background:#fff; padding:0 8px 6px; scrollbar-width:thin; }
-            .admin-page .module-tab { flex:0 0 auto; border:none; background:transparent; color:#6c757d; font-size:14px; font-weight:600; padding:12px 16px; border-bottom:3px solid transparent; margin-bottom:-2px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; transition:color .2s; }
+            .admin-page .page-header h1 { margin:0; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--dt-page-text); }
+            .admin-page .module-tabs { display:flex; justify-content:center; gap:6px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; border-bottom:2px solid var(--dt-border); margin-bottom:22px; background:var(--dt-panel-bg); padding:0 8px 6px; scrollbar-width:thin; box-shadow:var(--dt-shadow); }
+            .admin-page .module-tab { flex:0 0 auto; border:none; background:transparent; color:var(--dt-muted-text); font-size:14px; font-weight:600; padding:12px 16px; border-bottom:3px solid transparent; margin-bottom:-2px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; transition:color .2s; }
             .admin-page .module-tab:hover { color:#4B49AC; }
             .admin-page .module-tab.active { color:#4B49AC; border-bottom-color:#4B49AC; }
             .admin-page .module-pane { display:none; opacity:0; transform:translateY(10px); }
             .admin-page .module-pane.active { display:block; animation:tabPaneFade .25s ease forwards; }
             @keyframes tabPaneFade { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
-            .admin-page .simple-card { background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.06); padding:24px; max-width:1100px; margin:0 auto; }
-            .admin-page .unify-section-title { font-size:20px; font-weight:700; color:#191C24; display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-            .admin-page .muted { color:#8d8d8d; }
+            .admin-page .simple-card { background:var(--dt-panel-bg); color:var(--dt-page-text); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); padding:24px; max-width:1100px; margin:0 auto; }
+            .admin-page .unify-section-title { font-size:20px; font-weight:700; color:var(--dt-page-text); display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+            .admin-page .muted { color:var(--dt-muted-text); }
             .admin-page .status-box { margin:12px auto; padding:10px 14px; border-radius:8px; max-width:1100px; }
-            .admin-page .status-success { background:#e8f7ef; color:#146c43; }
-            .admin-page .status-error { background:#fdecea; color:#842029; }
-            .admin-page .status-warning { background:#fff7e6; color:#9a6700; }
+            .admin-page .status-success { background:var(--dt-success-bg); color:var(--dt-success-text); border:1px solid var(--dt-success-border); }
+            .admin-page .status-error { background:var(--dt-danger-bg); color:var(--dt-danger-text); border:1px solid var(--dt-danger-border); }
+            .admin-page .status-warning { background:var(--dt-warning-bg); color:var(--dt-warning-text); border:1px solid var(--dt-warning-border); }
             .admin-page .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-            .admin-page .admin-card { border:1px solid #ececf5; border-radius:10px; padding:16px; background:#fff; }
+            .admin-page .admin-card { border:1px solid var(--dt-border); border-radius:10px; padding:16px; background:var(--dt-panel-alt-bg); }
             .admin-page .split-grid { display:grid; grid-template-columns:minmax(320px, 0.9fr) minmax(0, 1.35fr); gap:16px; align-items:start; }
             .admin-page .form-grid-layout { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px 24px; align-items:start; }
-            .admin-page .form-group-custom label { font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:8px; }
-            .admin-page .form-control-custom { width:100%; border:1px solid #dee2e6; border-radius:8px; padding:9px 13px; font-size:13px; min-height:42px; box-sizing:border-box; }
-            .admin-page .form-control-custom:focus { border-color:#4B49AC; outline:none; }
+            .admin-page .form-group-custom label { font-size:13px; font-weight:600; color:var(--dt-page-text); display:block; margin-bottom:8px; }
+            .admin-page .form-control-custom { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:9px 13px; font-size:13px; min-height:42px; box-sizing:border-box; }
+            .admin-page .form-control-custom:focus { border-color:#4B49AC; outline:none; box-shadow:0 0 0 4px var(--dt-ring); }
             .admin-page .btn-gfa { border:none; border-radius:7px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
             .admin-page .btn-primary-gfa { background:#4B49AC; color:#fff; }
             .admin-page .btn-light-gfa { background:#f2f2f7; color:#555; }
             .admin-page .btn-danger-gfa { background:#dc3545; color:#fff; }
             .admin-page .table-unify { width:100%; border-collapse:collapse; font-size:13px; }
-            .admin-page .table-unify th, .admin-page .table-unify td { padding:10px 12px; border-bottom:1px solid #ececf5; text-align:left; vertical-align:top; }
-            .admin-page .table-unify th { color:#4B49AC; background:#f8f9ff; }
+            .admin-page .table-unify th, .admin-page .table-unify td { padding:10px 12px; border-bottom:1px solid var(--dt-border); text-align:left; vertical-align:top; color:var(--dt-page-text); }
+            .admin-page .table-unify th { color:#818cf8; background:var(--dt-table-head-bg); }
             .admin-page .actions { display:flex; flex-wrap:wrap; gap:8px; }
             .admin-page .stack { display:grid; gap:10px; }
             .admin-page .list-card { min-height:100%; }
@@ -70,7 +70,7 @@
                     <p class="muted" style="margin-bottom:16px;">Ajoutez un nouveau role dans le meme esprit que les ecrans Unify.</p>
 
                     <div class="admin-card">
-                        <h5 style="margin-bottom:14px;">Ajouter un role</h5>
+                        <h5 style="margin-bottom:14px;color:var(--dt-page-text);">Ajouter un role</h5>
                         <form method="POST" action="{{ route('administration.roles.store') }}" class="stack">
                             @csrf
                             <input type="hidden" name="tab" value="admin-roles">
@@ -148,7 +148,7 @@
                     <p class="muted" style="margin-bottom:16px;">Associez un compte a un role des sa creation.</p>
 
                     <div class="admin-card">
-                        <h5 style="margin-bottom:14px;">Ajouter un utilisateur</h5>
+                        <h5 style="margin-bottom:14px;color:var(--dt-page-text);">Ajouter un utilisateur</h5>
                         <form method="POST" action="{{ route('administration.users.store') }}">
                             @csrf
                             <input type="hidden" name="tab" value="admin-users">

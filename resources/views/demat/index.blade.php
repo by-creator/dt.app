@@ -19,20 +19,47 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        :root {
+            color-scheme: light dark;
+            --demat-page-bg: #f0f4f8;
+            --demat-surface: rgba(255,255,255,.94);
+            --demat-surface-soft: rgba(232,238,248,.9);
+            --demat-border: rgba(148,163,184,.22);
+            --demat-text: #191c24;
+            --demat-muted: #64748b;
+            --demat-card-text: #475569;
+            --demat-shadow: 0 4px 18px rgba(0,0,0,.08);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --demat-page-bg: #020617;
+                --demat-surface: rgba(15,23,42,.88);
+                --demat-surface-soft: rgba(30,41,59,.84);
+                --demat-border: rgba(148,163,184,.18);
+                --demat-text: #e5eefb;
+                --demat-muted: #94a3b8;
+                --demat-card-text: #cbd5e1;
+                --demat-shadow: 0 24px 56px rgba(2,6,23,.38);
+            }
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Overpass', sans-serif;
-            background: #f0f4f8;
+            background: var(--demat-page-bg);
+            color: var(--demat-text);
             min-height: 100vh;
         }
 
         .demat-hero {
-            background: #fff;
-            border-bottom: 1px solid #e8e8f0;
+            background: var(--demat-surface);
+            border-bottom: 1px solid var(--demat-border);
             padding: 32px 24px 36px;
             text-align: center;
             margin-bottom: 36px;
+            box-shadow: var(--demat-shadow);
         }
 
         .demat-hero .brand-logo {
@@ -52,13 +79,13 @@
         .demat-hero h1 {
             font-size: 28px;
             font-weight: 800;
-            color: #191c24;
+            color: var(--demat-text);
             margin-bottom: 6px;
         }
 
         .demat-hero p {
             font-size: 15px;
-            color: #888;
+            color: var(--demat-muted);
         }
 
         .demat-grid {
@@ -71,9 +98,9 @@
         }
 
         .demat-card {
-            background: #fff;
+            background: var(--demat-surface);
             border-radius: 14px;
-            box-shadow: 0 4px 18px rgba(0,0,0,.08);
+            box-shadow: var(--demat-shadow);
             padding: 28px 24px 24px;
             display: flex;
             flex-direction: column;
@@ -83,7 +110,7 @@
             text-decoration: none !important;
             color: inherit !important;
             transition: transform .18s, box-shadow .18s;
-            border: 2px solid transparent;
+            border: 1px solid var(--demat-border);
         }
 
         .demat-card:hover {
@@ -119,25 +146,25 @@
         .demat-card .card-desc {
             font-size: 12px;
             font-weight: 600;
-            color: #555;
+            color: var(--demat-card-text);
             line-height: 1.5;
             text-transform: uppercase;
         }
 
         .demat-card .card-desc strong {
-            color: #191c24;
+            color: var(--demat-text);
         }
 
-        .icon-validation { background: #e8f5e9; }
+        .icon-validation { background: color-mix(in srgb, #2e7d32 16%, transparent); }
         .icon-validation i { color: #2e7d32; }
 
-        .icon-facturation { background: #fff3e0; }
+        .icon-facturation { background: color-mix(in srgb, #e65100 16%, transparent); }
         .icon-facturation i { color: #e65100; }
 
-        .icon-paiement { background: #e3f2fd; }
+        .icon-paiement { background: color-mix(in srgb, #1565c0 16%, transparent); }
         .icon-paiement i { color: #1565c0; }
 
-        .icon-remise { background: #fce4ec; }
+        .icon-remise { background: color-mix(in srgb, #c62828 16%, transparent); }
         .icon-remise i { color: #c62828; }
 
         @media (max-width: 576px) {

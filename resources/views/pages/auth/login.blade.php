@@ -1,28 +1,60 @@
 <x-layouts::auth :title="__('Connexion')">
     <style>
+        :root {
+            color-scheme: light;
+            --auth-card-bg: rgba(255,255,255,.96);
+            --auth-card-border: rgba(108,117,255,.12);
+            --auth-card-shadow: 0 28px 80px rgba(54,63,136,.16);
+            --auth-title: #1c2240;
+            --auth-subtitle: #68708f;
+            --auth-label: #4d5577;
+            --auth-input-bg: #fff;
+            --auth-input-border: #d7dcf4;
+            --auth-input-text: #1f2547;
+            --auth-placeholder: #b0b6cc;
+            --auth-link: #252b53;
+            --auth-footer: #6a7292;
+        }
+
+        .dark {
+            color-scheme: dark;
+            --auth-card-bg: rgba(15,23,42,.84);
+            --auth-card-border: rgba(129,140,248,.18);
+            --auth-card-shadow: 0 28px 80px rgba(2,6,23,.5);
+            --auth-title: #e5eefb;
+            --auth-subtitle: #94a3b8;
+            --auth-label: #cbd5e1;
+            --auth-input-bg: rgba(15,23,42,.82);
+            --auth-input-border: rgba(148,163,184,.22);
+            --auth-input-text: #e2e8f0;
+            --auth-placeholder: #64748b;
+            --auth-link: #c7d2fe;
+            --auth-footer: #94a3b8;
+        }
+
         .dt-auth-shell { width: min(100%, 38rem); margin: 0 auto; }
-        .dt-auth-card { background: rgba(255,255,255,.96); border: 1px solid rgba(108,117,255,.12); border-radius: 1.75rem; box-shadow: 0 28px 80px rgba(54,63,136,.16); overflow: hidden; backdrop-filter: blur(14px); }
+        .dt-auth-card { background: var(--auth-card-bg); border: 1px solid var(--auth-card-border); border-radius: 1.75rem; box-shadow: var(--auth-card-shadow); overflow: hidden; backdrop-filter: blur(14px); }
         .dt-auth-body { padding: 3rem 3rem 2.75rem; }
         .dt-auth-logo { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-bottom: 1.75rem; }
         .dt-auth-logo img { max-width: 15rem; width: 100%; height: auto; object-fit: contain; }
-        .dt-auth-title { margin: 0; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; color: #1c2240; font-weight: 800; }
-        .dt-auth-subtitle { margin: .75rem 0 2rem; color: #68708f; font-size: 1rem; }
+        .dt-auth-title { margin: 0; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; color: var(--auth-title); font-weight: 800; }
+        .dt-auth-subtitle { margin: .75rem 0 2rem; color: var(--auth-subtitle); font-size: 1rem; }
         .dt-auth-alert { padding: .95rem 1rem; border-radius: .95rem; margin-bottom: 1rem; font-size: .92rem; }
         .dt-auth-alert-danger { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
         .dt-auth-alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
         .dt-auth-form { display: grid; gap: 1.15rem; }
         .dt-auth-field { display: grid; gap: .45rem; }
-        .dt-auth-field label { font-size: .82rem; font-weight: 700; color: #4d5577; text-transform: uppercase; letter-spacing: .08em; }
-        .dt-auth-input { width: 100%; border: 1px solid #d7dcf4; border-radius: .95rem; padding: 1rem 1.05rem; font-size: 1rem; color: #1f2547; background: #fff; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
-        .dt-auth-input::placeholder { color: #b0b6cc; }
+        .dt-auth-field label { font-size: .82rem; font-weight: 700; color: var(--auth-label); text-transform: uppercase; letter-spacing: .08em; }
+        .dt-auth-input { width: 100%; border: 1px solid var(--auth-input-border); border-radius: .95rem; padding: 1rem 1.05rem; font-size: 1rem; color: var(--auth-input-text); background: var(--auth-input-bg); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+        .dt-auth-input::placeholder { color: var(--auth-placeholder); }
         .dt-auth-input:focus { outline: none; border-color: #6965df; box-shadow: 0 0 0 4px rgba(105,101,223,.12); transform: translateY(-1px); }
         .dt-auth-submit { margin-top: .35rem; width: 100%; border: 0; border-radius: 999px; padding: 1rem 1.2rem; font-size: 1rem; font-weight: 800; letter-spacing: .03em; color: #fff; background: linear-gradient(135deg, #4b49ac, #6965df); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; box-shadow: 0 18px 34px rgba(75,73,172,.24); }
         .dt-auth-submit:hover { opacity: .96; transform: translateY(-1px); }
         .dt-auth-meta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .25rem; flex-wrap: wrap; }
-        .dt-auth-check { display: inline-flex; align-items: center; gap: .65rem; color: #57607f; font-size: .95rem; }
+        .dt-auth-check { display: inline-flex; align-items: center; gap: .65rem; color: var(--auth-subtitle); font-size: .95rem; }
         .dt-auth-check input { width: 1rem; height: 1rem; accent-color: #4b49ac; }
-        .dt-auth-link { color: #252b53; font-weight: 600; text-decoration: underline; text-underline-offset: .18em; }
-        .dt-auth-footer { margin-top: 2rem; text-align: center; color: #6a7292; font-size: .95rem; }
+        .dt-auth-link { color: var(--auth-link); font-weight: 600; text-decoration: underline; text-underline-offset: .18em; }
+        .dt-auth-footer { margin-top: 2rem; text-align: center; color: var(--auth-footer); font-size: .95rem; }
         .dt-auth-footer a { color: #5c58d4; font-weight: 700; text-decoration: none; }
         .dt-auth-footer a:hover { text-decoration: underline; }
         @media (max-width: 640px) { .dt-auth-body { padding: 2rem 1.4rem 2.1rem; } }

@@ -5,14 +5,14 @@
 
         <style>
             .gfa-admin-page { overflow: visible; min-height: max-content; }
-            .gfa-admin-page .tabs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;border-bottom:2px solid #e8e8f0;margin-bottom:22px;background:#fff;padding:0 8px 6px;overflow-x:auto;overflow-y:hidden}
-            .gfa-admin-page .tab{border:none;background:transparent;color:#6c757d;font-size:14px;font-weight:600;padding:12px 16px;border-bottom:3px solid transparent;margin-bottom:-2px;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+            .gfa-admin-page .tabs{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--dt-border);margin-bottom:22px;background:var(--dt-panel-bg);padding:0 8px 6px;overflow-x:auto;overflow-y:hidden;box-shadow:var(--dt-shadow)}
+            .gfa-admin-page .tab{border:none;background:transparent;color:var(--dt-muted-text);font-size:14px;font-weight:600;padding:12px 16px;border-bottom:3px solid transparent;margin-bottom:-2px;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
             .gfa-admin-page .tab.active{color:#4B49AC;border-bottom-color:#4B49AC}
             .gfa-admin-page .pane{display:none}.gfa-admin-page .pane.active{display:block}
-            .gfa-admin-page .gfa-card{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);padding:24px;max-width:1100px;margin:0 auto 20px;border:1px solid #ececf5}
-            .gfa-admin-page .gfa-card h3{font-size:20px;font-weight:700;color:#191C24;display:flex;gap:10px;justify-content:center;margin:0 0 18px}
-            .gfa-admin-page .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px;background:#fcfcff;padding:15px;border-radius:8px}
-            .gfa-admin-page .input,.gfa-admin-page .controls select,.gfa-admin-page .controls input[type="date"]{width:100%;border:1px solid #dee2e6;border-radius:8px;padding:8px 12px;font-size:13px;min-height:38px;box-sizing:border-box}
+            .gfa-admin-page .gfa-card{background:var(--dt-panel-bg);color:var(--dt-page-text);border-radius:12px;box-shadow:var(--dt-shadow);padding:24px;max-width:1100px;margin:0 auto 20px;border:1px solid var(--dt-border)}
+            .gfa-admin-page .gfa-card h3{font-size:20px;font-weight:700;color:var(--dt-page-text);display:flex;gap:10px;justify-content:center;margin:0 0 18px}
+            .gfa-admin-page .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px;background:var(--dt-panel-alt-bg);padding:15px;border-radius:8px;border:1px solid var(--dt-border)}
+            .gfa-admin-page .input,.gfa-admin-page .controls select,.gfa-admin-page .controls input[type="date"]{width:100%;border:1px solid var(--dt-input-border);background:var(--dt-input-bg);color:var(--dt-page-text);border-radius:8px;padding:8px 12px;font-size:13px;min-height:38px;box-sizing:border-box}
             .gfa-admin-page .btn{border:none;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px}
             .gfa-admin-page .btn-primary{background:#4B49AC;color:#fff}.gfa-admin-page .btn-add{background:#4B49AC;color:#fff}.gfa-admin-page .btn-danger{background:#dc3545;color:#fff}
             .gfa-admin-page .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}.gfa-admin-page .form-actions{margin-top:12px;display:flex;justify-content:flex-end}
@@ -20,12 +20,12 @@
             .gfa-admin-page .toolbar-row .controls{flex:1;min-width:260px;margin-bottom:0}
             .gfa-admin-page .toolbar-row .toolbar-action{flex:0 0 auto}
             .gfa-admin-page .split-grid{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.35fr);gap:16px;align-items:start}
-            .gfa-admin-page .sub-card{border:1px solid #ececf5;border-radius:10px;padding:16px;background:#fff}
+            .gfa-admin-page .sub-card{border:1px solid var(--dt-border);border-radius:10px;padding:16px;background:var(--dt-panel-alt-bg)}
             .gfa-admin-page .stack{display:grid;gap:10px}
             .gfa-admin-page .actions{display:flex;flex-wrap:wrap;gap:8px}
-            .gfa-admin-page .table-wrap{overflow:auto;border:1px solid #ececf5;border-radius:12px}.gfa-admin-page .table{width:100%;border-collapse:collapse}.gfa-admin-page .table th,.gfa-admin-page .table td{padding:12px 14px;border-top:1px solid #eef0f3;text-align:left;font-size:13px}.gfa-admin-page .table th{background:#f8f9ff;border-top:none;font-size:12px}
-            .gfa-admin-page .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.gfa-admin-page .stat{background:#f8f9ff;border:1px solid #ececf5;border-radius:10px;padding:15px 10px;text-align:center}.gfa-admin-page .muted{color:#888;font-size:13px}.gfa-admin-page .center{text-align:center}.gfa-admin-page .empty{padding:24px;color:#aaa;text-align:center}
-            .gfa-admin-page .status{display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px}.gfa-admin-page .ok{background:#e8f7ef;color:#146c43}.gfa-admin-page .err{background:#fdecea;color:#842029}
+            .gfa-admin-page .table-wrap{overflow:auto;border:1px solid var(--dt-border);border-radius:12px}.gfa-admin-page .table{width:100%;border-collapse:collapse}.gfa-admin-page .table th,.gfa-admin-page .table td{padding:12px 14px;border-top:1px solid var(--dt-border);text-align:left;font-size:13px;color:var(--dt-page-text)}.gfa-admin-page .table th{background:var(--dt-table-head-bg);border-top:none;font-size:12px}
+            .gfa-admin-page .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.gfa-admin-page .stat{background:var(--dt-panel-alt-bg);border:1px solid var(--dt-border);border-radius:10px;padding:15px 10px;text-align:center}.gfa-admin-page .muted{color:var(--dt-muted-text);font-size:13px}.gfa-admin-page .center{text-align:center}.gfa-admin-page .empty{padding:24px;color:var(--dt-soft-text);text-align:center}
+            .gfa-admin-page .status{display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:12px}.gfa-admin-page .ok{background:var(--dt-success-bg);color:var(--dt-success-text);border:1px solid var(--dt-success-border)}.gfa-admin-page .err{background:var(--dt-danger-bg);color:var(--dt-danger-text);border:1px solid var(--dt-danger-border)}
             @media (max-width:992px){.gfa-admin-page .grid,.gfa-admin-page .stats,.gfa-admin-page .split-grid{grid-template-columns:1fr}.gfa-admin-page .toolbar-row{flex-direction:column;align-items:stretch}.gfa-admin-page .toolbar-row .toolbar-action{width:100%}}
         </style>
 

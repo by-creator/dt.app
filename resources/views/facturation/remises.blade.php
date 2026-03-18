@@ -11,11 +11,11 @@
 
         <style>
             .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
-            .toolbar select { border:1px solid #dee2e6; border-radius:7px; padding:7px 12px; font-size:13px; }
+            .toolbar select { border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:7px; padding:7px 12px; font-size:13px; }
             .search-wrap { position:relative; flex:1; min-width:200px; max-width:340px; }
-            .search-wrap input { width:100%; border:1px solid #dee2e6; border-radius:7px; padding:7px 12px 7px 34px; font-size:13px; outline:none; }
-            .search-wrap input:focus { border-color:#4B49AC; }
-            .search-wrap .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#aaa; font-size:13px; }
+            .search-wrap input { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:7px; padding:7px 12px 7px 34px; font-size:13px; outline:none; }
+            .search-wrap input:focus { border-color:#4B49AC; box-shadow:0 0 0 4px var(--dt-ring); }
+            .search-wrap .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--dt-soft-text); font-size:13px; }
             .badge-status { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.4px; white-space:nowrap; }
             .badge-en_attente_facturation { background:#fff3cd; color:#856404; }
             .badge-en_attente_direction { background:#cce5ff; color:#004085; }
@@ -27,31 +27,31 @@
             .btn-rejeter:hover { background:#c82333; }
             .btn-refresh { background:#4B49AC; color:#fff; border:none; border-radius:7px; font-size:13px; padding:8px 12px; cursor:pointer; }
             .btn-refresh:hover { background:#3e3d99; }
-            .table-card { background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.07); overflow:hidden; }
+            .table-card { background:var(--dt-panel-bg); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); overflow:hidden; }
             .table-card table { margin:0; width:100%; border-collapse:collapse; }
-            .table-card thead th { background:#f8f9ff; font-size:12px; font-weight:700; color:#555; border-bottom:2px solid #e9ecef; white-space:nowrap; text-align:left; padding:14px 16px; }
-            .table-card tbody td { font-size:13px; vertical-align:middle; padding:14px 16px; border-top:1px solid #eef0f3; }
+            .table-card thead th { background:var(--dt-table-head-bg); font-size:12px; font-weight:700; color:var(--dt-page-text); border-bottom:2px solid var(--dt-border); white-space:nowrap; text-align:left; padding:14px 16px; }
+            .table-card tbody td { font-size:13px; vertical-align:middle; padding:14px 16px; border-top:1px solid var(--dt-border); color:var(--dt-page-text); }
             .table-responsive { overflow:auto; }
-            .empty-state { text-align:center; padding:48px; color:#aaa; }
-            .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9000; align-items:center; justify-content:center; }
+            .empty-state { text-align:center; padding:48px; color:var(--dt-soft-text); }
+            .modal-overlay { display:none; position:fixed; inset:0; background:var(--dt-overlay); z-index:9000; align-items:center; justify-content:center; }
             .modal-overlay.open { display:flex; }
-            .modal-box { background:#fff; border-radius:12px; padding:28px; width:100%; max-width:440px; box-shadow:0 8px 40px rgba(0,0,0,.18); }
+            .modal-box { background:var(--dt-panel-bg); color:var(--dt-page-text); border:1px solid var(--dt-border); border-radius:12px; padding:28px; width:100%; max-width:440px; box-shadow:var(--dt-shadow); }
             .modal-box h5 { font-weight:700; margin-bottom:14px; }
-            .modal-box textarea, .modal-box input[type=number] { width:100%; border:1px solid #dee2e6; border-radius:8px; padding:10px 12px; font-size:13px; }
+            .modal-box textarea, .modal-box input[type=number] { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:10px 12px; font-size:13px; }
             .modal-box textarea { resize:vertical; min-height:90px; }
             .modal-box input[type=number] { margin-top:8px; }
             .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
             .btn-cancel { background:#6c757d; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:13px; cursor:pointer; }
             .btn-confirm { background:#28a745; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; }
             .btn-confirm-reject { background:#dc3545; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; }
-            .pagination-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 16px 4px; font-size:13px; color:#555; }
+            .pagination-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 16px 4px; font-size:13px; color:var(--dt-muted-text); }
             .pagination-pages { display:flex; gap:4px; align-items:center; }
-            .page-btn { border:1px solid #dee2e6; background:#fff; border-radius:6px; padding:4px 10px; font-size:13px; cursor:pointer; color:#555; }
-            .page-btn:hover { background:#f0f0ff; border-color:#4B49AC; color:#4B49AC; }
+            .page-btn { border:1px solid var(--dt-border); background:var(--dt-panel-alt-bg); border-radius:6px; padding:4px 10px; font-size:13px; cursor:pointer; color:var(--dt-page-text); }
+            .page-btn:hover { background:var(--dt-table-head-bg); border-color:#4B49AC; color:#818cf8; }
             .page-btn.active { background:#4B49AC; color:#fff; border-color:#4B49AC; }
             .page-btn:disabled { opacity:.4; cursor:default; }
-            .role-badge { display:inline-block; background:#e8e8ff; color:#4B49AC; border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; margin-left:8px; }
-            .page-header h1 { display:flex; align-items:center; gap:10px; margin:0; flex-wrap:wrap; }
+            .role-badge { display:inline-block; background:var(--dt-table-head-bg); color:#818cf8; border:1px solid var(--dt-border); border-radius:20px; padding:2px 10px; font-size:11px; font-weight:700; margin-left:8px; }
+            .page-header h1 { display:flex; align-items:center; gap:10px; margin:0; flex-wrap:wrap; color:var(--dt-page-text); }
 
             @media (max-width: 768px) {
                 .toolbar { align-items:stretch; }
@@ -66,27 +66,27 @@
                     <span class="role-badge">Facturation</span>
                 @endif
                 @if ($isDirection)
-                    <span class="role-badge" style="background:#cce5ff;color:#004085">Direction Generale</span>
+                    <span class="role-badge">Direction Generale</span>
                 @endif
             </h1>
         </div>
 
         @if ($isFacturation)
-            <div class="alert" style="background:#e8f4fd;border:1px solid #bee5eb;border-radius:8px;padding:10px 16px;font-size:13px;color:#0c5460;margin-bottom:16px">
+            <div class="alert dt-theme-info" style="border-radius:8px;padding:10px 16px;font-size:13px;margin-bottom:16px">
                 <i class="fas fa-info-circle"></i>
                 Vous voyez les demandes en attente de votre validation. En validant, la demande sera transmise a la Direction Generale.
             </div>
         @endif
 
         @if ($isDirection)
-            <div class="alert" style="background:#e8f4fd;border:1px solid #bee5eb;border-radius:8px;padding:10px 16px;font-size:13px;color:#0c5460;margin-bottom:16px">
+            <div class="alert dt-theme-info" style="border-radius:8px;padding:10px 16px;font-size:13px;margin-bottom:16px">
                 <i class="fas fa-info-circle"></i>
                 Vous voyez les demandes validees par la Facturation, en attente de votre validation finale. Indiquez un pourcentage de remise lors de la validation.
             </div>
         @endif
 
         <div class="toolbar">
-            <label style="font-size:13px;font-weight:600;color:#555;margin:0">Filtrer :</label>
+            <label style="font-size:13px;font-weight:600;color:var(--dt-page-text);margin:0">Filtrer :</label>
             <select id="filter-statut" onchange="loadRemises()">
                 <option value="">Tous les statuts</option>
                 <option value="EN_ATTENTE_VALIDATION_FACTURATION">En attente (Facturation)</option>
@@ -126,7 +126,7 @@
         <div class="modal-overlay" id="reject-modal">
             <div class="modal-box">
                 <h5 style="color:#dc3545"><i class="fas fa-times-circle"></i> Motif du rejet</h5>
-                <p style="font-size:13px;color:#555;margin-bottom:10px">Veuillez preciser le motif du rejet :</p>
+                <p style="font-size:13px;color:var(--dt-muted-text);margin-bottom:10px">Veuillez preciser le motif du rejet :</p>
                 <textarea id="motif-input" placeholder="Saisissez le motif du rejet..."></textarea>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('reject-modal')">Annuler</button>
@@ -138,10 +138,10 @@
         <div class="modal-overlay" id="direction-modal">
             <div class="modal-box">
                 <h5 style="color:#28a745"><i class="fas fa-check-circle"></i> Validation Direction Generale</h5>
-                <p style="font-size:13px;color:#555;margin-bottom:10px">Saisissez le pourcentage de remise accorde :</p>
+                <p style="font-size:13px;color:var(--dt-muted-text);margin-bottom:10px">Saisissez le pourcentage de remise accorde :</p>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
                     <input type="number" id="pourcentage-input" min="0" max="100" step="0.01" placeholder="Ex: 15" style="max-width:140px">
-                    <span style="font-size:16px;font-weight:700;color:#4B49AC">%</span>
+                    <span style="font-size:16px;font-weight:700;color:#818cf8">%</span>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('direction-modal')">Annuler</button>
