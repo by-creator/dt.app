@@ -4,7 +4,14 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <title>Dakar Terminal - Tout faire a distance</title>
-    <link rel="icon" type="image/png" href="/img/image.png"/>
+
+    <link rel="icon" href="/img/icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="{{ asset('templates/fiche/assets/img/logo.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
