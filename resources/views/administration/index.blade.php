@@ -44,6 +44,10 @@
             .admin-page .icon-btn { justify-content:center; min-width:44px; padding:10px 12px; }
             .admin-page .icon-btn i { font-size:14px; }
             .admin-page .inline-user-actions { display:flex; gap:8px; flex-wrap:nowrap; align-items:center; }
+            .admin-page .password-toggle-group { position:relative; }
+            .admin-page .password-toggle-group .form-control-custom { padding-right:5.6rem; }
+            .admin-page .password-toggle { position:absolute; top:50%; right:12px; transform:translateY(-50%); border:none; background:transparent; color:#818cf8; font-size:12px; font-weight:700; cursor:pointer; padding:4px; }
+            .admin-page .password-toggle:hover { opacity:.85; }
 
             @media (max-width: 768px) {
                 .admin-page .admin-grid,
@@ -171,11 +175,17 @@
                                 </div>
                                 <div class="form-group-custom">
                                     <label for="user_password_confirmation">Confirmation *</label>
-                                    <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
+                                    <div class="password-toggle-group">
+                                        <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
+                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user_password_confirmation" aria-label="Afficher le mot de passe">Voir</button>
+                                    </div>
                                 </div>
                                 <div class="form-group-custom">
                                     <label for="user_password">Mot de passe *</label>
-                                    <input id="user_password" name="password" type="password" class="form-control-custom" required>
+                                    <div class="password-toggle-group">
+                                        <input id="user_password" name="password" type="password" class="form-control-custom" required>
+                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user_password" aria-label="Afficher le mot de passe">Voir</button>
+                                    </div>
                                 </div>
                             </div>
                             <div style="margin-top:14px;">
@@ -223,10 +233,16 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
+                                            <div class="password-toggle-group">
+                                                <input id="user-password-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
+                                                <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
+                                            </div>
                                         </td>
                                         <td>
-                                            <input form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
+                                            <div class="password-toggle-group">
+                                                <input id="user-password-confirmation-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
+                                                <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-confirmation-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="inline-user-actions">
@@ -297,6 +313,18 @@
                     if (result.isConfirmed) {
                         form.submit();
                     }
+                });
+            });
+
+            document.querySelectorAll('[data-password-toggle]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const input = document.getElementById(button.getAttribute('aria-controls'));
+                    if (!input) return;
+
+                    const shouldShow = input.type === 'password';
+                    input.type = shouldShow ? 'text' : 'password';
+                    button.textContent = shouldShow ? button.dataset.hideLabel : button.dataset.showLabel;
+                    button.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
                 });
             });
 

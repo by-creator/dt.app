@@ -48,6 +48,10 @@
         .dt-auth-input { width: 100%; border: 1px solid var(--auth-input-border); border-radius: .95rem; padding: 1rem 1.05rem; font-size: 1rem; color: var(--auth-input-text); background: var(--auth-input-bg); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
         .dt-auth-input::placeholder { color: var(--auth-placeholder); }
         .dt-auth-input:focus { outline: none; border-color: #6965df; box-shadow: 0 0 0 4px rgba(105,101,223,.12); transform: translateY(-1px); }
+        .dt-password-toggle-group { position: relative; }
+        .dt-password-toggle-group .dt-auth-input { padding-right: 6rem; }
+        .dt-password-toggle { position: absolute; top: 50%; right: .85rem; transform: translateY(-50%); border: 0; background: transparent; color: var(--auth-link); font-size: .86rem; font-weight: 700; cursor: pointer; padding: .25rem; }
+        .dt-password-toggle:hover { opacity: .86; }
         .dt-auth-submit { margin-top: .35rem; width: 100%; border: 0; border-radius: 999px; padding: 1rem 1.2rem; font-size: 1rem; font-weight: 800; letter-spacing: .03em; color: #fff; background: linear-gradient(135deg, #4b49ac, #6965df); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; box-shadow: 0 18px 34px rgba(75,73,172,.24); }
         .dt-auth-submit:hover { opacity: .96; transform: translateY(-1px); }
         .dt-auth-meta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .25rem; flex-wrap: wrap; }
@@ -88,7 +92,10 @@
 
                     <div class="dt-auth-field">
                         <label for="password">{{ __('Mot de passe') }}</label>
-                        <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Votre mot de passe" class="dt-auth-input">
+                        <div class="dt-password-toggle-group">
+                            <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Votre mot de passe" class="dt-auth-input">
+                            <button type="button" class="dt-password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="password" aria-label="Afficher le mot de passe">Voir</button>
+                        </div>
                     </div>
 
                     <button type="submit" class="dt-auth-submit" data-test="login-button">{{ __('SE CONNECTER') }}</button>
@@ -108,4 +115,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach(button => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById(button.getAttribute('aria-controls'));
+                if (!input) return;
+
+                const shouldShow = input.type === 'password';
+                input.type = shouldShow ? 'text' : 'password';
+                button.textContent = shouldShow ? button.dataset.hideLabel : button.dataset.showLabel;
+                button.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+            });
+        });
+    </script>
 </x-layouts::auth>

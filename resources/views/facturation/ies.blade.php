@@ -32,6 +32,10 @@
             .ies-form .form-group label { font-size:13px; font-weight:600; color:#444; display:block; margin-bottom:6px; }
             .ies-form .form-control { border-radius:8px; font-size:13px; height:42px; border:1px solid #dee2e6; padding:9px 13px; width:100%; color:#343a40; outline:none; transition:border-color .2s; }
             .ies-form .form-control:focus { border-color:#4B49AC; box-shadow:none; }
+            .ies-form .password-toggle-group { position:relative; }
+            .ies-form .password-toggle-group .form-control { padding-right:5.6rem; }
+            .ies-form .password-toggle { position:absolute; top:50%; right:12px; transform:translateY(-50%); border:none; background:transparent; color:#4B49AC; font-size:12px; font-weight:700; cursor:pointer; padding:4px; }
+            .ies-form .password-toggle:hover { opacity:.85; }
             .ies-form-footer { text-align:center; width:100%; }
             .btn-ies-save { background:#4B49AC; color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; margin-top:22px; display:inline-flex; align-items:center; gap:6px; }
             .btn-ies-save:hover { background:#3e3d99; }
@@ -101,7 +105,10 @@
                     </div>
                     <div class="form-group">
                         <label for="create_ies_password">Mot de passe</label>
-                        <input id="create_ies_password" name="password" type="password" class="form-control" maxlength="100" required placeholder="........">
+                        <div class="password-toggle-group">
+                            <input id="create_ies_password" name="password" type="password" class="form-control" maxlength="100" required placeholder="........">
+                            <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="create_ies_password" aria-label="Afficher le mot de passe">Voir</button>
+                        </div>
                     </div>
                     <div class="ies-form-footer">
                         <button type="submit" class="btn-ies-save"><i class="fas fa-paper-plane"></i> Envoyer</button>
@@ -122,7 +129,10 @@
                     </div>
                     <div class="form-group">
                         <label for="reset_ies_password">Nouveau mot de passe</label>
-                        <input id="reset_ies_password" name="password" type="password" class="form-control" maxlength="100" required placeholder="........">
+                        <div class="password-toggle-group">
+                            <input id="reset_ies_password" name="password" type="password" class="form-control" maxlength="100" required placeholder="........">
+                            <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="reset_ies_password" aria-label="Afficher le mot de passe">Voir</button>
+                        </div>
                     </div>
                     <div class="ies-form-footer">
                         <button type="submit" class="btn-ies-save"><i class="fas fa-paper-plane"></i> Envoyer</button>
@@ -143,6 +153,18 @@
                         this.classList.add('active');
                         const pane = document.getElementById(this.dataset.target);
                         if (pane) pane.classList.add('active');
+                    });
+                });
+
+                document.querySelectorAll('[data-password-toggle]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const input = document.getElementById(button.getAttribute('aria-controls'));
+                        if (!input) return;
+
+                        const shouldShow = input.type === 'password';
+                        input.type = shouldShow ? 'text' : 'password';
+                        button.textContent = shouldShow ? button.dataset.hideLabel : button.dataset.showLabel;
+                        button.setAttribute('aria-label', shouldShow ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
                     });
                 });
             })();
