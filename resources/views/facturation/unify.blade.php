@@ -20,8 +20,8 @@
             .unify-page .wizard-header { margin-bottom:22px; text-align:center; }
             .unify-page .wizard-title { font-size:20px; font-weight:700; color:#191C24; display:flex; align-items:center; gap:10px; justify-content:center; }
             .unify-page .wizard-subtitle { color:#888; font-size:13px; }
-            .unify-page .wizard-steps { display:flex; justify-content:flex-start; gap:10px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; margin:20px 0; border-bottom:1px solid #f2f2f7; padding:0 0 15px; scrollbar-width:thin; }
-            .unify-page .wizard-step-indicator { flex:0 0 auto; background:#f8f9fa; color:#6c757d; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:8px; cursor:pointer; border:1px solid #eee; }
+            .unify-page .wizard-steps { display:flex; justify-content:center; gap:10px; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; margin:20px 0; border-bottom:1px solid #f2f2f7; padding:0 0 15px; scrollbar-width:thin; }
+            .unify-page .wizard-step-indicator { flex:0 0 auto; background:#f8f9fa; color:#6c757d; border-radius:8px; padding:8px 16px; font-size:13px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; border:1px solid #eee; text-align:center; }
             .unify-page .wizard-step-indicator.active { background:#4B49AC; color:#fff; border-color:#4B49AC; }
             .unify-page .wizard-step { display:none; }
             .unify-page .wizard-step.active { display:block; }
@@ -179,8 +179,8 @@
                         </div>
                         <div class="unify-admin-card">
                             <h5>Import / Export tiers</h5>
-                            <p class="muted">Importer un fichier CSV ou XLSX puis exporter les donnees en XLSX.</p>
-                            <input type="file" id="admin-import-file" accept=".csv,.xlsx" class="form-control-custom" style="height:auto; padding:8px;">
+                            <p class="muted">Importer un gros fichier CSV via LOAD DATA LOCAL INFILE puis exporter les donnees en XLSX.</p>
+                            <input type="file" id="admin-import-file" accept=".csv" class="form-control-custom" style="height:auto; padding:8px;">
                             <div class="card-actions">
                                 <button type="button" id="admin-import-btn" class="btn-gfa btn-primary-gfa">Importer</button>
                                 <a class="btn-gfa btn-primary-gfa" href="/facturation/api/tiers-unify/export/xlsx">Exporter XLSX</a>
@@ -357,7 +357,7 @@
                 document.getElementById('admin-import-btn').onclick = async () => {
                     const fileInput = document.getElementById('admin-import-file');
                     if (!fileInput.files.length) {
-                        setStatus(adminStatus, 'Selectionnez un fichier CSV ou XLSX.', false);
+                        setStatus(adminStatus, 'Selectionnez un fichier CSV.', false);
                         return;
                     }
                     const formData = new FormData();

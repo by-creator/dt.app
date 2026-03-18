@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Models\TiersUnify;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 class TiersUnifyService
 {
@@ -52,10 +55,64 @@ class TiersUnifyService
         }
     }
 
+    public function importCsvWithLocalInfile(UploadedFile $file): int
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if ($extension !== 'csv') {
+            throw new \InvalidArgumentException('Format non supporte. Utilisez un fichier .csv pour l\'import massif.');
+        }
+
+        $delimiter = $this->detectCsvDelimiter($file->getRealPath());
+        $temporaryDirectory = storage_path('app/unify-imports');
+        File::ensureDirectoryExists($temporaryDirectory);
+
+        $temporaryPath = $temporaryDirectory.'/'.uniqid('tiers-unify-', true).'.csv';
+        File::copy($file->getRealPath(), $temporaryPath);
+
+        try {
+            $path = str_replace('\\', '\\\\', $temporaryPath);
+            $separator = $delimiter === ',' ? ',' : ';';
+
+            $sql = <<<SQL
+LOAD DATA LOCAL INFILE '{$path}'
+INTO TABLE tiers_unify
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY '{$separator}'
+OPTIONALLY ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(@raison_sociale, @compte_ipaki, @compte_neptune)
+SET
+    raison_sociale = UPPER(TRIM(REPLACE(@raison_sociale, '\r', ''))),
+    compte_ipaki = TRIM(REPLACE(@compte_ipaki, '\r', '')),
+    compte_neptune = NULLIF(TRIM(REPLACE(@compte_neptune, '\r', '')), ''),
+    created_at = NOW()
+SQL;
+
+            DB::connection()->getPdo()->exec($sql);
+
+            return (int) (DB::selectOne('SELECT ROW_COUNT() AS count')->count ?? 0);
+        } finally {
+            File::delete($temporaryPath);
+        }
+    }
+
     private function nullableString(mixed $value): ?string
     {
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function detectCsvDelimiter(string $path): string
+    {
+        $handle = fopen($path, 'rb');
+        $header = $handle ? (string) fgets($handle) : '';
+        if (is_resource($handle)) {
+            fclose($handle);
+        }
+
+        return substr_count($header, ';') >= substr_count($header, ',') ? ';' : ',';
     }
 }

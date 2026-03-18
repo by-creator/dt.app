@@ -200,8 +200,11 @@ class TicketGfaService
             'createdAt' => $ticket->created_at?->toIso8601String(),
             'calledAt' => $ticket->called_at?->toIso8601String(),
             'closedAt' => $ticket->closed_at?->toIso8601String(),
-            'waitingTime' => $ticket->called_at ? $ticket->called_at->diffInSeconds($ticket->created_at) : null,
-            'processingTime' => $ticket->processing_time,
+            'waitingTime' => $ticket->waiting_time && $ticket->created_at
+                ? abs($ticket->waiting_time->getTimestamp() - $ticket->created_at->getTimestamp())
+                : null,
+            'waitingTimeAt' => $ticket->waiting_time?->toIso8601String(),
+            'processingTime' => $ticket->processing_time !== null ? abs((int) $ticket->processing_time) : null,
         ];
     }
 
@@ -210,7 +213,9 @@ class TicketGfaService
         $ticket = TicketGfa::query()->with(['service', 'agent', 'guichet'])->findOrFail($ticketId);
 
         $closedAt = now();
-        $processingTime = $ticket->called_at ? $closedAt->diffInSeconds($ticket->called_at) : null;
+        $processingTime = $ticket->called_at
+            ? abs($closedAt->getTimestamp() - $ticket->called_at->getTimestamp())
+            : null;
 
         $ticket->forceFill([
             'statut' => $status,

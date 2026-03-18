@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         Schema::defaultStringLength(191);
         $this->ensureAdminUserExists();
+        $this->ensureBusinessRolesExist();
     }
 
     /**
@@ -70,6 +71,29 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 Artisan::call('create:admin-user');
+            } catch (Throwable) {
+                // Ignore bootstrap-time failures until the database is ready.
+            }
+        });
+    }
+
+    protected function ensureBusinessRolesExist(): void
+    {
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
+        if (($this->currentConsoleCommand() === 'roles:ensure-business')) {
+            return;
+        }
+
+        app()->booted(function (): void {
+            try {
+                if (! Schema::hasTable('roles')) {
+                    return;
+                }
+
+                Artisan::call('roles:ensure-business');
             } catch (Throwable) {
                 // Ignore bootstrap-time failures until the database is ready.
             }

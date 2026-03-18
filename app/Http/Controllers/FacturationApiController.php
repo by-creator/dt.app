@@ -106,6 +106,7 @@ class FacturationApiController extends Controller
         $roleName = $request->user()?->role?->name;
         $validated = $request->validate([
             'pourcentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'motif' => ['nullable', 'string', 'max:100'],
         ]);
 
         if (in_array($roleName, ['DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true) && $rattachement->statut === 'EN_ATTENTE_VALIDATION_DIRECTION') {
@@ -122,12 +123,13 @@ class FacturationApiController extends Controller
             ])->save();
 
             if (filled($rattachement->email)) {
-                $this->dematEmailService->sendRemiseValidatedByDirectionEmail(
+                $this->dematEmailService->sendRemiseValidatedByDirectionEmailWithMotif(
                     $rattachement->email,
                     $rattachement->nom,
                     $rattachement->prenom,
                     $rattachement->bl,
                     $rattachement->pourcentage,
+                    $validated['motif'] ?? null,
                 );
             }
 

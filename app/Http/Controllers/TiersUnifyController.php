@@ -97,44 +97,18 @@ class TiersUnifyController extends Controller
         $this->authorizeAdmin($request);
 
         $validated = $request->validate([
-            'file' => ['required', 'file', 'max:10240'],
+            'file' => ['required', 'file', 'max:102400'],
         ]);
 
         $file = $validated['file'];
-        $fileName = strtolower($file->getClientOriginalName() ?? '');
 
-        if (! str_ends_with($fileName, '.csv')) {
-            return response('Format non supporte pour le moment. Utilisez un fichier .csv.', 400);
+        try {
+            $count = $this->service->importCsvWithLocalInfile($file);
+
+            return response('Import effectue via LOAD DATA LOCAL INFILE : '.$count.' tiers.');
+        } catch (\Throwable $exception) {
+            return response('Erreur lors de l\'import: '.$exception->getMessage(), 400);
         }
-
-        $content = (string) file_get_contents($file->getRealPath());
-        $lines = preg_split('/\r\n|\r|\n/', $content) ?: [];
-        $items = [];
-
-        foreach ($lines as $index => $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
-            }
-            if ($index === 0 && str_contains(strtolower($line), 'raisonsociale')) {
-                continue;
-            }
-
-            $columns = preg_split('/[;,]/', $line) ?: [];
-            if (count($columns) < 3) {
-                return response('Ligne invalide: '.($index + 1), 400);
-            }
-
-            $items[] = [
-                'raisonSociale' => trim($columns[0]),
-                'compteIpaki' => trim($columns[1]),
-                'compteNeptune' => trim($columns[2]) ?: null,
-            ];
-        }
-
-        $this->service->saveAll($items);
-
-        return response('Import effectue: '.count($items).' tiers.');
     }
 
     private function authorizeAdmin(Request $request): void

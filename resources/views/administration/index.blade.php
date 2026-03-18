@@ -53,11 +53,11 @@
         </div>
 
         <div class="module-tabs">
-            <button type="button" class="module-tab active" data-target="admin-roles"><i class="fas fa-shield-alt"></i> Roles</button>
-            <button type="button" class="module-tab" data-target="admin-users"><i class="fas fa-users-cog"></i> Utilisateurs</button>
+            <button type="button" class="module-tab {{ ($activeTab ?? 'admin-roles') === 'admin-roles' ? 'active' : '' }}" data-target="admin-roles"><i class="fas fa-shield-alt"></i> Roles</button>
+            <button type="button" class="module-tab {{ ($activeTab ?? 'admin-roles') === 'admin-users' ? 'active' : '' }}" data-target="admin-users"><i class="fas fa-users-cog"></i> Utilisateurs</button>
         </div>
 
-        <div id="admin-roles" class="module-pane active">
+        <div id="admin-roles" class="module-pane {{ ($activeTab ?? 'admin-roles') === 'admin-roles' ? 'active' : '' }}">
             <div class="split-grid">
                 <div class="simple-card">
                     <h3 class="unify-section-title"><i class="fas fa-plus-circle" style="color:#4B49AC"></i> Enregistrement role</h3>
@@ -67,6 +67,7 @@
                         <h5 style="margin-bottom:14px;">Ajouter un role</h5>
                         <form method="POST" action="{{ route('administration.roles.store') }}" class="stack">
                             @csrf
+                            <input type="hidden" name="tab" value="admin-roles">
                             <div class="form-group-custom">
                                 <label for="role_name">Nom du role *</label>
                                 <input id="role_name" name="name" class="form-control-custom" placeholder="Ex: FACTURATION" required>
@@ -82,7 +83,7 @@
 
                     <div class="admin-card">
                         <h5 style="margin-bottom:14px;">Apercu</h5>
-                        <p class="muted">Total des roles : <strong style="color:#191C24">{{ $roles->count() }}</strong></p>
+                        <p class="muted">Total des roles : <strong style="color:#191C24">{{ $roles->total() }}</strong></p>
                         <p class="muted" style="margin-top:8px;">Les roles utilises ne peuvent pas etre supprimes.</p>
                     </div>
 
@@ -102,6 +103,7 @@
                                             <form method="POST" action="{{ route('administration.roles.update', $role) }}" class="stack">
                                                 @csrf
                                                 @method('PUT')
+                                                <input type="hidden" name="tab" value="admin-roles">
                                                 <input name="name" value="{{ $role->name }}" class="form-control-custom" required>
                                         </td>
                                         <td>{{ $role->users_count }}</td>
@@ -112,6 +114,7 @@
                                                     <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" onsubmit="return confirm('Supprimer ce role ?');">
                                                         @csrf
                                                         @method('DELETE')
+                                                        <input type="hidden" name="tab" value="admin-roles">
                                                         <button type="submit" class="btn-gfa btn-danger-gfa">Supprimer</button>
                                                     </form>
                                                 </div>
@@ -125,11 +128,15 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <div style="margin-top:18px;">
+                        {{ $roles->appends(['tab' => 'admin-roles'])->links() }}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="admin-users" class="module-pane">
+        <div id="admin-users" class="module-pane {{ ($activeTab ?? 'admin-roles') === 'admin-users' ? 'active' : '' }}">
             <div class="split-grid">
                 <div class="simple-card">
                     <h3 class="unify-section-title"><i class="fas fa-user-plus" style="color:#4B49AC"></i> Enregistrement utilisateur</h3>
@@ -139,6 +146,7 @@
                         <h5 style="margin-bottom:14px;">Ajouter un utilisateur</h5>
                         <form method="POST" action="{{ route('administration.users.store') }}">
                             @csrf
+                            <input type="hidden" name="tab" value="admin-users">
                             <div class="form-grid-layout">
                                 <div class="form-group-custom">
                                     <label for="user_name">Nom *</label>
@@ -151,7 +159,7 @@
                                 <div class="form-group-custom">
                                     <label for="user_role">Role *</label>
                                     <select id="user_role" name="role_id" class="form-control-custom" required>
-                                        @foreach ($roles as $role)
+                                        @foreach ($rolesForSelect as $role)
                                             <option value="{{ $role->id }}">{{ $role->name }}</option>
                                         @endforeach
                                     </select>
@@ -197,7 +205,7 @@
                                         </td>
                                         <td>
                                             <select form="user-update-{{ $user->id }}" name="role_id" class="form-control-custom" required>
-                                                @foreach ($roles as $role)
+                                                @foreach ($rolesForSelect as $role)
                                                     <option value="{{ $role->id }}" @selected($user->role_id === $role->id)>{{ $role->name }}</option>
                                                 @endforeach
                                             </select>
@@ -213,11 +221,13 @@
                                                 <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}">
                                                     @csrf
                                                     @method('PUT')
+                                                    <input type="hidden" name="tab" value="admin-users">
                                                     <button type="submit" class="btn-gfa btn-primary-gfa">Mettre a jour</button>
                                                 </form>
                                                 <form method="POST" action="{{ route('administration.users.destroy', $user) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');">
                                                     @csrf
                                                     @method('DELETE')
+                                                    <input type="hidden" name="tab" value="admin-users">
                                                     <button type="submit" class="btn-gfa btn-danger-gfa">Supprimer</button>
                                                 </form>
                                             </div>
@@ -230,6 +240,10 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    <div style="margin-top:18px;">
+                        {{ $users->appends(['tab' => 'admin-users'])->links() }}
                     </div>
                 </div>
             </div>

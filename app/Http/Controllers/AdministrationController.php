@@ -20,14 +20,20 @@ class AdministrationController extends Controller
         $this->authorizeAdmin($request);
 
         return view('administration.index', [
+            'activeTab' => $request->query('tab', 'admin-roles'),
             'roles' => Role::query()
                 ->withCount('users')
+                ->orderBy('name')
+                ->paginate(3, ['*'], 'roles_page')
+                ->withQueryString(),
+            'rolesForSelect' => Role::query()
                 ->orderBy('name')
                 ->get(),
             'users' => User::query()
                 ->with('role')
                 ->orderBy('name')
-                ->get(),
+                ->paginate(3, ['*'], 'users_page')
+                ->withQueryString(),
         ]);
     }
 
@@ -43,7 +49,7 @@ class AdministrationController extends Controller
             'name' => strtoupper(trim($validated['name'])),
         ]);
 
-        return back()->with('admin_success', 'Role cree avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Role cree avec succes.');
     }
 
     public function updateRole(Request $request, Role $role): RedirectResponse
@@ -58,7 +64,7 @@ class AdministrationController extends Controller
             'name' => strtoupper(trim($validated['name'])),
         ]);
 
-        return back()->with('admin_success', 'Role modifie avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Role modifie avec succes.');
     }
 
     public function destroyRole(Request $request, Role $role): RedirectResponse
@@ -66,12 +72,12 @@ class AdministrationController extends Controller
         $this->authorizeAdmin($request);
 
         if ($role->users()->exists()) {
-            return back()->with('admin_error', 'Impossible de supprimer un role deja attribue a des utilisateurs.');
+            return $this->redirectToAdministration($request, 'admin_error', 'Impossible de supprimer un role deja attribue a des utilisateurs.');
         }
 
         $role->delete();
 
-        return back()->with('admin_success', 'Role supprime avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Role supprime avec succes.');
     }
 
     public function storeUser(Request $request): RedirectResponse
@@ -93,7 +99,7 @@ class AdministrationController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        return back()->with('admin_success', 'Utilisateur cree avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Utilisateur cree avec succes.');
     }
 
     public function updateUser(Request $request, User $user): RedirectResponse
@@ -117,7 +123,7 @@ class AdministrationController extends Controller
 
         $user->save();
 
-        return back()->with('admin_success', 'Utilisateur modifie avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Utilisateur modifie avec succes.');
     }
 
     public function destroyUser(Request $request, User $user): RedirectResponse
@@ -125,16 +131,23 @@ class AdministrationController extends Controller
         $this->authorizeAdmin($request);
 
         if ((int) $request->user()->id === (int) $user->id) {
-            return back()->with('admin_error', 'Vous ne pouvez pas supprimer votre propre compte depuis cet ecran.');
+            return $this->redirectToAdministration($request, 'admin_error', 'Vous ne pouvez pas supprimer votre propre compte depuis cet ecran.');
         }
 
         $user->delete();
 
-        return back()->with('admin_success', 'Utilisateur supprime avec succes.');
+        return $this->redirectToAdministration($request, 'admin_success', 'Utilisateur supprime avec succes.');
     }
 
     protected function authorizeAdmin(Request $request): void
     {
         abort_unless($request->user()?->role?->name === 'ADMIN', 403);
+    }
+
+    protected function redirectToAdministration(Request $request, string $flashKey, string $message): RedirectResponse
+    {
+        return redirect()
+            ->route('administration.index', ['tab' => $request->input('tab', 'admin-roles')])
+            ->with($flashKey, $message);
     }
 }

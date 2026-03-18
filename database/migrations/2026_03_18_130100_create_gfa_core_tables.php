@@ -39,8 +39,6 @@ return new class extends Migration
             $table->foreignId('guichet_id')->nullable()->constrained('guichets')->nullOnDelete();
             $table->string('statut', 50)->default('EN_ATTENTE');
             $table->string('numero', 20);
-            $table->string('nom_client', 150)->nullable();
-            $table->string('motif', 255)->nullable();
             $table->dateTime('waiting_time')->nullable();
             $table->dateTime('called_at')->nullable();
             $table->dateTime('closed_at')->nullable();
