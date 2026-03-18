@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Mail;
 class DematEmailService
 {
     private const DEFAULT_RECIPIENTS = [
-        'iosid242@gmail.com',
-        'noreplysitedt@gmail.com',
+        'sn004-proforma@dakar-terminal.com',
+        'sn004-facturation@dakar-terminal.com',
     ];
 
-    private const DEFAULT_DIRECTOR_EMAIL = 'bongoyebamarcdamien@yahoo.fr';
+    private const DEFAULT_DIRECTOR_EMAIL = 'sn004-remise.facturation@dakar-terminal.com';
 
     public function sendValidationEmail(
         string $nom,
