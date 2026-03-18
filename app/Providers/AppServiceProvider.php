@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         Schema::defaultStringLength(191);
+        $this->ensureAdminUserExists();
     }
 
     /**
@@ -48,5 +51,37 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    protected function ensureAdminUserExists(): void
+    {
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
+        if (($this->currentConsoleCommand() === 'create:admin-user')) {
+            return;
+        }
+
+        app()->booted(function (): void {
+            try {
+                if (! Schema::hasTable('roles') || ! Schema::hasTable('users')) {
+                    return;
+                }
+
+                Artisan::call('create:admin-user');
+            } catch (Throwable) {
+                // Ignore bootstrap-time failures until the database is ready.
+            }
+        });
+    }
+
+    protected function currentConsoleCommand(): ?string
+    {
+        if (! app()->runningInConsole()) {
+            return null;
+        }
+
+        return $_SERVER['argv'][1] ?? null;
     }
 }
