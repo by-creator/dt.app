@@ -3,8 +3,8 @@
         .dt-auth-shell { width: min(100%, 38rem); margin: 0 auto; }
         .dt-auth-card { background: rgba(255,255,255,.96); border: 1px solid rgba(108,117,255,.12); border-radius: 1.75rem; box-shadow: 0 28px 80px rgba(54,63,136,.16); overflow: hidden; backdrop-filter: blur(14px); }
         .dt-auth-body { padding: 3rem 3rem 2.75rem; }
-        .dt-auth-logo { display: inline-flex; align-items: center; justify-content: center; width: 4rem; height: 4rem; margin-bottom: 1.5rem; border-radius: 1.25rem; background: linear-gradient(135deg, rgba(75,73,172,.12), rgba(121,120,233,.18)); }
-        .dt-auth-logo img { max-width: 2.5rem; max-height: 2.5rem; }
+        .dt-auth-logo { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-bottom: 1.75rem; }
+        .dt-auth-logo img { max-width: 15rem; width: 100%; height: auto; object-fit: contain; }
         .dt-auth-title { margin: 0; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.05; color: #1c2240; font-weight: 800; }
         .dt-auth-subtitle { margin: .75rem 0 2rem; color: #68708f; font-size: 1rem; }
         .dt-auth-alert { padding: .95rem 1rem; border-radius: .95rem; margin-bottom: 1rem; font-size: .92rem; }
@@ -73,12 +73,6 @@
                     </div>
                 </form>
 
-                @if (Route::has('register'))
-                    <div class="dt-auth-footer">
-                        {{ __('Vous n’avez pas de compte ?') }}
-                        <a href="{{ route('register') }}" wire:navigate>{{ __('Créer un compte') }}</a>
-                    </div>
-                @endif
             </div>
         </div>
     </div>

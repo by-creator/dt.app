@@ -17,6 +17,7 @@ class EnsureBusinessRolesCommand extends Command
         'DIRECTION_FINANCIERE',
         'DIRECTION_EXPLOITATION',
         'INFORMATIQUE',
+        'FACTURATION',
         'CONTROLE_DE_GESTION',
         'COMPTABILITE',
         'SERVICE_GENERAUX',

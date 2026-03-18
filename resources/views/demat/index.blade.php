@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;600;700;800&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -181,7 +182,7 @@
         </div>
     </a>
 
-    <a href="/demat/remise" class="demat-card">
+    <a href="#" class="demat-card" id="demat-remise-card">
         <div class="card-icon-wrap icon-remise">
             <i class="fas fa-tags"></i>
         </div>
@@ -194,5 +195,18 @@
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('demat-remise-card')?.addEventListener('click', function (event) {
+        event.preventDefault();
+
+        Swal.fire({
+            icon: 'info',
+            title: 'Option indisponible',
+            text: "Cette option n'est pas disponible pour le moment.",
+            confirmButtonText: 'Fermer',
+            confirmButtonColor: '#4B49AC',
+        });
+    });
+</script>
 </body>
 </html>

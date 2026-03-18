@@ -12,6 +12,8 @@ use App\Http\Controllers\UnifyPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+Route::redirect('/register', '/login');
+Route::post('/register', fn () => redirect('/login'));
 Route::view('/demat', 'demat.index')->name('demat');
 Route::get('/demat/validation', [DematFormController::class, 'validationForm'])->name('demat.validation');
 Route::post('/demat/validation', [DematFormController::class, 'submitValidation']);
