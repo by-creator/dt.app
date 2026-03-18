@@ -16,6 +16,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::view('facturation/dashboard', 'facturation.dashboard')->name('facturation.dashboard');
     Route::view('facturation/validations', 'facturation.validations')->name('facturation.validations');
+    Route::view('facturation/remises', 'facturation.remises')->name('facturation.remises');
+    Route::view('facturation/unify', 'facturation.unify')->name('facturation.unify');
+    Route::view('facturation/ies', 'facturation.ies')->name('facturation.ies');
+    Route::view('facturation/gfa-admin', 'facturation.gfa-admin')->name('facturation.gfa-admin');
 });
 
 require __DIR__.'/settings.php';

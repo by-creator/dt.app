@@ -30,19 +30,19 @@
                         <flux:sidebar.item icon="check-badge" :href="route('facturation.validations')" :current="request()->routeIs('facturation.validations')" wire:navigate>
                             {{ __('Gestion des validations') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="percent-badge" :href="route('facturation.dashboard').'?section=remises'" wire:navigate>
+                        <flux:sidebar.item icon="percent-badge" :href="route('facturation.remises')" :current="request()->routeIs('facturation.remises')" wire:navigate>
                             {{ __('Gestion de remises') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-document-list" :href="route('facturation.dashboard').'?section=unify'" wire:navigate>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('facturation.unify')" :current="request()->routeIs('facturation.unify')" wire:navigate>
                             {{ __('Gestion Unify') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" :href="route('facturation.dashboard').'?section=ies'" wire:navigate>
+                        <flux:sidebar.item icon="users" :href="route('facturation.ies')" :current="request()->routeIs('facturation.ies')" wire:navigate>
                             {{ __('Gestion IES') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 
                     <flux:sidebar.group :heading="__('Administration')" class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="server-stack" :href="route('facturation.dashboard').'?section=gfa-admin'" wire:navigate>
+                        <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')" wire:navigate>
                             {{ __('Gfa Admin') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
