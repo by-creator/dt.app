@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Throwable;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
         $this->ensureAdminUserExists();
         $this->ensureBusinessRolesExist();
+
+        $this->configureDefaults();
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 
     /**
