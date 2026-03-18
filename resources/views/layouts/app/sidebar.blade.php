@@ -4,6 +4,7 @@
         @include('partials.head')
     </head>
     <body class="dt-app-shell min-h-screen bg-white dark:bg-zinc-800">
+        @php($roleName = auth()->user()?->role?->name)
         <flux:sidebar sticky collapsible="mobile" class="dt-sidebar border-e">
             <flux:sidebar.header class="px-4 pt-4">
                 <div class="dt-brand w-full">
@@ -24,7 +25,7 @@
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
-                @if (auth()->user()?->role?->name === 'ADMIN')
+                @if ($roleName === 'ADMIN')
                     <flux:sidebar.group :heading="__('Administration')" class="mt-4 grid gap-2">
                         <flux:sidebar.item icon="shield-check" :href="route('administration.index')" :current="request()->routeIs('administration.*')" wire:navigate>
                             {{ __('Administration') }}
@@ -51,11 +52,13 @@
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 
-                    <flux:sidebar.group :heading="__('Administration Facturation')" class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')">
-                            {{ __('Gfa Admin') }}
-                        </flux:sidebar.item>
-                    </flux:sidebar.group>
+                    @if (in_array($roleName, ['ADMIN', 'SUPER_U'], true))
+                        <flux:sidebar.group :heading="__('Administration Facturation')" class="mt-4 grid gap-2">
+                            <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')">
+                                {{ __('Gfa Admin') }}
+                            </flux:sidebar.item>
+                        </flux:sidebar.group>
+                    @endif
                 @endif
             </flux:sidebar.nav>
 

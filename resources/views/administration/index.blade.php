@@ -40,17 +40,16 @@
             .admin-page .list-card { min-height:100%; }
             .admin-page .list-scroll { overflow-x:auto; }
             .admin-page .search-toolbar { margin:18px 0 14px; }
-            .admin-page .inline-user-form { display:grid; grid-template-columns:minmax(170px,1.1fr) minmax(200px,1.4fr) minmax(150px,.9fr) minmax(240px,1.5fr) auto; gap:10px; align-items:start; }
-            .admin-page .inline-user-form .password-stack { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-            .admin-page .inline-user-actions { display:flex; gap:8px; flex-wrap:wrap; }
+            .admin-page .field-span-2 { grid-column:1 / -1; }
+            .admin-page .icon-btn { justify-content:center; min-width:44px; padding:10px 12px; }
+            .admin-page .icon-btn i { font-size:14px; }
+            .admin-page .inline-user-actions { display:flex; gap:8px; flex-wrap:nowrap; align-items:center; }
 
             @media (max-width: 768px) {
                 .admin-page .admin-grid,
                 .admin-page .form-grid-layout,
                 .admin-page .split-grid { grid-template-columns:1fr; }
                 .admin-page .actions { flex-direction:column; }
-                .admin-page .inline-user-form { grid-template-columns:1fr; }
-                .admin-page .inline-user-form .password-stack { grid-template-columns:1fr; }
                 .admin-page .inline-user-actions { flex-direction:column; }
             }
         </style>
@@ -154,6 +153,14 @@
                             @csrf
                             <input type="hidden" name="tab" value="admin-users">
                             <div class="form-grid-layout">
+                                <div class="form-group-custom field-span-2">
+                                    <label for="user_role">Role *</label>
+                                    <select id="user_role" name="role_id" class="form-control-custom" required>
+                                        @foreach ($rolesForSelect as $role)
+                                            <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="form-group-custom">
                                     <label for="user_name">Nom *</label>
                                     <input id="user_name" name="name" class="form-control-custom" required>
@@ -163,20 +170,12 @@
                                     <input id="user_email" name="email" type="email" class="form-control-custom" required>
                                 </div>
                                 <div class="form-group-custom">
-                                    <label for="user_role">Role *</label>
-                                    <select id="user_role" name="role_id" class="form-control-custom" required>
-                                        @foreach ($rolesForSelect as $role)
-                                            <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <label for="user_password_confirmation">Confirmation *</label>
+                                    <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
                                 </div>
                                 <div class="form-group-custom">
                                     <label for="user_password">Mot de passe *</label>
                                     <input id="user_password" name="password" type="password" class="form-control-custom" required>
-                                </div>
-                                <div class="form-group-custom">
-                                    <label for="user_password_confirmation">Confirmation *</label>
-                                    <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
                                 </div>
                             </div>
                             <div style="margin-top:14px;">
@@ -203,6 +202,7 @@
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Mot de passe</th>
+                                    <th>Confirmation</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -223,10 +223,10 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <div class="password-stack">
-                                                <input form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
-                                                <input form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
-                                            </div>
+                                            <input form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
+                                        </td>
+                                        <td>
+                                            <input form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
                                         </td>
                                         <td>
                                             <div class="inline-user-actions">
@@ -234,20 +234,24 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="tab" value="admin-users">
-                                                    <button type="submit" class="btn-gfa btn-primary-gfa">Mettre a jour</button>
+                                                    <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" aria-label="Modifier" title="Modifier">
+                                                        <i class="fas fa-pen"></i>
+                                                    </button>
                                                 </form>
                                                 <form method="POST" action="{{ route('administration.users.destroy', $user) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <input type="hidden" name="tab" value="admin-users">
-                                                    <button type="submit" class="btn-gfa btn-danger-gfa">Supprimer</button>
+                                                    <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" aria-label="Supprimer" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="muted">Aucun utilisateur disponible.</td>
+                                        <td colspan="6" class="muted">Aucun utilisateur disponible.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
