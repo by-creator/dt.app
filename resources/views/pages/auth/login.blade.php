@@ -1,59 +1,348 @@
-<x-layouts::auth :title="__('Log in')">
-    <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+<x-layouts::auth :title="__('Connexion')">
+    <style>
+        .dt-login-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 1rem;
+        }
 
-        <!-- Session Status -->
-        <x-auth-session-status class="text-center" :status="session('status')" />
+        .dt-login-card {
+            overflow: hidden;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+        }
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
-            @csrf
+        .dt-login-brand {
+            display: flex;
+            justify-content: center;
+            padding: 0.875rem 1.125rem 0.5rem;
+            background: #fff;
+        }
 
-            <!-- Email Address -->
-            <flux:input
-                name="email"
-                :label="__('Email address')"
-                :value="old('email')"
-                type="email"
-                required
-                autofocus
-                autocomplete="email"
-                placeholder="email@example.com"
-            />
+        .dt-login-brand img {
+            display: block;
+            width: min(100%, 300px);
+            height: auto;
+            object-fit: contain;
+        }
 
-            <!-- Password -->
-            <div class="relative">
-                <flux:input
-                    name="password"
-                    :label="__('Password')"
-                    type="password"
-                    required
-                    autocomplete="current-password"
-                    :placeholder="__('Password')"
-                    viewable
-                />
+        .dt-login-header {
+            padding: 2.25rem 2.5rem 1.75rem;
+            color: #fff;
+            text-align: center;
+            background: linear-gradient(135deg, #4B49AC, #7978E9);
+        }
 
-                @if (Route::has('password.request'))
-                    <flux:link class="absolute top-0 text-sm end-0" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot your password?') }}
-                    </flux:link>
+        .dt-login-header h1 {
+            margin: 0 0 0.25rem;
+            font-size: 1.375rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+        }
+
+        .dt-login-header p {
+            margin: 0;
+            font-size: 0.8125rem;
+            opacity: 0.88;
+        }
+
+        .dt-login-body {
+            padding: 2.25rem 2.5rem 2.5rem;
+        }
+
+        .dt-login-alert {
+            display: flex;
+            gap: 0.625rem;
+            align-items: flex-start;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+        }
+
+        .dt-login-alert--danger {
+            color: #991b1b;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .dt-login-alert--info {
+            color: #1d4ed8;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .dt-login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .dt-login-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .dt-login-field label {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .dt-login-input-wrap {
+            position: relative;
+        }
+
+        .dt-login-input-wrap svg,
+        .dt-login-password-link svg,
+        .dt-login-alert svg,
+        .dt-login-button svg {
+            flex-shrink: 0;
+        }
+
+        .dt-login-input-wrap svg {
+            position: absolute;
+            top: 50%;
+            left: 0.875rem;
+            width: 1rem;
+            height: 1rem;
+            color: #9ca3af;
+            transform: translateY(-50%);
+        }
+
+        .dt-login-input {
+            width: 100%;
+            padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+            font-size: 0.875rem;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 0.5rem;
+            background: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .dt-login-input:focus {
+            outline: none;
+            border-color: #4B49AC;
+            box-shadow: 0 0 0 3px rgba(75, 73, 172, 0.12);
+        }
+
+        .dt-login-password-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .dt-login-password-link {
+            display: inline-flex;
+            gap: 0.35rem;
+            align-items: center;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #4B49AC;
+            text-decoration: none;
+        }
+
+        .dt-login-password-link:hover {
+            color: #3d3a94;
+            text-decoration: underline;
+        }
+
+        .dt-login-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .dt-login-remember {
+            display: inline-flex;
+            gap: 0.625rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .dt-login-remember input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #4B49AC;
+        }
+
+        .dt-login-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.8125rem;
+            color: #fff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: 0;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, #4B49AC, #7978E9);
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .dt-login-button:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .dt-login-signup {
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .dt-login-signup a {
+            color: #4B49AC;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .dt-login-signup a:hover {
+            text-decoration: underline;
+        }
+
+        .dt-login-footer {
+            margin-top: 1.25rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .dt-login-body,
+            .dt-login-header {
+                padding-right: 1.5rem;
+                padding-left: 1.5rem;
+            }
+
+            .dt-login-password-row,
+            .dt-login-meta {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <div class="dt-login-wrapper">
+        <div class="dt-login-card">
+            <div class="dt-login-brand">
+                <img src="{{ asset('img/image.png') }}" alt="Logo Dakar Terminal" />
+            </div>
+
+            <div class="dt-login-header">
+                <h1>{{ __('CONNEXION') }}</h1>
+                <p>{{ __('Entrez vos informations de connexion') }}</p>
+            </div>
+
+            <div class="dt-login-body">
+                @if ($errors->any())
+                    <div class="dt-login-alert dt-login-alert--danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-8.75-3.25a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-1.5 0v-3.5ZM10 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ $errors->first() }}</span>
+                    </div>
+                @endif
+
+                @if (session('status'))
+                    <div class="dt-login-alert dt-login-alert--info">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-8.75-2.75a.75.75 0 0 1 1.5 0 .75.75 0 0 1-1.5 0ZM10 9a.75.75 0 0 0-.75.75v4a.75.75 0 0 0 1.5 0v-4A.75.75 0 0 0 10 9Z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ session('status') }}</span>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('login.store') }}" class="dt-login-form">
+                    @csrf
+
+                    <div class="dt-login-field">
+                        <label for="email">{{ __('Adresse email') }}</label>
+                        <div class="dt-login-input-wrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M3.25 4A2.25 2.25 0 0 0 1 6.25v7.5A2.25 2.25 0 0 0 3.25 16h13.5A2.25 2.25 0 0 0 19 13.75v-7.5A2.25 2.25 0 0 0 16.75 4H3.25Zm0 1.5h13.5a.75.75 0 0 1 .458 1.344l-6.75 5.25a.75.75 0 0 1-.916 0l-6.75-5.25A.75.75 0 0 1 3.25 5.5Z" />
+                            </svg>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value="{{ old('email') }}"
+                                required
+                                autofocus
+                                autocomplete="email"
+                                placeholder="admin@dakarterminal.sn"
+                                class="dt-login-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="dt-login-field">
+                        <div class="dt-login-password-row">
+                            <label for="password">{{ __('Mot de passe') }}</label>
+                            @if (Route::has('password.request'))
+                                <a href="{{ route('password.request') }}" class="dt-login-password-link" wire:navigate>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M18 10A8 8 0 1 1 2 10a8 8 0 0 1 16 0Zm-8-3.25a2.25 2.25 0 0 0-2.122 1.504.75.75 0 0 1-1.414-.504 3.75 3.75 0 1 1 6.986 2.248A2.5 2.5 0 0 0 12.5 12v.25a.75.75 0 0 1-1.5 0V12a4 4 0 0 1 1.347-2.992A2.25 2.25 0 0 0 10 6.75ZM10 15a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span>{{ __('Mot de passe oublié ?') }}</span>
+                                </a>
+                            @endif
+                        </div>
+                        <div class="dt-login-input-wrap">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 1.75A3.75 3.75 0 0 0 6.25 5.5v1.69c-.963.236-1.75 1.04-1.75 2.06v5.5A2.25 2.25 0 0 0 6.75 17h6.5a2.25 2.25 0 0 0 2.25-2.25v-5.5c0-1.02-.787-1.824-1.75-2.06V5.5A3.75 3.75 0 0 0 10 1.75Zm2.25 5.25V5.5a2.25 2.25 0 1 0-4.5 0V7h4.5Z" clip-rule="evenodd" />
+                            </svg>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                                class="dt-login-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="dt-login-meta">
+                        <label class="dt-login-remember" for="remember">
+                            <input id="remember" name="remember" type="checkbox" value="1" @checked(old('remember')) />
+                            <span>{{ __('Se souvenir de moi') }}</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="dt-login-button" data-test="login-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h7.19L8.47 6.78a.75.75 0 1 1 1.06-1.06l3.75 3.75a.75.75 0 0 1 0 1.06l-3.75 3.75a.75.75 0 1 1-1.06-1.06l2.47-2.47H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M11 3.25A2.75 2.75 0 0 1 13.75 6v1a.75.75 0 0 1-1.5 0V6A1.25 1.25 0 0 0 11 4.75H6A1.25 1.25 0 0 0 4.75 6v8A1.25 1.25 0 0 0 6 15.25h5A1.25 1.25 0 0 0 12.25 14v-1a.75.75 0 0 1 1.5 0v1A2.75 2.75 0 0 1 11 16.75H6A2.75 2.75 0 0 1 3.25 14V6A2.75 2.75 0 0 1 6 3.25h5Z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ __('Se connecter') }}</span>
+                    </button>
+                </form>
+
+                @if (Route::has('register'))
+                    <div class="dt-login-signup">
+                        <span>{{ __('Vous n\'avez pas de compte ?') }}</span>
+                        <a href="{{ route('register') }}" wire:navigate>{{ __('Créer un compte') }}</a>
+                    </div>
                 @endif
             </div>
+        </div>
 
-            <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
-
-            <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
-                    {{ __('Log in') }}
-                </flux:button>
-            </div>
-        </form>
-
-        @if (Route::has('register'))
-            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
-                <span>{{ __('Don\'t have an account?') }}</span>
-                <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
-            </div>
-        @endif
+        <div class="dt-login-footer">
+            &copy; {{ now()->year }} Dakar Terminal — {{ __('Système de Gestion Portuaire') }}
+        </div>
     </div>
 </x-layouts::auth>
