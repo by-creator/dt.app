@@ -1,0 +1,16 @@
+diff --git a/tests/Feature/DematPageTest.php b/tests/Feature/DematPageTest.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b4f1020cf1213c12d4e7ced8d7c060541b7dfb9
+--- /dev/null
++++ b/tests/Feature/DematPageTest.php
+@@ -0,0 +1,10 @@
++<?php
++
++it('renders the public demat page for guests', function () {
++    $response = $this->get('/demat');
++
++    $response->assertOk();
++    $response->assertSee('Tout faire à distance');
++    $response->assertSee('Demande de validation');
++    $response->assertSee('Demande de remise');
++});
