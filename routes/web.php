@@ -15,6 +15,7 @@ Route::view('/gfa/guichet', 'facturation.public-guichet-gfa')->name('facturation
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::view('facturation/dashboard', 'facturation.dashboard')->name('facturation.dashboard');
+    Route::view('facturation/validations', 'facturation.validations')->name('facturation.validations');
 });
 
 require __DIR__.'/settings.php';

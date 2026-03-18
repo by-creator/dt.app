@@ -27,7 +27,7 @@
                         <flux:sidebar.item icon="computer-desktop" :href="route('facturation.guichet-gfa.public')" target="_blank" rel="noopener noreferrer">
                             {{ __('Guichet GFA') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="check-badge" :href="route('facturation.dashboard').'?section=validations'" wire:navigate>
+                        <flux:sidebar.item icon="check-badge" :href="route('facturation.validations')" :current="request()->routeIs('facturation.validations')" wire:navigate>
                             {{ __('Gestion des validations') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="percent-badge" :href="route('facturation.dashboard').'?section=remises'" wire:navigate>
