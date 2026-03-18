@@ -64,3 +64,88 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+@layer components {
+    .dt-app-shell {
+        background:
+            radial-gradient(circle at top left, rgba(121, 120, 233, 0.14), transparent 26%),
+            radial-gradient(circle at top right, rgba(17, 153, 142, 0.10), transparent 24%),
+            linear-gradient(180deg, #f8fafc 0%, #eef2ff 48%, #f8fafc 100%);
+    }
+
+    .dark .dt-app-shell {
+        background:
+            radial-gradient(circle at top left, rgba(121, 120, 233, 0.16), transparent 26%),
+            radial-gradient(circle at top right, rgba(17, 153, 142, 0.12), transparent 24%),
+            linear-gradient(180deg, #020617 0%, #0f172a 55%, #020617 100%);
+    }
+
+    .dt-sidebar {
+        @apply border-slate-200/70 bg-white/80 backdrop-blur-xl;
+        box-shadow: 20px 0 45px -34px rgba(15, 23, 42, 0.35);
+    }
+
+    .dark .dt-sidebar {
+        @apply border-slate-700/70 bg-slate-950/75;
+        box-shadow: 20px 0 45px -34px rgba(2, 6, 23, 0.72);
+    }
+
+    .dt-topbar {
+        @apply border-slate-200/70 bg-white/72 backdrop-blur-xl;
+        box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.4);
+    }
+
+    .dark .dt-topbar {
+        @apply border-slate-700/70 bg-slate-950/72;
+        box-shadow: 0 18px 42px -34px rgba(2, 6, 23, 0.75);
+    }
+
+    .dt-sidebar [data-flux-sidebar-group-heading],
+    .dt-mobile-nav [data-flux-sidebar-group-heading] {
+        @apply px-3 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-slate-400 dark:text-slate-500;
+    }
+
+    .dt-sidebar [data-flux-sidebar-item],
+    .dt-mobile-nav [data-flux-sidebar-item],
+    .dt-topbar [data-flux-navbar-item] {
+        @apply rounded-2xl border border-transparent text-slate-600 transition-all duration-200 dark:text-slate-300;
+    }
+
+    .dt-sidebar [data-flux-sidebar-item]:hover,
+    .dt-mobile-nav [data-flux-sidebar-item]:hover,
+    .dt-topbar [data-flux-navbar-item]:hover {
+        @apply border-indigo-200/70 bg-indigo-50 text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-200;
+        box-shadow: 0 12px 28px -24px rgba(79, 70, 229, 0.65);
+    }
+
+    .dt-sidebar [data-current] [data-flux-sidebar-item],
+    .dt-mobile-nav [data-current] [data-flux-sidebar-item],
+    .dt-topbar [data-current] [data-flux-navbar-item] {
+        @apply border-indigo-200/80 bg-gradient-to-r from-indigo-50 to-white text-indigo-700 dark:border-indigo-500/25 dark:from-indigo-500/12 dark:to-slate-950 dark:text-indigo-200;
+        box-shadow: 0 18px 32px -26px rgba(79, 70, 229, 0.7);
+    }
+
+    .dt-sidebar [data-flux-sidebar-item] svg,
+    .dt-mobile-nav [data-flux-sidebar-item] svg,
+    .dt-topbar [data-flux-navbar-item] svg {
+        @apply text-slate-400 dark:text-slate-500;
+    }
+
+    .dt-sidebar [data-current] [data-flux-sidebar-item] svg,
+    .dt-mobile-nav [data-current] [data-flux-sidebar-item] svg,
+    .dt-topbar [data-current] [data-flux-navbar-item] svg,
+    .dt-sidebar [data-flux-sidebar-item]:hover svg,
+    .dt-mobile-nav [data-flux-sidebar-item]:hover svg,
+    .dt-topbar [data-flux-navbar-item]:hover svg {
+        @apply text-indigo-500 dark:text-indigo-300;
+    }
+
+    .dt-brand {
+        @apply rounded-[1.6rem] border border-white/60 bg-white/65 p-3 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)] dark:border-slate-800/80 dark:bg-slate-900/70;
+    }
+
+    .dt-user-panel [data-flux-sidebar-profile],
+    .dt-user-menu [data-flux-profile] {
+        @apply rounded-2xl border border-slate-200/70 bg-white/72 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.45)] dark:border-slate-700/70 dark:bg-slate-900/72;
+    }
+}

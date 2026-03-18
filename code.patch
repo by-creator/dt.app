@@ -1,7 +1,7 @@
-diff --git a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
---- a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
-+++ b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
-@@ -10,2 +10,3 @@
-     Route::get('dashboard', DashboardController::class)->name('dashboard');
-+    Route::view('facturation/dashboard', 'facturation.dashboard')->name('facturation.dashboard');
- });
+diff --git a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\resources\views\components\desktop-user-menu.blade.php b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\resources\views\components\desktop-user-menu.blade.php
+--- a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\resources\views\components\desktop-user-menu.blade.php
++++ b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\resources\views\components\desktop-user-menu.blade.php
+@@ -1,2 +1,2 @@
+-<flux:dropdown position="bottom" align="start">
++<flux:dropdown position="bottom" align="start" {{ $attributes }}>
+     <flux:sidebar.profile
