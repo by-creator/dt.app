@@ -1,12 +1,7 @@
 diff --git a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
 --- a/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
 +++ b/c:\Users\marcd\Documents\Code\Laravel\Dakar-Terminal\application\dt.app\routes\web.php
-@@ -2,2 +2,3 @@
- 
-+use App\Http\Controllers\DashboardController;
- use Illuminate\Support\Facades\Route;
-@@ -8,3 +9,3 @@
- Route::middleware(['auth', 'verified'])->group(function () {
--    Route::view('dashboard', 'dashboard')->name('dashboard');
-+    Route::get('dashboard', DashboardController::class)->name('dashboard');
+@@ -10,2 +10,3 @@
+     Route::get('dashboard', DashboardController::class)->name('dashboard');
++    Route::view('facturation/dashboard', 'facturation.dashboard')->name('facturation.dashboard');
  });
