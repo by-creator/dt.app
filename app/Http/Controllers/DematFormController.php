@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RattachementBl;
+use App\Services\DematEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DematFormController extends Controller
 {
+    public function __construct(
+        protected DematEmailService $dematEmailService,
+    ) {}
+
     public function validationForm(): View
     {
         return view('demat.validation');
@@ -24,21 +28,28 @@ class DematFormController extends Controller
     public function submitValidation(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'prenom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'numeroBl' => ['nullable', 'string', 'max:255'],
-            'maisonTransit' => ['nullable', 'string', 'max:255'],
+            'nom' => ['required', 'string', 'max:100'],
+            'prenom' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150'],
+            'numeroBl' => ['required', 'string', 'max:100'],
+            'maisonTransit' => ['nullable', 'string', 'max:100'],
             'fileBl' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'fileBadShipping' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'fileDeclaration' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $this->storeSubmission('validation', $request, $validated, [
-            'fileBl',
-            'fileBadShipping',
-            'fileDeclaration',
-        ]);
+        $submission = $this->createSubmission($request, $validated, 'VALIDATION', 'EN_ATTENTE');
+
+        $this->dematEmailService->sendValidationEmail(
+            $submission->nom,
+            $submission->prenom,
+            $submission->email,
+            $submission->bl,
+            $submission->maison,
+            $request->file('fileBl'),
+            $request->file('fileBadShipping'),
+            $request->file('fileDeclaration'),
+        );
 
         return $this->successfulResponse($request, 'validation');
     }
@@ -46,11 +57,11 @@ class DematFormController extends Controller
     public function submitRemise(Request $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validate([
-            'nom' => ['required', 'string', 'max:255'],
-            'prenom' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'numeroBl' => ['nullable', 'string', 'max:255'],
-            'maisonTransit' => ['nullable', 'string', 'max:255'],
+            'nom' => ['required', 'string', 'max:100'],
+            'prenom' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:150'],
+            'numeroBl' => ['required', 'string', 'max:100'],
+            'maisonTransit' => ['nullable', 'string', 'max:100'],
             'fileDemandeManuscrite' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'fileBadShipping' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'fileBl' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -58,41 +69,37 @@ class DematFormController extends Controller
             'fileDeclaration' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $this->storeSubmission('remise', $request, $validated, [
-            'fileDemandeManuscrite',
-            'fileBadShipping',
-            'fileBl',
-            'fileFacture',
-            'fileDeclaration',
-        ]);
+        $submission = $this->createSubmission($request, $validated, 'REMISE', 'EN_ATTENTE_VALIDATION_FACTURATION');
+
+        $this->dematEmailService->sendRemiseEmail(
+            $submission->nom,
+            $submission->prenom,
+            $submission->email,
+            $submission->bl,
+            $submission->maison,
+            $request->file('fileDemandeManuscrite'),
+            $request->file('fileBadShipping'),
+            $request->file('fileBl'),
+            $request->file('fileFacture'),
+            $request->file('fileDeclaration'),
+        );
 
         return $this->successfulResponse($request, 'remise');
     }
 
-    protected function storeSubmission(string $type, Request $request, array $validated, array $fileFields): void
+    protected function createSubmission(Request $request, array $validated, string $type, string $statut): RattachementBl
     {
-        $submissionId = now()->format('YmdHis').'-'.Str::lower(Str::random(8));
-        $basePath = "demat/{$type}/{$submissionId}";
-        $storedFiles = [];
-
-        foreach ($fileFields as $fileField) {
-            if (! $request->hasFile($fileField)) {
-                continue;
-            }
-
-            $storedFiles[$fileField] = $request->file($fileField)->store($basePath, 'local');
-        }
-
-        Storage::disk('local')->put(
-            "{$basePath}/submission.json",
-            json_encode([
-                'id' => $submissionId,
-                'type' => $type,
-                'submitted_at' => now()->toIso8601String(),
-                'data' => array_diff_key($validated, array_flip($fileFields)),
-                'files' => $storedFiles,
-            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-        );
+        return RattachementBl::query()->create([
+            'user_id' => $request->user()?->id,
+            'nom' => $validated['nom'],
+            'prenom' => $validated['prenom'],
+            'email' => $validated['email'],
+            'bl' => $validated['numeroBl'],
+            'maison' => $validated['maisonTransit'] ?? null,
+            'statut' => $statut,
+            'type' => $type,
+            'time_elapsed' => null,
+        ]);
     }
 
     protected function successfulResponse(Request $request, string $type): JsonResponse|RedirectResponse

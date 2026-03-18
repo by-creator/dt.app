@@ -75,7 +75,7 @@
         </div>
         <div class="field-group">
             <label>Numero de BL</label>
-            <input type="text" name="numeroBl" placeholder="Votre numero de BL"/>
+            <input type="text" name="numeroBl" placeholder="Votre numero de BL" required/>
         </div>
         <div class="field-group">
             <label>Maison de transit</label>

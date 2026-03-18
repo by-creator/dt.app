@@ -110,6 +110,13 @@
             let rejectTargetId = null;
             let currentPage = 1;
 
+            function csrfHeaders(extra = {}) {
+                return {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    ...extra,
+                };
+            }
+
             function fmtDate(iso) {
                 if (!iso) return '-';
                 const d = new Date(iso);
@@ -194,7 +201,10 @@
             async function valider(id) {
                 if (!confirm('Confirmer la validation de cette demande ?')) return;
                 try {
-                    const res = await fetch(`/facturation/api/rattachements/${id}/valider`, { method: 'PATCH' });
+                    const res = await fetch(`/facturation/api/rattachements/${id}/valider`, {
+                        method: 'PATCH',
+                        headers: csrfHeaders(),
+                    });
                     if (res.ok) loadDemandes(); else alert('Erreur lors de la validation.');
                 } catch (e) {
                     alert('Erreur de connexion.');
@@ -219,7 +229,7 @@
                 try {
                     const res = await fetch(`/facturation/api/rattachements/${rejectTargetId}/rejeter`, {
                         method: 'PATCH',
-                        headers: { 'Content-Type':'application/json' },
+                        headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: JSON.stringify({ motif })
                     });
                     if (res.ok) {

@@ -161,6 +161,13 @@
             const isDirection = @json($isDirection);
             const isAdmin = @json($isAdmin);
 
+            function csrfHeaders(extra = {}) {
+                return {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    ...extra,
+                };
+            }
+
             window.addEventListener('DOMContentLoaded', function () {
                 const sel = document.getElementById('filter-statut');
                 if (isFacturation && !isAdmin) {
@@ -271,7 +278,7 @@
                 try {
                     const res = await fetch(`/facturation/api/remises/${id}/valider`, {
                         method: 'PATCH',
-                        headers: { 'Content-Type':'application/json' },
+                        headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: '{}'
                     });
                     if (res.ok) loadRemises(); else alert('Erreur lors de la validation.');
@@ -296,7 +303,7 @@
                 try {
                     const res = await fetch(`/facturation/api/remises/${directionTargetId}/valider`, {
                         method: 'PATCH',
-                        headers: { 'Content-Type':'application/json' },
+                        headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: JSON.stringify({ pourcentage: pct })
                     });
                     if (res.ok) {
@@ -326,7 +333,7 @@
                 try {
                     const res = await fetch(`/facturation/api/remises/${rejectTargetId}/rejeter`, {
                         method: 'PATCH',
-                        headers: { 'Content-Type':'application/json' },
+                        headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: JSON.stringify({ motif })
                     });
                     if (res.ok) {

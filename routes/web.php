@@ -3,6 +3,11 @@
 use App\Http\Controllers\AdministrationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DematFormController;
+use App\Http\Controllers\FacturationApiController;
+use App\Http\Controllers\GfaApiController;
+use App\Http\Controllers\GfaDisplayController;
+use App\Http\Controllers\TiersUnifyController;
+use App\Http\Controllers\UnifyPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -12,21 +17,35 @@ Route::post('/demat/validation', [DematFormController::class, 'submitValidation'
 Route::get('/demat/remise', [DematFormController::class, 'remiseForm'])->name('demat.remise');
 Route::post('/demat/remise', [DematFormController::class, 'submitRemise']);
 Route::view('/gfa/guichet', 'facturation.public-guichet-gfa')->name('facturation.guichet-gfa.public');
-Route::get('/gfa/admin', function () {
-    $wifiSsid = config('app.name', 'Dakar Terminal') . '_WiFi';
-    $wifiPassword = '';
-    $wifiQrData = sprintf(
-        'WIFI:T:%s;S:%s;P:%s;;',
-        $wifiPassword !== '' ? 'WPA' : 'nopass',
-        $wifiSsid,
-        $wifiPassword
-    );
-
-    return view('facturation.public-gfa-admin', [
-        'wifiSsid' => $wifiSsid,
-        'wifiQrData' => $wifiQrData,
-    ]);
-})->name('facturation.gfa-admin.public');
+Route::get('/gfa/admin', [GfaDisplayController::class, 'display'])->name('facturation.gfa-admin.public');
+Route::get('/gfa/display', [GfaDisplayController::class, 'display']);
+Route::get('/gfa/ticket', [GfaDisplayController::class, 'ticket'])->name('gfa.ticket');
+Route::get('/gfa/api/services', [GfaApiController::class, 'getServices']);
+Route::post('/gfa/api/services', [GfaApiController::class, 'createService']);
+Route::put('/gfa/api/services/{service}', [GfaApiController::class, 'updateService']);
+Route::delete('/gfa/api/services/{service}', [GfaApiController::class, 'deleteService']);
+Route::get('/gfa/api/guichets', [GfaApiController::class, 'getGuichets']);
+Route::post('/gfa/api/guichets', [GfaApiController::class, 'createGuichet']);
+Route::put('/gfa/api/guichets/{guichet}', [GfaApiController::class, 'updateGuichet']);
+Route::delete('/gfa/api/guichets/{guichet}', [GfaApiController::class, 'deleteGuichet']);
+Route::get('/gfa/api/agents', [GfaApiController::class, 'getAgents']);
+Route::post('/gfa/api/agents', [GfaApiController::class, 'createAgent']);
+Route::put('/gfa/api/agents/{agent}', [GfaApiController::class, 'updateAgent']);
+Route::delete('/gfa/api/agents/{agent}', [GfaApiController::class, 'deleteAgent']);
+Route::get('/gfa/api/guichet/{guichetId}/info', [GfaApiController::class, 'getGuichetInfo']);
+Route::get('/gfa/api/guichet/{guichetId}/waiting', [GfaApiController::class, 'getWaitingForGuichet']);
+Route::get('/gfa/api/guichet/{guichetId}/current', [GfaApiController::class, 'getCurrentForGuichet']);
+Route::post('/gfa/api/guichet/call-next', [GfaApiController::class, 'callNextForGuichet']);
+Route::post('/gfa/api/guichet/recall', [GfaApiController::class, 'recallTicket']);
+Route::patch('/gfa/api/guichet/ticket/{id}/termine', [GfaApiController::class, 'termineTicket']);
+Route::patch('/gfa/api/guichet/ticket/{id}/incomplet', [GfaApiController::class, 'incompletTicket']);
+Route::patch('/gfa/api/guichet/ticket/{id}/absent', [GfaApiController::class, 'absentTicket']);
+Route::get('/gfa/api/stats', [GfaApiController::class, 'getStats']);
+Route::get('/gfa/api/tickets', [GfaApiController::class, 'listTickets']);
+Route::get('/gfa/api/tickets/export', [GfaApiController::class, 'exportTickets']);
+Route::delete('/gfa/api/tickets/truncate', [GfaApiController::class, 'truncateTickets']);
+Route::get('/gfa/api/scan-token', [GfaApiController::class, 'generateScanToken']);
+Route::post('/gfa/api/tickets', [GfaApiController::class, 'createTicketPublic']);
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -42,7 +61,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('facturation/remises', 'facturation.remises')->name('facturation.remises');
     Route::view('facturation/unify', 'facturation.unify')->name('facturation.unify');
     Route::view('facturation/ies', 'facturation.ies')->name('facturation.ies');
-    Route::view('facturation/gfa-admin', 'facturation.gfa-admin')->name('facturation.gfa-admin');
+    Route::get('facturation/gfa-admin', [GfaDisplayController::class, 'gfaAdmin'])->name('facturation.gfa-admin');
+    Route::post('facturation/gfa-admin/wifi-settings', [GfaDisplayController::class, 'saveWifiSettings'])->name('facturation.gfa-admin.wifi-settings');
+    Route::get('facturation/api/rattachements', [FacturationApiController::class, 'listRattachements'])->name('facturation.api.rattachements.index');
+    Route::patch('facturation/api/rattachements/{rattachement}/valider', [FacturationApiController::class, 'validateRattachement'])->name('facturation.api.rattachements.validate');
+    Route::patch('facturation/api/rattachements/{rattachement}/rejeter', [FacturationApiController::class, 'rejectRattachement'])->name('facturation.api.rattachements.reject');
+    Route::get('facturation/api/remises', [FacturationApiController::class, 'listRemises'])->name('facturation.api.remises.index');
+    Route::patch('facturation/api/remises/{rattachement}/valider', [FacturationApiController::class, 'validateRemise'])->name('facturation.api.remises.validate');
+    Route::patch('facturation/api/remises/{rattachement}/rejeter', [FacturationApiController::class, 'rejectRemise'])->name('facturation.api.remises.reject');
+    Route::post('facturation/api/tiers-unify/save', [TiersUnifyController::class, 'save']);
+    Route::get('facturation/api/tiers-unify', [TiersUnifyController::class, 'index']);
+    Route::get('facturation/api/tiers-unify/export', [TiersUnifyController::class, 'exportCsv']);
+    Route::get('facturation/api/tiers-unify/export/xlsx', [TiersUnifyController::class, 'exportExcel']);
+    Route::post('facturation/api/tiers-unify/import', [TiersUnifyController::class, 'import']);
+    Route::post('facturation/unify/print/fiche', [UnifyPrintController::class, 'printFiche']);
+    Route::post('facturation/unify/print/attestation', [UnifyPrintController::class, 'printAttestation']);
 });
 
 require __DIR__.'/settings.php';
