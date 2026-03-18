@@ -13,9 +13,9 @@
                 gap:6px;
                 flex-wrap:wrap;
                 border-bottom:2px solid #e8e8f0;
-                margin-bottom:28px;
+                margin-bottom:22px;
                 background:#fff;
-                padding:0 8px;
+                padding:0 8px 6px;
             }
             .module-tab { border:none; background:transparent; color:#6c757d; font-size:14px; font-weight:600; padding:12px 16px; border-bottom:3px solid transparent; margin-bottom:-2px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; transition:color .2s; }
             .module-tab:hover { color:#4B49AC; }

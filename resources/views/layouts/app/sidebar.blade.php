@@ -7,7 +7,9 @@
         <flux:sidebar sticky collapsible="mobile" class="dt-sidebar border-e">
             <flux:sidebar.header class="px-4 pt-4">
                 <div class="dt-brand w-full">
-                    <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                    <a href="{{ route('dashboard') }}" class="flex items-center justify-center" wire:navigate>
+                        <img src="{{ asset('img/image.png') }}" alt="Logo" class="h-16 w-auto object-contain">
+                    </a>
                 </div>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
@@ -22,27 +24,35 @@
                     </flux:sidebar.item>
                 </flux:sidebar.group>
 
+                @if (auth()->user()?->role?->name === 'ADMIN')
+                    <flux:sidebar.group :heading="__('Administration')" class="mt-4 grid gap-2">
+                        <flux:sidebar.item icon="shield-check" :href="route('administration.index')" :current="request()->routeIs('administration.*')" wire:navigate>
+                            {{ __('Administration') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+
                 @if (request()->routeIs('facturation.*'))
                     <flux:sidebar.group :heading="__('Facturation')" class="mt-4 grid gap-2">
                         <flux:sidebar.item icon="computer-desktop" :href="route('facturation.guichet-gfa.public')" target="_blank" rel="noopener noreferrer">
                             {{ __('Guichet GFA') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="check-badge" :href="route('facturation.validations')" :current="request()->routeIs('facturation.validations')" wire:navigate>
+                        <flux:sidebar.item icon="check-badge" :href="route('facturation.validations')" :current="request()->routeIs('facturation.validations')">
                             {{ __('Gestion des validations') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="percent-badge" :href="route('facturation.remises')" :current="request()->routeIs('facturation.remises')" wire:navigate>
+                        <flux:sidebar.item icon="percent-badge" :href="route('facturation.remises')" :current="request()->routeIs('facturation.remises')">
                             {{ __('Gestion de remises') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-document-list" :href="route('facturation.unify')" :current="request()->routeIs('facturation.unify')" wire:navigate>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('facturation.unify')" :current="request()->routeIs('facturation.unify')">
                             {{ __('Gestion Unify') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" :href="route('facturation.ies')" :current="request()->routeIs('facturation.ies')" wire:navigate>
+                        <flux:sidebar.item icon="users" :href="route('facturation.ies')" :current="request()->routeIs('facturation.ies')">
                             {{ __('Gestion IES') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
 
-                    <flux:sidebar.group :heading="__('Administration')" class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')" wire:navigate>
+                    <flux:sidebar.group :heading="__('Administration Facturation')" class="mt-4 grid gap-2">
+                        <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')">
                             {{ __('Gfa Admin') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
@@ -50,16 +60,6 @@
             </flux:sidebar.nav>
 
             <flux:spacer />
-
-            <flux:sidebar.nav class="px-3 pb-4">
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
 
             <x-desktop-user-menu class="dt-user-panel hidden px-3 pb-4 lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
