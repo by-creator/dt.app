@@ -7,6 +7,7 @@ use App\Services\DematEmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class DematFormController extends Controller
@@ -38,14 +39,14 @@ class DematFormController extends Controller
             'fileDeclaration' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $submission = $this->createSubmission($request, $validated, 'VALIDATION', 'EN_ATTENTE');
+        $submission = $this->attemptCreateSubmission($request, $validated, 'VALIDATION', 'EN_ATTENTE');
 
         $this->dematEmailService->sendValidationEmail(
-            $submission->nom,
-            $submission->prenom,
-            $submission->email,
-            $submission->bl,
-            $submission->maison,
+            $submission?->nom ?? $validated['nom'],
+            $submission?->prenom ?? $validated['prenom'],
+            $submission?->email ?? $validated['email'],
+            $submission?->bl ?? $validated['numeroBl'],
+            $submission?->maison ?? ($validated['maisonTransit'] ?? null),
             $request->file('fileBl'),
             $request->file('fileBadShipping'),
             $request->file('fileDeclaration'),
@@ -69,14 +70,14 @@ class DematFormController extends Controller
             'fileDeclaration' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $submission = $this->createSubmission($request, $validated, 'REMISE', 'EN_ATTENTE_VALIDATION_FACTURATION');
+        $submission = $this->attemptCreateSubmission($request, $validated, 'REMISE', 'EN_ATTENTE_VALIDATION_FACTURATION');
 
         $this->dematEmailService->sendRemiseEmail(
-            $submission->nom,
-            $submission->prenom,
-            $submission->email,
-            $submission->bl,
-            $submission->maison,
+            $submission?->nom ?? $validated['nom'],
+            $submission?->prenom ?? $validated['prenom'],
+            $submission?->email ?? $validated['email'],
+            $submission?->bl ?? $validated['numeroBl'],
+            $submission?->maison ?? ($validated['maisonTransit'] ?? null),
             $request->file('fileDemandeManuscrite'),
             $request->file('fileBadShipping'),
             $request->file('fileBl'),
@@ -100,6 +101,22 @@ class DematFormController extends Controller
             'type' => $type,
             'time_elapsed' => null,
         ]);
+    }
+
+    protected function attemptCreateSubmission(Request $request, array $validated, string $type, string $statut): ?RattachementBl
+    {
+        try {
+            return $this->createSubmission($request, $validated, $type, $statut);
+        } catch (\Throwable $exception) {
+            Log::error('Demat submission persistence failed.', [
+                'type' => $type,
+                'email' => $validated['email'] ?? null,
+                'numero_bl' => $validated['numeroBl'] ?? null,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     protected function successfulResponse(Request $request, string $type): JsonResponse|RedirectResponse

@@ -1,6 +1,7 @@
 <x-layouts::app :title="__('Gestion des validations')">
     <div class="flex h-full w-full flex-1 flex-col gap-6">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .validation-shell { display:flex; flex-direction:column; gap:18px; }
@@ -110,6 +111,33 @@
             let rejectTargetId = null;
             let currentPage = 1;
 
+            const swalTheme = {
+                background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#0f172a',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e5eefb',
+                confirmButtonColor: '#4B49AC',
+                cancelButtonColor: '#64748b',
+            };
+
+            function showError(message) {
+                return Swal.fire({
+                    ...swalTheme,
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: message,
+                });
+            }
+
+            function showSuccess(message) {
+                return Swal.fire({
+                    ...swalTheme,
+                    icon: 'success',
+                    title: 'Succes',
+                    text: message,
+                    timer: 1800,
+                    showConfirmButton: false,
+                });
+            }
+
             function csrfHeaders(extra = {}) {
                 return {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -199,15 +227,29 @@
             }
 
             async function valider(id) {
-                if (!confirm('Confirmer la validation de cette demande ?')) return;
+                const result = await Swal.fire({
+                    ...swalTheme,
+                    icon: 'question',
+                    title: 'Confirmer la validation',
+                    text: 'Voulez-vous confirmer la validation de ce dossier ?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Valider',
+                    cancelButtonText: 'Annuler',
+                });
+                if (!result.isConfirmed) return;
                 try {
                     const res = await fetch(`/facturation/api/rattachements/${id}/valider`, {
                         method: 'PATCH',
                         headers: csrfHeaders(),
                     });
-                    if (res.ok) loadDemandes(); else alert('Erreur lors de la validation.');
+                    if (res.ok) {
+                        await showSuccess('La demande a ete validee.');
+                        loadDemandes();
+                    } else {
+                        showError('Erreur lors de la validation.');
+                    }
                 } catch (e) {
-                    alert('Erreur de connexion.');
+                    showError('Erreur de connexion.');
                 }
             }
 
@@ -225,7 +267,10 @@
 
             async function confirmReject() {
                 const motif = document.getElementById('motif-input').value.trim();
-                if (!motif) { alert('Veuillez saisir un motif de rejet.'); return; }
+                if (!motif) {
+                    showError('Veuillez saisir un motif de rejet.');
+                    return;
+                }
                 try {
                     const res = await fetch(`/facturation/api/rattachements/${rejectTargetId}/rejeter`, {
                         method: 'PATCH',
@@ -234,12 +279,13 @@
                     });
                     if (res.ok) {
                         closeRejectModal();
+                        await showSuccess('La demande a ete rejetee.');
                         loadDemandes();
                     } else {
-                        alert('Erreur lors du rejet.');
+                        showError('Erreur lors du rejet.');
                     }
                 } catch (e) {
-                    alert('Erreur de connexion.');
+                    showError('Erreur de connexion.');
                 }
             }
 

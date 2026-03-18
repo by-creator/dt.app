@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class DematEmailService
@@ -249,6 +250,12 @@ class DematEmailService
     {
         $recipients = array_unique(array_filter(array_merge($this->configuredRecipients(), $additionalRecipients)));
 
+        Log::info('Demat mail broadcast prepared.', [
+            'subject' => $subject,
+            'recipients' => array_values($recipients),
+            'attachments_count' => count($attachments),
+        ]);
+
         foreach ($recipients as $recipient) {
             $this->sendToOne($recipient, $subject, $html, $attachments);
         }
@@ -258,6 +265,12 @@ class DematEmailService
     {
         $recipients = array_unique(array_filter(array_merge([$toEmail], $this->configuredRecipients())));
 
+        Log::info('Demat mail multi-recipient prepared.', [
+            'subject' => $subject,
+            'recipients' => array_values($recipients),
+            'attachments_count' => count($attachments),
+        ]);
+
         foreach ($recipients as $recipient) {
             $this->sendToOne($recipient, $subject, $html, $attachments);
         }
@@ -265,6 +278,12 @@ class DematEmailService
 
     private function sendToOne(string $to, string $subject, string $html, array $attachments = []): void
     {
+        Log::info('Demat mail sending.', [
+            'to' => $to,
+            'subject' => $subject,
+            'attachments_count' => count($attachments),
+        ]);
+
         Mail::send([], [], function ($message) use ($to, $subject, $html, $attachments): void {
             $compiledHtml = $html;
             $logoPath = public_path('img/image.png');
@@ -455,6 +474,15 @@ class DematEmailService
 
     private function configuredRecipients(): array
     {
-        return config('demat.recipients', self::DEFAULT_RECIPIENTS);
+        $configured = config('demat.recipients', []);
+
+        if (! is_array($configured)) {
+            $configured = [];
+        }
+
+        return array_values(array_unique(array_filter(array_merge(
+            self::DEFAULT_RECIPIENTS,
+            $configured,
+        ))));
     }
 }

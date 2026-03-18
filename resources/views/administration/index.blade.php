@@ -116,7 +116,7 @@
                                                 <div class="actions">
                                                     <button type="submit" class="btn-gfa btn-primary-gfa">Enregistrer</button>
                                             </form>
-                                                    <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" onsubmit="return confirm('Supprimer ce role ?');">
+                                                    <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" class="js-confirm-delete" data-confirm-title="Supprimer ce role ?" data-confirm-text="Cette action est irreversible.">
                                                         @csrf
                                                         @method('DELETE')
                                                         <input type="hidden" name="tab" value="admin-roles">
@@ -238,7 +238,7 @@
                                                         <i class="fas fa-pen"></i>
                                                     </button>
                                                 </form>
-                                                <form method="POST" action="{{ route('administration.users.destroy', $user) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                                                <form method="POST" action="{{ route('administration.users.destroy', $user) }}" class="js-confirm-delete" data-confirm-title="Supprimer cet utilisateur ?" data-confirm-text="Cette action est irreversible.">
                                                     @csrf
                                                     @method('DELETE')
                                                     <input type="hidden" name="tab" value="admin-users">
@@ -276,6 +276,29 @@
                 const target = document.getElementById(tab.dataset.target);
                 if (target) target.classList.add('active');
             }));
+
+            document.querySelectorAll('.js-confirm-delete').forEach(form => {
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+
+                    const result = await Swal.fire({
+                        background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#0f172a',
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e5eefb',
+                        icon: 'warning',
+                        title: form.dataset.confirmTitle || 'Confirmer la suppression ?',
+                        text: form.dataset.confirmText || 'Cette action est irreversible.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Supprimer',
+                        cancelButtonText: 'Annuler',
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#64748b',
+                    });
+
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
 
             @if (session('admin_success'))
                 Swal.fire({

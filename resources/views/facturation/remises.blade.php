@@ -8,6 +8,7 @@
 
     <div class="flex h-full w-full flex-1 flex-col gap-6">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
@@ -161,6 +162,33 @@
             const isDirection = @json($isDirection);
             const isAdmin = @json($isAdmin);
 
+            const swalTheme = {
+                background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#0f172a',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e5eefb',
+                confirmButtonColor: '#4B49AC',
+                cancelButtonColor: '#64748b',
+            };
+
+            function showError(message) {
+                return Swal.fire({
+                    ...swalTheme,
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: message,
+                });
+            }
+
+            function showSuccess(message) {
+                return Swal.fire({
+                    ...swalTheme,
+                    icon: 'success',
+                    title: 'Succes',
+                    text: message,
+                    timer: 1800,
+                    showConfirmButton: false,
+                });
+            }
+
             function csrfHeaders(extra = {}) {
                 return {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -274,16 +302,30 @@
             }
 
             async function validerFacturation(id) {
-                if (!confirm('Confirmer la validation ? La demande sera transmise a la Direction Generale.')) return;
+                const result = await Swal.fire({
+                    ...swalTheme,
+                    icon: 'question',
+                    title: 'Confirmer la validation',
+                    text: 'Voulez-vous confirmer la validation de ce dossier ? La demande sera transmise a la Direction Generale.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Valider',
+                    cancelButtonText: 'Annuler',
+                });
+                if (!result.isConfirmed) return;
                 try {
                     const res = await fetch(`/facturation/api/remises/${id}/valider`, {
                         method: 'PATCH',
                         headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: '{}'
                     });
-                    if (res.ok) loadRemises(); else alert('Erreur lors de la validation.');
+                    if (res.ok) {
+                        await showSuccess('La demande a ete transmise a la Direction Generale.');
+                        loadRemises();
+                    } else {
+                        showError('Erreur lors de la validation.');
+                    }
                 } catch (e) {
-                    alert('Erreur de connexion.');
+                    showError('Erreur de connexion.');
                 }
             }
 
@@ -297,7 +339,7 @@
             async function confirmDirectionValidation() {
                 const pct = document.getElementById('pourcentage-input').value.trim();
                 if (!pct || isNaN(pct) || Number(pct) < 0 || Number(pct) > 100) {
-                    alert('Veuillez saisir un pourcentage valide entre 0 et 100.');
+                    showError('Veuillez saisir un pourcentage valide entre 0 et 100.');
                     return;
                 }
                 try {
@@ -308,12 +350,13 @@
                     });
                     if (res.ok) {
                         closeModal('direction-modal');
+                        await showSuccess('La demande a ete validee avec succes.');
                         loadRemises();
                     } else {
-                        alert('Erreur lors de la validation.');
+                        showError('Erreur lors de la validation.');
                     }
                 } catch (e) {
-                    alert('Erreur de connexion.');
+                    showError('Erreur de connexion.');
                 }
             }
 
@@ -327,7 +370,7 @@
             async function confirmReject() {
                 const motif = document.getElementById('motif-input').value.trim();
                 if (!motif) {
-                    alert('Veuillez saisir un motif de rejet.');
+                    showError('Veuillez saisir un motif de rejet.');
                     return;
                 }
                 try {
@@ -338,12 +381,13 @@
                     });
                     if (res.ok) {
                         closeModal('reject-modal');
+                        await showSuccess('La demande a ete rejetee.');
                         loadRemises();
                     } else {
-                        alert('Erreur lors du rejet.');
+                        showError('Erreur lors du rejet.');
                     }
                 } catch (e) {
-                    alert('Erreur de connexion.');
+                    showError('Erreur de connexion.');
                 }
             }
 
