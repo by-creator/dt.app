@@ -10,6 +10,7 @@ Route::get('/demat/validation', [DematFormController::class, 'validationForm'])-
 Route::post('/demat/validation', [DematFormController::class, 'submitValidation']);
 Route::get('/demat/remise', [DematFormController::class, 'remiseForm'])->name('demat.remise');
 Route::post('/demat/remise', [DematFormController::class, 'submitRemise']);
+Route::view('/gfa/guichet', 'facturation.public-guichet-gfa')->name('facturation.guichet-gfa.public');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

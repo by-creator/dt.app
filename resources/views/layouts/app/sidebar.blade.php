@@ -24,7 +24,7 @@
 
                 @if (request()->routeIs('facturation.*'))
                     <flux:sidebar.group :heading="__('Facturation')" class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="computer-desktop" :href="route('facturation.dashboard').'?section=guichet-gfa'" wire:navigate>
+                        <flux:sidebar.item icon="computer-desktop" :href="route('facturation.guichet-gfa.public')" target="_blank" rel="noopener noreferrer">
                             {{ __('Guichet GFA') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="check-badge" :href="route('facturation.dashboard').'?section=validations'" wire:navigate>
