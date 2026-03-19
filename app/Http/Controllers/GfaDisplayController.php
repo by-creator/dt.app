@@ -70,6 +70,13 @@ class GfaDisplayController extends Controller
         return back()->with('successMessage', 'Parametres Wi-Fi mis a jour avec succes.');
     }
 
+    public function ticketGo(): RedirectResponse
+    {
+        $token = $this->scanTokenGfaService->generateToken();
+
+        return redirect()->route('gfa.ticket', ['token' => $token]);
+    }
+
     public function ticket(Request $request): View
     {
         $token = $request->query('token');

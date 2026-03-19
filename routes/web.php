@@ -23,6 +23,7 @@ Route::post('/demat/remise', [DematFormController::class, 'submitRemise']);
 Route::view('/gfa/guichet', 'facturation.public-guichet-gfa')->name('facturation.guichet-gfa.public');
 Route::get('/gfa/admin', [GfaDisplayController::class, 'display'])->name('facturation.gfa-admin.public');
 Route::get('/gfa/display', [GfaDisplayController::class, 'display']);
+Route::get('/gfa/ticket/go', [GfaDisplayController::class, 'ticketGo'])->name('gfa.ticket.go');
 Route::get('/gfa/ticket', [GfaDisplayController::class, 'ticket'])->name('gfa.ticket');
 Route::get('/gfa/api/services', [GfaApiController::class, 'getServices']);
 Route::post('/gfa/api/services', [GfaApiController::class, 'createService']);

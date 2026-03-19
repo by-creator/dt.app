@@ -122,7 +122,7 @@
         const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
         const MONTHS = ['janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre'];
         let audioContext = null;
-        let qrRefreshTimer = null;
+        let qrRefreshTimer = null; // kept for compatibility, no longer used
 
         function updateClock() {
             const now = new Date();
@@ -197,19 +197,11 @@
             document.getElementById('agent-name').textContent = 'En attente';
         }
 
-        async function refreshTicketQr() {
-            try {
-                const response = await fetch('/gfa/api/scan-token');
-                if (!response.ok) return;
-                const data = await response.json();
-                const ticketUrl = window.location.origin + '/gfa/ticket?token=' + encodeURIComponent(data.token);
-                document.getElementById('ticket-qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(ticketUrl);
-                document.getElementById('ticket-qr-img').style.opacity = '1';
-                document.getElementById('ticket-qr-card').href = ticketUrl;
-            } catch (e) {
-            }
-            clearTimeout(qrRefreshTimer);
-            qrRefreshTimer = setTimeout(refreshTicketQr, 4 * 60 * 1000);
+        function refreshTicketQr() {
+            const ticketUrl = window.location.origin + '/gfa/ticket/go';
+            document.getElementById('ticket-qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(ticketUrl);
+            document.getElementById('ticket-qr-img').style.opacity = '1';
+            document.getElementById('ticket-qr-card').href = ticketUrl;
         }
 
         async function loadCurrentTicket() {
