@@ -1,11 +1,1 @@
 NOTES
-
-gfa/ticket :
-    retirer bouton retour vers gfa
-    
-    
-gfa/guichet : 
-    bouton pour ticket manuel
-
-gfa/display : 
-    vérification code qr dispinble une fois mais il y'a une erreur
