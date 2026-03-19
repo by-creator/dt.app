@@ -39,6 +39,9 @@
                         <flux:sidebar.item icon="shield-check" :href="route('administration.index')" :current="request()->routeIs('administration.*')" wire:navigate>
                             {{ __('Administration') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('audit.index')" :current="request()->routeIs('audit.*')" wire:navigate>
+                            {{ __('Audit') }}
+                        </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endif
 

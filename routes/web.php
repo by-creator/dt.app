@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdministrationController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DematFormController;
 use App\Http\Controllers\FacturationApiController;
@@ -55,6 +56,9 @@ Route::post('/gfa/api/tickets', [GfaApiController::class, 'createTicketPublic'])
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('administration', [AdministrationController::class, 'index'])->name('administration.index');
+    Route::get('audit', [AuditController::class, 'index'])->name('audit.index');
+    Route::get('audit/export/csv', [AuditController::class, 'exportCsv'])->name('audit.export.csv');
+    Route::get('audit/export/pdf', [AuditController::class, 'exportPdf'])->name('audit.export.pdf');
     Route::post('administration/roles', [AdministrationController::class, 'storeRole'])->name('administration.roles.store');
     Route::put('administration/roles/{role}', [AdministrationController::class, 'updateRole'])->name('administration.roles.update');
     Route::delete('administration/roles/{role}', [AdministrationController::class, 'destroyRole'])->name('administration.roles.destroy');

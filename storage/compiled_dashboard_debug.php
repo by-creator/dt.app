@@ -1,4 +1,15 @@
-<x-layouts::app :title="__('Tableau de bord')">
+<?php if (isset($component)) { $__componentOriginal81a506f898233b9e7d58286e6bea3c18 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal81a506f898233b9e7d58286e6bea3c18 = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'f4ac99e09542ff494432bc959d4fee61::app','data' => ['title' => __('Tableau de bord')]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('layouts::app'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['title' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute(__('Tableau de bord'))]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
     <div class="dt-dashboard flex h-full w-full flex-1 flex-col gap-6">
         <style>
             .dt-dashboard {
@@ -128,7 +139,7 @@
                     </span>
                     <div>
                         <p class="text-xs uppercase tracking-[0.22em] text-slate-400">Aujourd'hui</p>
-                        <p class="font-semibold text-slate-700 dark:text-slate-200">{{ $todayLabel }}</p>
+                        <p class="font-semibold text-slate-700 dark:text-slate-200"><?php echo e($todayLabel); ?></p>
                     </div>
                 </div>
             </div>
@@ -138,7 +149,7 @@
                     <div class="relative z-10 flex items-start justify-between gap-3">
                         <div>
                             <p class="text-sm/5 font-medium text-white/80">Utilisateurs actifs</p>
-                            <p class="mt-4 text-4xl font-bold">{{ number_format($stats['total_users']) }}</p>
+                            <p class="mt-4 text-4xl font-bold"><?php echo e(number_format($stats['total_users'])); ?></p>
                         </div>
                         <div class="rounded-2xl bg-white/15 p-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -152,7 +163,7 @@
                     <div class="relative z-10 flex items-start justify-between gap-3">
                         <div>
                             <p class="text-sm/5 font-medium text-white/80">Rôles définis</p>
-                            <p class="mt-4 text-4xl font-bold">{{ number_format($stats['total_roles']) }}</p>
+                            <p class="mt-4 text-4xl font-bold"><?php echo e(number_format($stats['total_roles'])); ?></p>
                         </div>
                         <div class="rounded-2xl bg-white/15 p-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -166,7 +177,7 @@
                     <div class="relative z-10 flex items-start justify-between gap-3">
                         <div>
                             <p class="text-sm/5 font-medium text-white/80">Administrateurs</p>
-                            <p class="mt-4 text-4xl font-bold">{{ number_format($stats['admin_users']) }}</p>
+                            <p class="mt-4 text-4xl font-bold"><?php echo e(number_format($stats['admin_users'])); ?></p>
                         </div>
                         <div class="rounded-2xl bg-white/15 p-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -180,7 +191,7 @@
                     <div class="relative z-10 flex items-start justify-between gap-3">
                         <div>
                             <p class="text-sm/5 font-medium text-white/80">Créés aujourd'hui</p>
-                            <p class="mt-4 text-4xl font-bold">{{ number_format($stats['users_today']) }}</p>
+                            <p class="mt-4 text-4xl font-bold"><?php echo e(number_format($stats['users_today'])); ?></p>
                         </div>
                         <div class="rounded-2xl bg-white/15 p-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -202,7 +213,7 @@
                         </p>
                     </div>
 
-                    <a href="{{ route('profile.edit') }}"
+                    <a href="<?php echo e(route('profile.edit')); ?>"
                        class="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/15">
                         Voir mon profil
                     </a>
@@ -219,39 +230,42 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200/70 dark:divide-slate-700/70">
-                            @forelse ($recentUsers as $recentUser)
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $recentUsers; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $recentUser): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <tr class="dt-table-row transition">
                                     <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500 dark:text-slate-400">
-                                        {{ $recentUser->created_at?->locale('fr')->translatedFormat('d/m/Y H:i') }}
+                                        <?php echo e($recentUser->created_at?->locale('fr')->translatedFormat('d/m/Y H:i')); ?>
+
                                     </td>
                                     <td class="px-5 py-4">
                                         <div class="flex items-center gap-3">
                                             <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white dark:bg-white dark:text-slate-900">
-                                                {{ $recentUser->initials() }}
+                                                <?php echo e($recentUser->initials()); ?>
+
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-slate-900 dark:text-white">{{ $recentUser->name }}</p>
-                                                <p class="text-sm text-slate-500 dark:text-slate-400">{{ $recentUser->email }}</p>
+                                                <p class="font-semibold text-slate-900 dark:text-white"><?php echo e($recentUser->name); ?></p>
+                                                <p class="text-sm text-slate-500 dark:text-slate-400"><?php echo e($recentUser->email); ?></p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-5 py-4">
-                                        @php($roleName = $recentUser->role?->name ?? 'USER')
-                                        <span class="dt-badge {{ $roleName === 'ADMIN' ? 'dt-badge-admin' : 'dt-badge-user' }}">
-                                            {{ $roleName }}
+                                        <?php ($roleName = $recentUser->role?->name ?? 'USER'); ?>
+                                        <span class="dt-badge <?php echo e($roleName === 'ADMIN' ? 'dt-badge-admin' : 'dt-badge-user'); ?>">
+                                            <?php echo e($roleName); ?>
+
                                         </span>
                                     </td>
                                     <td class="px-5 py-4 text-sm font-medium text-emerald-600 dark:text-emerald-400">
                                         Compte actif
                                     </td>
                                 </tr>
-                            @empty
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                 <tr>
                                     <td colspan="4" class="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                                         Aucun utilisateur disponible pour le moment.
                                     </td>
                                 </tr>
-                            @endforelse
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -272,17 +286,17 @@
                     </div>
 
                     <div class="space-y-3">
-                        <a href="{{ route('profile.edit') }}"
+                        <a href="<?php echo e(route('profile.edit')); ?>"
                            class="flex items-center justify-between rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700">
                             <span>Mettre à jour mon profil</span>
                             <span>&rarr;</span>
                         </a>
-                        <a href="{{ route('security.edit') }}"
+                        <a href="<?php echo e(route('security.edit')); ?>"
                            class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10">
                             <span>Paramètres de sécurité</span>
                             <span>&rarr;</span>
                         </a>
-                        <a href="{{ route('demat') }}"
+                        <a href="<?php echo e(route('demat')); ?>"
                            class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-emerald-500/30 dark:hover:bg-emerald-500/10">
                             <span>Accéder à Demat</span>
                             <span>&rarr;</span>
@@ -321,7 +335,7 @@
             </div>
         </div>
 
-        {{-- Audit metrics --}}
+        
         <section class="dt-panel overflow-hidden rounded-[1.5rem]">
             <div class="flex flex-col gap-2 border-b border-slate-200/70 px-5 py-4 dark:border-slate-700/70 md:flex-row md:items-center md:justify-between">
                 <div class="flex items-center gap-3">
@@ -332,10 +346,10 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Activité du jour</h2>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Métriques d'audit en temps réel — {{ now()->locale('fr')->translatedFormat('l d F Y') }}</p>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Métriques d'audit en temps réel — <?php echo e(now()->locale('fr')->translatedFormat('l d F Y')); ?></p>
                     </div>
                 </div>
-                <a href="{{ route('audit.index') }}"
+                <a href="<?php echo e(route('audit.index')); ?>"
                    class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-200 dark:hover:bg-indigo-500/15"
                    wire:navigate>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
@@ -351,7 +365,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ number_format($auditStats['requests_today']) }}</p>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white"><?php echo e(number_format($auditStats['requests_today'])); ?></p>
                         <p class="text-sm text-slate-500 dark:text-slate-400">Requêtes aujourd'hui</p>
                     </div>
                 </div>
@@ -363,7 +377,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ number_format($auditStats['active_users_today']) }}</p>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white"><?php echo e(number_format($auditStats['active_users_today'])); ?></p>
                         <p class="text-sm text-slate-500 dark:text-slate-400">Utilisateurs actifs</p>
                     </div>
                 </div>
@@ -375,14 +389,14 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ number_format($auditStats['errors_today']) }}</p>
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white"><?php echo e(number_format($auditStats['errors_today'])); ?></p>
                         <p class="text-sm text-slate-500 dark:text-slate-400">Erreurs (4xx / 5xx)</p>
                     </div>
                 </div>
             </div>
 
             <div class="grid gap-0 border-t border-slate-200/70 dark:border-slate-700/70 md:grid-cols-2 md:divide-x divide-slate-200/70 dark:divide-slate-700/70">
-                {{-- Top routes --}}
+                
                 <div class="px-6 py-5">
                     <h3 class="mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Top routes du jour</h3>
                     <?php $auditMaxTotal = $auditTopRoutes->max('total') ?: 1; ?>
@@ -403,7 +417,7 @@
                     <?php endif; ?>
                 </div>
 
-                {{-- Method breakdown --}}
+                
                 <div class="px-6 py-5">
                     <h3 class="mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Répartition par méthode</h3>
                     <?php if ($auditByMethod->isNotEmpty()): ?>
@@ -425,4 +439,13 @@
             </div>
         </section>
     </div>
-</x-layouts::app>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal81a506f898233b9e7d58286e6bea3c18)): ?>
+<?php $attributes = $__attributesOriginal81a506f898233b9e7d58286e6bea3c18; ?>
+<?php unset($__attributesOriginal81a506f898233b9e7d58286e6bea3c18); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal81a506f898233b9e7d58286e6bea3c18)): ?>
+<?php $component = $__componentOriginal81a506f898233b9e7d58286e6bea3c18; ?>
+<?php unset($__componentOriginal81a506f898233b9e7d58286e6bea3c18); ?>
+<?php endif; ?>
