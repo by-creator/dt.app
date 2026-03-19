@@ -111,6 +111,33 @@ class TiersUnifyController extends Controller
         }
     }
 
+    public function update(Request $request, TiersUnify $tiers)
+    {
+        $this->authorizeAdmin($request);
+
+        $validated = $request->validate([
+            'raisonSociale' => ['required', 'string', 'max:255'],
+            'compteIpaki' => ['required', 'string', 'max:50'],
+            'compteNeptune' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $tiers->update([
+            'raison_sociale' => $validated['raisonSociale'],
+            'compte_ipaki' => $validated['compteIpaki'],
+            'compte_neptune' => $validated['compteNeptune'] ?? null,
+        ]);
+
+        return response()->json($this->toArray($tiers->fresh()));
+    }
+
+    public function destroy(Request $request, TiersUnify $tiers)
+    {
+        $this->authorizeAdmin($request);
+        $tiers->delete();
+
+        return response()->noContent();
+    }
+
     private function authorizeAdmin(Request $request): void
     {
         abort_unless($request->user()?->role?->name === 'ADMIN', 403);

@@ -53,6 +53,9 @@
             .unify-page .page-header { text-align:center; margin-bottom:20px; }
             .unify-page .page-header h1 { margin:0; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--dt-page-text); }
 
+            @media (max-width: 900px) {
+                #unify-admin > div { grid-template-columns:1fr !important; }
+            }
             @media (max-width: 768px) {
                 .unify-page .form-grid-layout, .unify-page .admin-grid { grid-template-columns:1fr; }
                 .unify-page iframe.tutorial-pdf { min-height:420px; }
@@ -164,13 +167,12 @@
 
         @if ($isAdmin)
             <div id="unify-admin" class="module-pane">
-                <div class="simple-card">
-                    <h3 class="unify-section-title"><i class="fas fa-cog" style="color:#4B49AC"></i> Administration Unify</h3>
-                    <p>Zone reservee aux utilisateurs ADMIN.</p>
-                    <div class="admin-grid">
-                        <div class="unify-admin-card">
-                            <h5>Ajout manuel d'un tiers</h5>
-                            <div id="admin-status" class="status-box"></div>
+                <div style="display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.4fr);gap:16px;max-width:1200px;margin:0 auto;align-items:start">
+                    <div class="simple-card" style="margin:0">
+                        <h3 class="unify-section-title"><i class="fas fa-cog" style="color:#4B49AC"></i> Administration Unify</h3>
+                        <div id="admin-status" class="status-box"></div>
+                        <div class="unify-admin-card" style="margin-bottom:16px">
+                            <h5 style="margin-bottom:12px;font-weight:700">Ajout manuel d'un tiers</h5>
                             <div class="form-group-custom"><label for="admin-raison">Raison sociale *</label><input id="admin-raison" class="form-control-custom"></div>
                             <div class="form-group-custom"><label for="admin-ipaki">Compte Ipaki *</label><input id="admin-ipaki" class="form-control-custom"></div>
                             <div class="form-group-custom"><label for="admin-neptune">Compte Neptune</label><input id="admin-neptune" class="form-control-custom"></div>
@@ -179,12 +181,33 @@
                             </div>
                         </div>
                         <div class="unify-admin-card">
-                            <h5>Import / Export tiers</h5>
-                            <p class="muted">Importer un fichier CSV de tiers puis exporter les donnees en XLSX.</p>
-                            <input type="file" id="admin-import-file" accept=".csv" class="form-control-custom" style="height:auto; padding:8px;">
+                            <h5 style="margin-bottom:12px;font-weight:700">Import / Export tiers</h5>
+                            <p class="muted" style="margin-bottom:10px">Importer un fichier CSV de tiers puis exporter les donnees en XLSX.</p>
+                            <input type="file" id="admin-import-file" accept=".csv" class="form-control-custom" style="height:auto;padding:8px;">
                             <div class="card-actions">
                                 <button type="button" id="admin-import-btn" class="btn-gfa btn-primary-gfa">Importer</button>
                                 <a class="btn-gfa btn-primary-gfa" href="/facturation/api/tiers-unify/export/xlsx">Exporter XLSX</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="simple-card" style="margin:0">
+                        <h3 class="unify-section-title"><i class="fas fa-list" style="color:#4B49AC"></i> Liste des tiers</h3>
+                        <div class="tiers-toolbar">
+                            <input id="admin-tiers-search" class="form-control-custom tiers-search-input" type="search" placeholder="Rechercher...">
+                        </div>
+                        <div id="admin-edit-status" class="status-box"></div>
+                        <div style="overflow-x:auto">
+                            <table class="table-unify">
+                                <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th><th>Neptune</th><th style="width:110px">Actions</th></tr></thead>
+                                <tbody id="admin-tiers-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div class="table-meta">
+                            <span id="admin-tiers-count" class="muted"></span>
+                            <div class="pagination">
+                                <button type="button" class="btn-gfa btn-light-gfa" id="admin-tiers-prev">Precedent</button>
+                                <span id="admin-tiers-page" class="muted"></span>
+                                <button type="button" class="btn-gfa btn-light-gfa" id="admin-tiers-next">Suivant</button>
                             </div>
                         </div>
                     </div>
@@ -352,7 +375,7 @@
                     });
                     const msg = await resp.text();
                     setStatus(adminStatus, resp.ok ? 'Tiers ajoute.' : msg, resp.ok);
-                    if (resp.ok) loadTiers(true);
+                    if (resp.ok) { loadTiers(true); loadAdminTiers(true); }
                 };
 
                 document.getElementById('admin-import-btn').onclick = async () => {
@@ -366,9 +389,78 @@
                     const resp = await fetch('/facturation/api/tiers-unify/import', { method: 'POST', body: formData });
                     const msg = await resp.text();
                     setStatus(adminStatus, msg, resp.ok);
-                    if (resp.ok) loadTiers(true);
+                    if (resp.ok) { loadTiers(true); loadAdminTiers(true); }
                 };
             }
+
+            // Admin tiers list with pagination + edit/delete
+            let adminTiersPage = 0;
+            const adminTiersSize = 10;
+            let adminTiersSearch = '';
+            const adminEditStatus = document.getElementById('admin-edit-status');
+
+            async function loadAdminTiers(jumpFirst = false) {
+                if (jumpFirst) adminTiersPage = 0;
+                const tbody = document.getElementById('admin-tiers-tbody');
+                if (!tbody) return;
+                const searchParam = adminTiersSearch ? `&search=${encodeURIComponent(adminTiersSearch)}` : '';
+                const res = await fetch(`/facturation/api/tiers-unify?page=${adminTiersPage}&size=${adminTiersSize}${searchParam}`);
+                if (!res.ok) { tbody.innerHTML = '<tr><td colspan="4" class="muted">Erreur de chargement.</td></tr>'; return; }
+                const page = await res.json();
+                if (!page.content || page.content.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="muted">Aucun tiers.</td></tr>';
+                } else {
+                    tbody.innerHTML = page.content.map(t => `<tr id="atr-${t.id}">
+                        <td><input id="aipaki-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.compteIpaki ?? '').replace(/"/g,'&quot;')}"></td>
+                        <td><input id="araison-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.raisonSociale ?? '').replace(/"/g,'&quot;')}"></td>
+                        <td><input id="aneptune-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.compteNeptune ?? '').replace(/"/g,'&quot;')}"></td>
+                        <td style="white-space:nowrap"><button type="button" class="btn-gfa btn-primary-gfa" style="padding:4px 8px;font-size:12px;min-height:32px" onclick="adminUpdateTiers(${t.id})"><i class="fas fa-pen"></i></button> <button type="button" class="btn-gfa" style="background:#dc3545;color:#fff;padding:4px 8px;font-size:12px;min-height:32px" onclick="adminDeleteTiers(${t.id})"><i class="fas fa-trash"></i></button></td>
+                    </tr>`).join('');
+                }
+                document.getElementById('admin-tiers-count').textContent = `${page.totalElements ?? 0} tiers`;
+                document.getElementById('admin-tiers-page').textContent = `Page ${page.page + 1} / ${Math.max(1, page.totalPages)}`;
+                document.getElementById('admin-tiers-prev').disabled = page.first;
+                document.getElementById('admin-tiers-next').disabled = page.last;
+            }
+
+            async function adminUpdateTiers(id) {
+                const payload = {
+                    raisonSociale: document.getElementById(`araison-${id}`).value.trim(),
+                    compteIpaki: document.getElementById(`aipaki-${id}`).value.trim(),
+                    compteNeptune: document.getElementById(`aneptune-${id}`).value.trim() || null,
+                };
+                const resp = await fetch(`/facturation/api/tiers-unify/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify(payload)
+                });
+                setStatus(adminEditStatus, resp.ok ? 'Tiers mis a jour.' : 'Erreur lors de la modification.', resp.ok);
+                if (resp.ok) { loadTiers(); loadAdminTiers(); }
+            }
+
+            async function adminDeleteTiers(id) {
+                if (!confirm('Supprimer ce tiers ?')) return;
+                const resp = await fetch(`/facturation/api/tiers-unify/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                });
+                setStatus(adminEditStatus, resp.ok ? 'Tiers supprime.' : 'Erreur lors de la suppression.', resp.ok);
+                if (resp.ok) { loadTiers(true); loadAdminTiers(true); }
+            }
+
+            const adminTiersSearchInput = document.getElementById('admin-tiers-search');
+            if (adminTiersSearchInput) {
+                adminTiersSearchInput.addEventListener('input', () => { adminTiersSearch = adminTiersSearchInput.value.trim(); loadAdminTiers(true); });
+            }
+            const adminTiersPrev = document.getElementById('admin-tiers-prev');
+            const adminTiersNext = document.getElementById('admin-tiers-next');
+            if (adminTiersPrev) adminTiersPrev.onclick = () => { if (adminTiersPage > 0) { adminTiersPage--; loadAdminTiers(); } };
+            if (adminTiersNext) adminTiersNext.onclick = () => { adminTiersPage++; loadAdminTiers(); };
+
+            // Load admin tiers when tab is activated
+            tabs.forEach(tab => tab.addEventListener('click', () => {
+                if (tab.dataset.target === 'unify-admin') loadAdminTiers();
+            }));
         </script>
     </div>
 </x-layouts::app>

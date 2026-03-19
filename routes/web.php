@@ -80,6 +80,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('facturation/api/tiers-unify/export', [TiersUnifyController::class, 'exportCsv']);
     Route::get('facturation/api/tiers-unify/export/xlsx', [TiersUnifyController::class, 'exportExcel']);
     Route::post('facturation/api/tiers-unify/import', [TiersUnifyController::class, 'import']);
+    Route::put('facturation/api/tiers-unify/{tiers}', [TiersUnifyController::class, 'update']);
+    Route::delete('facturation/api/tiers-unify/{tiers}', [TiersUnifyController::class, 'destroy']);
     Route::post('facturation/unify/print/fiche', [UnifyPrintController::class, 'printFiche']);
     Route::post('facturation/unify/print/attestation', [UnifyPrintController::class, 'printAttestation']);
 });
