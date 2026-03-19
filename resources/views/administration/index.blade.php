@@ -109,7 +109,7 @@
                                 @forelse ($roles as $role)
                                     <tr>
                                         <td>
-                                            <form method="POST" action="{{ route('administration.roles.update', $role) }}" class="stack">
+                                            <form method="POST" action="{{ route('administration.roles.update', $role) }}" class="stack js-confirm-save" data-confirm-title="Modifier ce role ?">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="tab" value="admin-roles">
@@ -117,14 +117,14 @@
                                         </td>
                                         <td>{{ $role->users_count }}</td>
                                         <td>
-                                                <div class="actions">
-                                                    <button type="submit" class="btn-gfa btn-primary-gfa">Enregistrer</button>
+                                                <div class="actions" style="flex-wrap:nowrap">
+                                                    <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" title="Modifier"><i class="fas fa-pen"></i></button>
                                             </form>
                                                     <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" class="js-confirm-delete" data-confirm-title="Supprimer ce role ?" data-confirm-text="Cette action est irreversible.">
                                                         @csrf
                                                         @method('DELETE')
                                                         <input type="hidden" name="tab" value="admin-roles">
-                                                        <button type="submit" class="btn-gfa btn-danger-gfa">Supprimer</button>
+                                                        <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" title="Supprimer"><i class="fas fa-trash"></i></button>
                                                     </form>
                                                 </div>
                                         </td>
@@ -246,7 +246,7 @@
                                         </td>
                                         <td>
                                             <div class="inline-user-actions">
-                                                <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}">
+                                                <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}" class="js-confirm-save" data-confirm-title="Modifier cet utilisateur ?">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="tab" value="admin-users">
@@ -293,13 +293,34 @@
                 if (target) target.classList.add('active');
             }));
 
+            const swalAdminTheme = {
+                background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#1a1e2e',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e2e8f0',
+                cancelButtonColor: '#64748b',
+            };
+
+            document.querySelectorAll('.js-confirm-save').forEach(form => {
+                form.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    const result = await Swal.fire({
+                        ...swalAdminTheme,
+                        icon: 'question',
+                        title: form.dataset.confirmTitle || 'Enregistrer les modifications ?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Enregistrer',
+                        cancelButtonText: 'Annuler',
+                        confirmButtonColor: '#4B49AC',
+                    });
+                    if (result.isConfirmed) form.submit();
+                });
+            });
+
             document.querySelectorAll('.js-confirm-delete').forEach(form => {
                 form.addEventListener('submit', async event => {
                     event.preventDefault();
 
                     const result = await Swal.fire({
-                        background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#0f172a',
-                        color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e5eefb',
+                        ...swalAdminTheme,
                         icon: 'warning',
                         title: form.dataset.confirmTitle || 'Confirmer la suppression ?',
                         text: form.dataset.confirmText || 'Cette action est irreversible.',
@@ -307,7 +328,6 @@
                         confirmButtonText: 'Supprimer',
                         cancelButtonText: 'Annuler',
                         confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#64748b',
                     });
 
                     if (result.isConfirmed) {
@@ -329,30 +349,15 @@
             });
 
             @if (session('admin_success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Succes',
-                    text: @json(session('admin_success')),
-                    confirmButtonColor: '#4B49AC'
-                });
+                Swal.fire({ ...swalAdminTheme, icon: 'success', title: 'Succes', text: @json(session('admin_success')), confirmButtonColor: '#4B49AC' });
             @endif
 
             @if (session('admin_error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erreur',
-                    text: @json(session('admin_error')),
-                    confirmButtonColor: '#4B49AC'
-                });
+                Swal.fire({ ...swalAdminTheme, icon: 'error', title: 'Erreur', text: @json(session('admin_error')), confirmButtonColor: '#dc3545' });
             @endif
 
             @if ($errors->any())
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Validation',
-                    html: @json(implode('<br>', $errors->all())),
-                    confirmButtonColor: '#4B49AC'
-                });
+                Swal.fire({ ...swalAdminTheme, icon: 'warning', title: 'Validation', html: @json(implode('<br>', $errors->all())), confirmButtonColor: '#4B49AC' });
             @endif
         </script>
     </div>

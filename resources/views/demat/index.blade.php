@@ -201,7 +201,7 @@
         </div>
     </a>
 
-    <a href="https://mytouchpoint.net/dakar_terminal" class="demat-card">
+    <a href="{{ route('demat.paiement') }}" class="demat-card">
         <div class="card-icon-wrap icon-paiement">
             <i class="fas fa-credit-card"></i>
         </div>

@@ -6,6 +6,7 @@
 
     <div class="unify-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .unify-page { overflow: visible; min-height: max-content; }
@@ -216,6 +217,12 @@
         @endif
 
         <script>
+            const swalUnify = {
+                background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#1a1e2e',
+                color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e2e8f0',
+                cancelButtonColor: '#64748b',
+            };
+
             const tabs = document.querySelectorAll('.module-tab');
             const panes = document.querySelectorAll('.module-pane');
             tabs.forEach(tab => tab.addEventListener('click', () => {
@@ -424,6 +431,8 @@
             }
 
             async function adminUpdateTiers(id) {
+                const confirm = await Swal.fire({ ...swalUnify, icon: 'question', title: 'Modifier ce tiers ?', showCancelButton: true, confirmButtonText: 'Enregistrer', cancelButtonText: 'Annuler', confirmButtonColor: '#4B49AC' });
+                if (!confirm.isConfirmed) return;
                 const payload = {
                     raisonSociale: document.getElementById(`araison-${id}`).value.trim(),
                     compteIpaki: document.getElementById(`aipaki-${id}`).value.trim(),
@@ -434,17 +443,18 @@
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
                     body: JSON.stringify(payload)
                 });
-                setStatus(adminEditStatus, resp.ok ? 'Tiers mis a jour.' : 'Erreur lors de la modification.', resp.ok);
+                await Swal.fire({ ...swalUnify, icon: resp.ok ? 'success' : 'error', title: resp.ok ? 'Succes' : 'Erreur', text: resp.ok ? 'Tiers mis a jour avec succes.' : 'Erreur lors de la modification.', confirmButtonColor: resp.ok ? '#4B49AC' : '#dc3545' });
                 if (resp.ok) { loadTiers(); loadAdminTiers(); }
             }
 
             async function adminDeleteTiers(id) {
-                if (!confirm('Supprimer ce tiers ?')) return;
+                const confirm = await Swal.fire({ ...swalUnify, icon: 'warning', title: 'Supprimer ce tiers ?', text: 'Cette action est irreversible.', showCancelButton: true, confirmButtonText: 'Supprimer', cancelButtonText: 'Annuler', confirmButtonColor: '#dc3545' });
+                if (!confirm.isConfirmed) return;
                 const resp = await fetch(`/facturation/api/tiers-unify/${id}`, {
                     method: 'DELETE',
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
                 });
-                setStatus(adminEditStatus, resp.ok ? 'Tiers supprime.' : 'Erreur lors de la suppression.', resp.ok);
+                await Swal.fire({ ...swalUnify, icon: resp.ok ? 'success' : 'error', title: resp.ok ? 'Succes' : 'Erreur', text: resp.ok ? 'Tiers supprime avec succes.' : 'Erreur lors de la suppression.', confirmButtonColor: resp.ok ? '#4B49AC' : '#dc3545' });
                 if (resp.ok) { loadTiers(true); loadAdminTiers(true); }
             }
 
