@@ -197,7 +197,7 @@
         </div>
         <div class="card-title">Facturation</div>
         <div class="card-desc">
-            <strong>FACTURATION</strong> : Genez Vos Factures Proforma / Factures Definitives / BAD
+            <strong>FACTURATION</strong> : Génerez Vos Factures Proforma / Factures Definitives / BAD
         </div>
     </a>
 
