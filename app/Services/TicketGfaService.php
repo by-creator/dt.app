@@ -24,8 +24,6 @@ class TicketGfaService
             'service_id' => $service->id,
             'statut' => 'EN_ATTENTE',
             'numero' => $this->generateTicketNumber($service),
-            'nom_client' => blank($nomClient) ? null : trim($nomClient),
-            'motif' => blank($motif) ? null : trim($motif),
         ]);
 
         $payload = $this->toArray($ticket->load('service'));

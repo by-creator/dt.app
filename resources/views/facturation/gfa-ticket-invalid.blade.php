@@ -178,12 +178,7 @@
                 <span>Un nouveau scan est necessaire avant de continuer.</span>
             </div>
 
-            <div class="invalid-actions">
-                <a href="{{ url('/gfa/display') }}" class="btn-return">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Retour a l'ecran GFA</span>
-                </a>
-            </div>
+            
         </div>
     </div>
 </body>

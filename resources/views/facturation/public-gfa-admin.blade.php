@@ -104,7 +104,7 @@
                 <div class="qr-label"><strong>SSID :</strong> <span class="qr-text">{{ $wifiSsid }}</span></div>
             </div>
         </div>
-        <div class="qr-card">
+        <a id="ticket-qr-card" class="qr-card" href="#" target="_blank" style="text-decoration:none;color:inherit;cursor:pointer">
             <div class="qr-card-left">
                 <div class="qr-icon qr-icon-ticket"><i class="fas fa-ticket-alt"></i></div>
                 <div class="qr-step">Etape 2</div>
@@ -114,7 +114,7 @@
                 <div class="qr-code"><img id="ticket-qr-img" src="" alt="QR Ticket" style="opacity:.4"></div>
                 <div class="qr-label">Scanner pour un ticket</div>
             </div>
-        </div>
+        </a>
     </div>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
     <script>
@@ -205,6 +205,7 @@
                 const ticketUrl = window.location.origin + '/gfa/ticket?token=' + encodeURIComponent(data.token);
                 document.getElementById('ticket-qr-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(ticketUrl);
                 document.getElementById('ticket-qr-img').style.opacity = '1';
+                document.getElementById('ticket-qr-card').href = ticketUrl;
             } catch (e) {
             }
             clearTimeout(qrRefreshTimer);

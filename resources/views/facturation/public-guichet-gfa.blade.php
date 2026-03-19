@@ -96,7 +96,7 @@
             <div id="tab-client" class="tab-pane active">
                 <ul class="queue-list" id="queue-list"><li><p class="tab-empty-msg">Aucun client en attente</p></li></ul>
                 <p class="ticket-info">Pour les clients qui ne peuvent pas scanner :</p>
-                <button class="btn-ticket" id="btn-ticket" onclick="openTicketModal()" disabled>TICKET</button>
+                <button class="btn-ticket" id="btn-ticket" onclick="openTicketModal()">TICKET</button>
             </div>
             <div id="tab-personnel" class="tab-pane"><p class="tab-empty-msg">Aucun personnel en attente.</p></div>
             <div id="tab-rapports" class="tab-pane"><p class="tab-empty-msg">Aucun rapport disponible.</p></div>
@@ -262,7 +262,6 @@
 
     function setButtons(enabled) {
         document.getElementById('btn-suivant').disabled = !enabled;
-        document.getElementById('btn-ticket').disabled = !enabled;
         const hasTicket = enabled && !!currentTicket;
         document.getElementById('btn-rappel').disabled = !hasTicket;
         document.getElementById('btn-termine').disabled = !hasTicket;
