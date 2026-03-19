@@ -61,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('administration/users', [AdministrationController::class, 'storeUser'])->name('administration.users.store');
     Route::put('administration/users/{user}', [AdministrationController::class, 'updateUser'])->name('administration.users.update');
     Route::delete('administration/users/{user}', [AdministrationController::class, 'destroyUser'])->name('administration.users.destroy');
+    Route::view('direction/dashboard', 'direction.dashboard')->name('direction.dashboard');
+    Route::view('direction/remises', 'facturation.remises')->name('direction.remises');
     Route::view('facturation/dashboard', 'facturation.dashboard')->name('facturation.dashboard');
     Route::view('facturation/validations', 'facturation.validations')->name('facturation.validations');
     Route::view('facturation/remises', 'facturation.remises')->name('facturation.remises');

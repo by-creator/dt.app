@@ -16,13 +16,22 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav class="px-3 pb-2 pt-3">
-                <flux:sidebar.group :heading="__('Platform')" class="grid gap-2">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="book-open-text" :href="route('facturation.dashboard')" :current="request()->routeIs('facturation.dashboard')" wire:navigate>
-                        {{ __('Facturation') }}
-                    </flux:sidebar.item>
+                <flux:sidebar.group class="grid gap-2">
+                    @if (!in_array($roleName, ['DIRECTION_GENERALE', 'FACTURATION'], true))
+                        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                            {{ __('Dashboard') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if (!in_array($roleName, ['DIRECTION_GENERALE'], true))
+                        <flux:sidebar.item icon="book-open-text" :href="route('facturation.dashboard')" :current="request()->routeIs('facturation.dashboard')" wire:navigate>
+                            {{ __('Facturation') }}
+                        </flux:sidebar.item>
+                    @endif
+                    @if (in_array($roleName, ['DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true))
+                        <flux:sidebar.item icon="building-office-2" :href="route('direction.dashboard')" :current="request()->routeIs('direction.dashboard')" wire:navigate>
+                            {{ __('Direction Générale') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
 
                 @if ($roleName === 'ADMIN')
@@ -33,8 +42,16 @@
                     </flux:sidebar.group>
                 @endif
 
+                @if (request()->routeIs('direction.*'))
+                    <flux:sidebar.group class="mt-4 grid gap-2">
+                        <flux:sidebar.item icon="percent-badge" :href="route('direction.remises')" :current="request()->routeIs('direction.remises')">
+                            {{ __('Gestion des remises') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endif
+
                 @if (request()->routeIs('facturation.*'))
-                    <flux:sidebar.group :heading="__('Facturation')" class="mt-4 grid gap-2">
+                    <flux:sidebar.group class="mt-4 grid gap-2">
                         <flux:sidebar.item icon="computer-desktop" :href="route('facturation.guichet-gfa.public')" target="_blank" rel="noopener noreferrer">
                             {{ __('Guichet GFA') }}
                         </flux:sidebar.item>

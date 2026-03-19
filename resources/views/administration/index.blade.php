@@ -293,17 +293,19 @@
                 if (target) target.classList.add('active');
             }));
 
-            const swalAdminTheme = {
-                background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#1a1e2e',
-                color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e2e8f0',
-                cancelButtonColor: '#64748b',
-            };
+            function swalAdminTheme() {
+                return {
+                    background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#ffffff',
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#1e293b',
+                    cancelButtonColor: '#64748b',
+                };
+            }
 
             document.querySelectorAll('.js-confirm-save').forEach(form => {
                 form.addEventListener('submit', async event => {
                     event.preventDefault();
                     const result = await Swal.fire({
-                        ...swalAdminTheme,
+                        ...swalAdminTheme(),
                         icon: 'question',
                         title: form.dataset.confirmTitle || 'Enregistrer les modifications ?',
                         showCancelButton: true,
@@ -320,7 +322,7 @@
                     event.preventDefault();
 
                     const result = await Swal.fire({
-                        ...swalAdminTheme,
+                        ...swalAdminTheme(),
                         icon: 'warning',
                         title: form.dataset.confirmTitle || 'Confirmer la suppression ?',
                         text: form.dataset.confirmText || 'Cette action est irreversible.',
@@ -349,15 +351,15 @@
             });
 
             @if (session('admin_success'))
-                Swal.fire({ ...swalAdminTheme, icon: 'success', title: 'Succes', text: @json(session('admin_success')), confirmButtonColor: '#4B49AC' });
+                Swal.fire({ ...swalAdminTheme(), icon: 'success', title: 'Succes', text: @json(session('admin_success')), confirmButtonColor: '#4B49AC' });
             @endif
 
             @if (session('admin_error'))
-                Swal.fire({ ...swalAdminTheme, icon: 'error', title: 'Erreur', text: @json(session('admin_error')), confirmButtonColor: '#dc3545' });
+                Swal.fire({ ...swalAdminTheme(), icon: 'error', title: 'Erreur', text: @json(session('admin_error')), confirmButtonColor: '#dc3545' });
             @endif
 
             @if ($errors->any())
-                Swal.fire({ ...swalAdminTheme, icon: 'warning', title: 'Validation', html: @json(implode('<br>', $errors->all())), confirmButtonColor: '#4B49AC' });
+                Swal.fire({ ...swalAdminTheme(), icon: 'warning', title: 'Validation', html: @json(implode('<br>', $errors->all())), confirmButtonColor: '#4B49AC' });
             @endif
         </script>
     </div>

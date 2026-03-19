@@ -17,6 +17,10 @@ class DashboardController extends Controller
             return redirect()->route('facturation.dashboard');
         }
 
+        if ($request->user()?->role?->name === 'DIRECTION_GENERALE') {
+            return redirect()->route('direction.dashboard');
+        }
+
         $today = CarbonImmutable::today();
         $recentUsers = User::query()
             ->with('role')
