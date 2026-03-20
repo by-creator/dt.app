@@ -109,7 +109,7 @@ class FacturationApiController extends Controller
             'motif' => ['nullable', 'string', 'max:100'],
         ]);
 
-        if (in_array($roleName, ['DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true) && $rattachement->statut === 'EN_ATTENTE_VALIDATION_DIRECTION') {
+        if (in_array($roleName, ['DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION', 'ADMIN', 'SUPER_U'], true) && $rattachement->statut === 'EN_ATTENTE_VALIDATION_DIRECTION') {
             if (! array_key_exists('pourcentage', $validated) || $validated['pourcentage'] === null || $validated['pourcentage'] === '') {
                 throw ValidationException::withMessages([
                     'pourcentage' => 'Le pourcentage est obligatoire pour la validation finale.',
@@ -165,7 +165,7 @@ class FacturationApiController extends Controller
         ]);
 
         abort_unless(
-            in_array($request->user()?->role?->name, ['FACTURATION', 'DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true),
+            in_array($request->user()?->role?->name, ['FACTURATION', 'DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION', 'ADMIN', 'SUPER_U'], true),
             403
         );
 
@@ -195,7 +195,7 @@ class FacturationApiController extends Controller
             return $items->where('statut', 'EN_ATTENTE_VALIDATION_FACTURATION');
         }
 
-        if ($roleName === 'DIRECTION_GENERALE') {
+        if (in_array($roleName, ['DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION'], true)) {
             return $items->where('statut', 'EN_ATTENTE_VALIDATION_DIRECTION');
         }
 
@@ -205,7 +205,7 @@ class FacturationApiController extends Controller
     private function authorizeFacturationAccess(Request $request): void
     {
         abort_unless(
-            in_array($request->user()?->role?->name, ['FACTURATION', 'DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true),
+            in_array($request->user()?->role?->name, ['FACTURATION', 'DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION', 'ADMIN', 'SUPER_U'], true),
             403
         );
     }

@@ -1,6 +1,5 @@
 <x-layouts::app :title="__('Audit')">
     <div class="audit-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .audit-page { overflow: visible; min-height: max-content; }

@@ -4,12 +4,46 @@
         @include('partials.head')
     </head>
     <body class="dt-app-shell min-h-screen bg-white dark:bg-zinc-800">
-        @php($roleName = auth()->user()?->role?->name)
+        @php
+            $roleName = auth()->user()?->role?->name;
+
+            $dashboardRouteName = match ($roleName) {
+                'DIRECTION_GENERALE' => 'direction.dashboard',
+                'DIRECTION_FINANCIERE' => 'direction.financiere',
+                'DIRECTION_EXPLOITATION' => 'direction.exploitation',
+                'FACTURATION' => 'facturation.dashboard',
+                'PLANIFICATION' => 'planification.dashboard',
+                default => 'dashboard',
+            };
+
+            $dashboardPatterns = match ($roleName) {
+                'DIRECTION_GENERALE' => ['direction.dashboard'],
+                'DIRECTION_FINANCIERE' => ['direction.financiere'],
+                'DIRECTION_EXPLOITATION' => ['direction.exploitation'],
+                'FACTURATION' => ['facturation.dashboard'],
+                'PLANIFICATION' => ['planification.dashboard'],
+                default => ['dashboard'],
+            };
+
+            $showMenuLink = in_array($roleName, [
+                'ADMIN',
+                'DIRECTION_GENERALE',
+                'DIRECTION_FINANCIERE',
+                'DIRECTION_EXPLOITATION',
+                'FACTURATION',
+                'PLANIFICATION',
+            ], true);
+
+            $dashboardCurrent = request()->routeIs(...$dashboardPatterns);
+        @endphp
+
         <flux:sidebar sticky collapsible="mobile" class="dt-sidebar border-e">
             <flux:sidebar.header class="px-4 pt-4">
                 <div class="dt-brand w-full">
-                    <a href="{{ route('dashboard') }}" class="flex items-center justify-center" wire:navigate>
-                        <img src="{{ asset('img/image.png') }}" alt="Logo" class="h-16 w-auto object-contain">
+                    <a href="{{ route($dashboardRouteName) }}" class="dt-brand-link" wire:navigate>
+                        <div class="dt-brand-mark">
+                            <img src="{{ asset('img/image.png') }}" alt="Logo" class="dt-brand-image">
+                        </div>
                     </a>
                 </div>
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -17,69 +51,26 @@
 
             <flux:sidebar.nav class="px-3 pb-2 pt-3">
                 <flux:sidebar.group class="grid gap-2">
-                    @if (!in_array($roleName, ['DIRECTION_GENERALE', 'FACTURATION'], true))
-                        <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                            {{ __('Dashboard') }}
-                        </flux:sidebar.item>
-                    @endif
-                    @if (!in_array($roleName, ['DIRECTION_GENERALE'], true))
-                        <flux:sidebar.item icon="book-open-text" :href="route('facturation.dashboard')" :current="request()->routeIs('facturation.dashboard')" wire:navigate>
-                            {{ __('Facturation') }}
-                        </flux:sidebar.item>
-                    @endif
-                    @if (in_array($roleName, ['DIRECTION_GENERALE', 'ADMIN', 'SUPER_U'], true))
-                        <flux:sidebar.item icon="building-office-2" :href="route('direction.dashboard')" :current="request()->routeIs('direction.dashboard')" wire:navigate>
-                            {{ __('Direction Générale') }}
+                    <flux:sidebar.item
+                        icon="home"
+                        :href="route($dashboardRouteName)"
+                        :current="$dashboardCurrent"
+                        wire:navigate
+                    >
+                        {{ __('Dashboard') }}
+                    </flux:sidebar.item>
+
+                    @if ($showMenuLink)
+                        <flux:sidebar.item
+                            icon="squares-2x2"
+                            :href="route('menu.index')"
+                            :current="request()->routeIs('menu.index')"
+                            wire:navigate
+                        >
+                            {{ __('Menu') }}
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>
-
-                @if ($roleName === 'ADMIN')
-                    <flux:sidebar.group :heading="__('Administration')" class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="shield-check" :href="route('administration.index')" :current="request()->routeIs('administration.*')" wire:navigate>
-                            {{ __('Administration') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-document-list" :href="route('audit.index')" :current="request()->routeIs('audit.*')" wire:navigate>
-                            {{ __('Audit') }}
-                        </flux:sidebar.item>
-                    </flux:sidebar.group>
-                @endif
-
-                @if (request()->routeIs('direction.*'))
-                    <flux:sidebar.group class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="percent-badge" :href="route('direction.remises')" :current="request()->routeIs('direction.remises')">
-                            {{ __('Gestion des remises') }}
-                        </flux:sidebar.item>
-                    </flux:sidebar.group>
-                @endif
-
-                @if (request()->routeIs('facturation.*'))
-                    <flux:sidebar.group class="mt-4 grid gap-2">
-                        <flux:sidebar.item icon="computer-desktop" :href="route('facturation.guichet-gfa.public')" target="_blank" rel="noopener noreferrer">
-                            {{ __('Guichet GFA') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="check-badge" :href="route('facturation.validations')" :current="request()->routeIs('facturation.validations')">
-                            {{ __('Gestion des validations') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="percent-badge" :href="route('facturation.remises')" :current="request()->routeIs('facturation.remises')">
-                            {{ __('Gestion de remises') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-document-list" :href="route('facturation.unify')" :current="request()->routeIs('facturation.unify')">
-                            {{ __('Gestion Unify') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" :href="route('facturation.ies')" :current="request()->routeIs('facturation.ies')">
-                            {{ __('Gestion IES') }}
-                        </flux:sidebar.item>
-                    </flux:sidebar.group>
-
-                    @if (in_array($roleName, ['ADMIN', 'SUPER_U'], true))
-                        <flux:sidebar.group :heading="__('Administration Facturation')" class="mt-4 grid gap-2">
-                            <flux:sidebar.item icon="server-stack" :href="route('facturation.gfa-admin')" :current="request()->routeIs('facturation.gfa-admin')">
-                                {{ __('Gfa Admin') }}
-                            </flux:sidebar.item>
-                        </flux:sidebar.group>
-                    @endif
-                @endif
             </flux:sidebar.nav>
 
             <flux:spacer />
@@ -87,7 +78,6 @@
             <x-desktop-user-menu class="dt-user-panel hidden px-3 pb-4 lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
         <flux:header class="dt-topbar lg:hidden">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 

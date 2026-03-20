@@ -22,6 +22,18 @@ class DashboardController extends Controller
             return redirect()->route('direction.dashboard');
         }
 
+        if ($request->user()?->role?->name === 'DIRECTION_FINANCIERE') {
+            return redirect()->route('direction.financiere');
+        }
+
+        if ($request->user()?->role?->name === 'DIRECTION_EXPLOITATION') {
+            return redirect()->route('direction.exploitation');
+        }
+
+        if ($request->user()?->role?->name === 'PLANIFICATION') {
+            return redirect()->route('planification.dashboard');
+        }
+
         $today = CarbonImmutable::today();
         $recentUsers = User::query()
             ->with('role')

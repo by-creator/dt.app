@@ -6,7 +6,6 @@
 
     <div class="unify-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .unify-page { overflow: visible; min-height: max-content; }
@@ -141,18 +140,20 @@
                     <input id="tiers-search" class="form-control-custom tiers-search-input" type="search" placeholder="Rechercher un tiers (raison sociale, compte...)">
                     <button type="button" class="btn-gfa btn-primary-gfa" id="tiers-refresh"><i class="fas fa-sync-alt"></i> Actualiser</button>
                 </div>
-                <div style="overflow-x:auto;">
-                    <table class="table-unify">
-                        <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th></tr></thead>
-                        <tbody id="tiers-tbody"></tbody>
-                    </table>
-                </div>
-                <div class="table-meta">
-                    <span id="tiers-count-info" class="muted"></span>
-                    <div class="pagination">
-                        <button type="button" class="btn-gfa btn-light-gfa" id="tiers-prev">Precedent</button>
-                        <span id="tiers-page-info" class="muted"></span>
-                        <button type="button" class="btn-gfa btn-light-gfa" id="tiers-next">Suivant</button>
+                <div class="dt-table-card">
+                    <div class="dt-table-responsive">
+                        <table>
+                            <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th></tr></thead>
+                            <tbody id="tiers-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="dt-pagination-bar">
+                        <span id="tiers-count-info"></span>
+                        <div class="dt-pagination-pages">
+                            <button type="button" class="dt-page-btn" id="tiers-prev">Precedent</button>
+                            <span id="tiers-page-info" style="padding:0 8px;font-size:13px;color:var(--dt-muted-text)"></span>
+                            <button type="button" class="dt-page-btn" id="tiers-next">Suivant</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,18 +198,20 @@
                             <input id="admin-tiers-search" class="form-control-custom tiers-search-input" type="search" placeholder="Rechercher...">
                         </div>
                         <div id="admin-edit-status" class="status-box"></div>
-                        <div style="overflow-x:auto">
-                            <table class="table-unify">
-                                <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th><th>Neptune</th><th style="width:110px">Actions</th></tr></thead>
-                                <tbody id="admin-tiers-tbody"></tbody>
-                            </table>
-                        </div>
-                        <div class="table-meta">
-                            <span id="admin-tiers-count" class="muted"></span>
-                            <div class="pagination">
-                                <button type="button" class="btn-gfa btn-light-gfa" id="admin-tiers-prev">Precedent</button>
-                                <span id="admin-tiers-page" class="muted"></span>
-                                <button type="button" class="btn-gfa btn-light-gfa" id="admin-tiers-next">Suivant</button>
+                        <div class="dt-table-card">
+                            <div class="dt-table-responsive">
+                                <table>
+                                    <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th><th>Neptune</th><th style="width:110px">Actions</th></tr></thead>
+                                    <tbody id="admin-tiers-tbody"></tbody>
+                                </table>
+                            </div>
+                            <div class="dt-pagination-bar">
+                                <span id="admin-tiers-count"></span>
+                                <div class="dt-pagination-pages">
+                                    <button type="button" class="dt-page-btn" id="admin-tiers-prev">Precedent</button>
+                                    <span id="admin-tiers-page" style="padding:0 8px;font-size:13px;color:var(--dt-muted-text)"></span>
+                                    <button type="button" class="dt-page-btn" id="admin-tiers-next">Suivant</button>
+                                </div>
                             </div>
                         </div>
                     </div>

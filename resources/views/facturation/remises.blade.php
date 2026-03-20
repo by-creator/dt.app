@@ -2,13 +2,18 @@
     @php
         $roleName = auth()->user()?->role?->name;
         $isFacturation = $roleName === 'FACTURATION';
-        $isDirection = $roleName === 'DIRECTION_GENERALE';
+        $isDirection = in_array($roleName, ['DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION'], true);
         $isAdmin = in_array($roleName, ['ADMIN', 'SUPER_U'], true);
+        $directionBadge = match ($roleName) {
+            'DIRECTION_GENERALE' => 'Direction Generale',
+            'DIRECTION_FINANCIERE' => 'Direction Financiere',
+            'DIRECTION_EXPLOITATION' => 'Direction Exploitation',
+            default => 'Direction',
+        };
     @endphp
 
     <div class="flex h-full w-full flex-1 flex-col gap-6">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style>
             .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
@@ -67,7 +72,7 @@
                     <span class="role-badge">Facturation</span>
                 @endif
                 @if ($isDirection)
-                    <span class="role-badge">Direction Generale</span>
+                    <span class="role-badge">{{ $directionBadge }}</span>
                 @endif
             </h1>
         </div>
@@ -82,7 +87,7 @@
         @if ($isDirection)
             <div class="alert dt-theme-info" style="border-radius:8px;padding:10px 16px;font-size:13px;margin-bottom:16px">
                 <i class="fas fa-info-circle"></i>
-                Vous voyez les demandes validees par la Facturation, en attente de votre validation finale. Indiquez un pourcentage de remise lors de la validation.
+                Vous voyez les demandes validees par la Facturation, en attente de validation direction. Indiquez un pourcentage de remise lors de la validation finale.
             </div>
         @endif
 
@@ -138,7 +143,7 @@
 
         <div class="modal-overlay" id="direction-modal">
             <div class="modal-box">
-                <h5 style="color:#28a745"><i class="fas fa-check-circle"></i> Validation Direction Generale</h5>
+                <h5 style="color:#28a745"><i class="fas fa-check-circle"></i> Validation Direction</h5>
                 <p style="font-size:13px;color:var(--dt-muted-text);margin-bottom:10px">Saisissez le pourcentage de remise accorde :</p>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
                     <input type="number" id="pourcentage-input" min="0" max="100" step="0.01" placeholder="Ex: 15" style="max-width:140px">
