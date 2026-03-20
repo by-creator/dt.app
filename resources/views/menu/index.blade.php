@@ -1,50 +1,44 @@
 <x-layouts::app :title="__('Menu')">
     @php
         $roleName = auth()->user()?->role?->name;
+        $menuSection = $menuSection ?? null;
 
-        $menuByRole = [
+        $rootMenuByRole = [
             'ADMIN' => [
                 [
                     'title' => 'Direction Generale',
-                    'description' => 'Acces au tableau de bord de la Direction Generale.',
-                    'route' => route('direction.dashboard'),
+                    'description' => 'Accedez au sous-menu de la Direction Generale.',
+                    'route' => route('menu.direction-generale'),
                     'icon' => 'building-office-2',
-                    'keywords' => 'direction generale dashboard dg',
+                    'keywords' => 'direction generale dashboard dg remises',
                 ],
                 [
                     'title' => 'Direction Financiere',
-                    'description' => 'Acces au tableau de bord de la Direction Financiere.',
-                    'route' => route('direction.financiere'),
+                    'description' => 'Accedez au sous-menu de la Direction Financiere.',
+                    'route' => route('menu.direction-financiere'),
                     'icon' => 'banknotes',
-                    'keywords' => 'direction financiere dashboard df',
+                    'keywords' => 'direction financiere dashboard df remises',
                 ],
                 [
                     'title' => 'Direction Exploitation',
-                    'description' => 'Acces au tableau de bord de la Direction Exploitation.',
-                    'route' => route('direction.exploitation'),
+                    'description' => 'Accedez au sous-menu de la Direction Exploitation.',
+                    'route' => route('menu.direction-exploitation'),
                     'icon' => 'truck',
-                    'keywords' => 'direction exploitation dashboard de',
+                    'keywords' => 'direction exploitation dashboard de remises',
                 ],
                 [
                     'title' => 'Planification',
-                    'description' => 'Acces au tableau de bord du module Planification.',
-                    'route' => route('planification.dashboard'),
+                    'description' => 'Accedez au sous-menu du module Planification.',
+                    'route' => route('menu.planification'),
                     'icon' => 'calendar-days',
-                    'keywords' => 'planification dashboard',
+                    'keywords' => 'planification dashboard codification',
                 ],
                 [
                     'title' => 'Facturation',
-                    'description' => 'Acces au tableau de bord du module Facturation.',
-                    'route' => route('facturation.dashboard'),
+                    'description' => 'Accedez au sous-menu du module Facturation.',
+                    'route' => route('menu.facturation'),
                     'icon' => 'book-open-text',
-                    'keywords' => 'facturation dashboard',
-                ],
-                [
-                    'title' => 'Gfa Admin',
-                    'description' => 'Administration complete du module GFA.',
-                    'route' => route('facturation.gfa-admin'),
-                    'icon' => 'server-stack',
-                    'keywords' => 'gfa admin facturation',
+                    'keywords' => 'facturation validations remises rapports unify ies gfa',
                 ],
                 [
                     'title' => 'Administration',
@@ -143,8 +137,122 @@
             ],
         ];
 
-        $menuLinks = collect($menuByRole[$roleName] ?? []);
-        $pageTitle = match ($roleName) {
+        $adminSubmenus = [
+            'direction-generale' => [
+                'title' => 'Menu Direction Generale',
+                'description' => 'Retrouvez les acces de la Direction Generale.',
+                'links' => [
+                    [
+                        'title' => 'Gestion des remises',
+                        'description' => 'Validez les demandes de remises en attente cote direction.',
+                        'route' => route('facturation.remises'),
+                        'icon' => 'percent-badge',
+                        'keywords' => 'remises direction generale',
+                    ],
+                ],
+            ],
+            'direction-financiere' => [
+                'title' => 'Menu Direction Financiere',
+                'description' => 'Retrouvez les acces de la Direction Financiere.',
+                'links' => [
+                    [
+                        'title' => 'Gestion des remises',
+                        'description' => 'Consultez et validez les demandes de remises cote direction financiere.',
+                        'route' => route('facturation.remises'),
+                        'icon' => 'percent-badge',
+                        'keywords' => 'remises direction financiere',
+                    ],
+                ],
+            ],
+            'direction-exploitation' => [
+                'title' => 'Menu Direction Exploitation',
+                'description' => 'Retrouvez les acces de la Direction Exploitation.',
+                'links' => [
+                    [
+                        'title' => 'Gestion des remises',
+                        'description' => 'Consultez et validez les demandes de remises cote direction exploitation.',
+                        'route' => route('facturation.remises'),
+                        'icon' => 'percent-badge',
+                        'keywords' => 'remises direction exploitation',
+                    ],
+                ],
+            ],
+            'facturation' => [
+                'title' => 'Menu Facturation',
+                'description' => 'Retrouvez les principaux acces du module Facturation.',
+                'links' => [
+                    [
+                        'title' => 'Guichet GFA',
+                        'description' => 'Acces au guichet public GFA.',
+                        'route' => route('facturation.guichet-gfa.public'),
+                        'icon' => 'computer-desktop',
+                        'keywords' => 'guichet gfa public',
+                        'target' => '_blank',
+                        'rel' => 'noopener',
+                    ],
+                    [
+                        'title' => 'Gestion des validations',
+                        'description' => 'Consultez et traitez les validations en attente.',
+                        'route' => route('facturation.validations'),
+                        'icon' => 'check-badge',
+                        'keywords' => 'validations facturation',
+                    ],
+                    [
+                        'title' => 'Gestion des remises',
+                        'description' => 'Traitez les demandes de remises cote facturation.',
+                        'route' => route('facturation.remises'),
+                        'icon' => 'percent-badge',
+                        'keywords' => 'remises facturation',
+                    ],
+                    [
+                        'title' => 'Gestion des rapports',
+                        'description' => 'Consultez et administrez les rapports de suivi.',
+                        'route' => route('facturation.rapport'),
+                        'icon' => 'document-text',
+                        'keywords' => 'rapports suivi',
+                    ],
+                    [
+                        'title' => 'Gestion Unify',
+                        'description' => 'Gerez les tiers et imports du module Unify.',
+                        'route' => route('facturation.unify'),
+                        'icon' => 'clipboard-document-list',
+                        'keywords' => 'unify tiers',
+                    ],
+                    [
+                        'title' => 'Gestion IES',
+                        'description' => 'Acces aux operations IES.',
+                        'route' => route('facturation.ies'),
+                        'icon' => 'users',
+                        'keywords' => 'ies comptes',
+                    ],
+                    [
+                        'title' => 'Gfa Admin',
+                        'description' => 'Administration complete du module GFA.',
+                        'route' => route('facturation.gfa-admin'),
+                        'icon' => 'server-stack',
+                        'keywords' => 'gfa admin facturation',
+                    ],
+                ],
+            ],
+            'planification' => [
+                'title' => 'Menu Planification',
+                'description' => 'Retrouvez les acces du module Planification.',
+                'links' => [
+                    [
+                        'title' => 'Codification',
+                        'description' => 'Importez et gerez les manifestes du module Planification.',
+                        'route' => route('planification.upload-manifest'),
+                        'icon' => 'document-arrow-up',
+                        'keywords' => 'codification manifest upload planification',
+                    ],
+                ],
+            ],
+        ];
+
+        $submenu = $roleName === 'ADMIN' && $menuSection ? ($adminSubmenus[$menuSection] ?? null) : null;
+        $menuLinks = collect($submenu['links'] ?? ($rootMenuByRole[$roleName] ?? []));
+
+        $pageTitle = $submenu['title'] ?? match ($roleName) {
             'DIRECTION_GENERALE' => 'Menu Direction Generale',
             'DIRECTION_FINANCIERE' => 'Menu Direction Financiere',
             'DIRECTION_EXPLOITATION' => 'Menu Direction Exploitation',
@@ -152,6 +260,8 @@
             'PLANIFICATION' => 'Menu Planification',
             default => 'Menu administrateur',
         };
+
+        $pageDescription = $submenu['description'] ?? 'Recherchez rapidement un module et accedez aux espaces disponibles pour votre role.';
     @endphp
 
     <div class="admin-menu-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
@@ -200,15 +310,18 @@
             }
 
             .admin-menu-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                display: flex;
+                flex-wrap: wrap;
                 gap: 16px;
+                align-items: stretch;
             }
 
             .admin-menu-card {
                 display: flex;
                 flex-direction: column;
                 gap: 12px;
+                width: 252px;
+                max-width: 252px;
                 min-height: 190px;
                 border: 1px solid var(--am-border);
                 border-radius: 1.4rem;
@@ -264,13 +377,24 @@
                         </div>
                         <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{{ $pageTitle }}</h1>
                         <p class="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-                            Recherchez rapidement un module et accedez aux espaces disponibles pour votre role.
+                            {{ $pageDescription }}
                         </p>
                     </div>
 
-                    <div class="w-full max-w-md">
-                        <label class="sr-only" for="admin-menu-search">Rechercher un menu</label>
+                    <div class="flex w-full max-w-md flex-col gap-3">
+                        @if ($submenu)
+                            <a href="{{ route('menu.index') }}"
+                               class="inline-flex items-center gap-2 self-start rounded-full bg-white/85 px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white dark:bg-slate-900/70 dark:text-indigo-200 dark:ring-slate-700/70"
+                               wire:navigate>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+                                Retour au menu principal
+                            </a>
+                        @endif
+
                         <div class="relative">
+                            <label class="sr-only" for="admin-menu-search">Rechercher un menu</label>
                             <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35m1.85-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
@@ -289,6 +413,8 @@
                            class="admin-menu-card"
                            data-menu-card
                            data-keywords="{{ strtolower($link['title'].' '.$link['keywords']) }}"
+                           @if (!empty($link['target'])) target="{{ $link['target'] }}" @endif
+                           @if (!empty($link['rel'])) rel="{{ $link['rel'] }}" @endif
                            wire:navigate>
                             <span class="admin-menu-icon">
                                 <flux:icon :name="$link['icon']" class="h-6 w-6" />

@@ -64,7 +64,7 @@
                         <flux:sidebar.item
                             icon="squares-2x2"
                             :href="route('menu.index')"
-                            :current="request()->routeIs('menu.index')"
+                            :current="request()->routeIs('menu.*')"
                             wire:navigate
                         >
                             {{ __('Menu') }}
