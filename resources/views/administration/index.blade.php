@@ -31,9 +31,12 @@
             .admin-page .btn-primary-gfa { background:#4B49AC; color:#fff; }
             .admin-page .btn-light-gfa { background:#f2f2f7; color:#555; }
             .admin-page .btn-danger-gfa { background:#dc3545; color:#fff; }
-            .admin-page .table-unify { width:100%; border-collapse:collapse; font-size:13px; }
-            .admin-page .table-unify th, .admin-page .table-unify td { padding:10px 12px; border-bottom:1px solid var(--dt-border); text-align:left; vertical-align:top; color:var(--dt-page-text); }
-            .admin-page .table-unify th { color:#818cf8; background:var(--dt-table-head-bg); }
+            .admin-page .table-card { background:var(--dt-panel-bg); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); overflow:hidden; }
+            .admin-page .table-responsive { overflow:auto; }
+            .admin-page .table-unify { width:100%; border-collapse:collapse; font-size:13px; margin:0; }
+            .admin-page .table-unify th { background:var(--dt-table-head-bg); font-size:12px; font-weight:700; color:var(--dt-page-text); border-bottom:2px solid var(--dt-border); white-space:nowrap; text-align:left; padding:14px 16px; }
+            .admin-page .table-unify td { font-size:13px; vertical-align:middle; padding:14px 16px; border-top:1px solid var(--dt-border); text-align:left; color:var(--dt-page-text); }
+            .admin-page .empty-state { text-align:center; padding:48px; color:var(--dt-soft-text); }
             .admin-page .actions { display:flex; flex-wrap:wrap; gap:8px; }
             .admin-page .stack { display:grid; gap:10px; }
             .admin-page .list-card { min-height:100%; }
@@ -96,45 +99,49 @@
                     </form>
 
                     <div class="list-scroll" style="margin-top:18px;">
-                        <table class="table-unify">
-                            <thead>
-                                <tr>
-                                    <th>Role</th>
-                                    <th>Utilisateurs</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($roles as $role)
-                                    <tr>
-                                        <td>
-                                            <form method="POST" action="{{ route('administration.roles.update', $role) }}" class="stack js-confirm-save" data-confirm-title="Modifier ce role ?">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="hidden" name="tab" value="admin-roles">
-                                                <input name="name" value="{{ $role->name }}" class="form-control-custom" required>
-                                        </td>
-                                        <td>{{ $role->users_count }}</td>
-                                        <td>
-                                                <div class="actions" style="flex-wrap:nowrap">
-                                                    <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" title="Modifier"><i class="fas fa-pen"></i></button>
-                                            </form>
-                                                    <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" class="js-confirm-delete" data-confirm-title="Supprimer ce role ?" data-confirm-text="Cette action est irreversible.">
+                        <div class="table-card">
+                            <div class="table-responsive">
+                                <table class="table-unify">
+                                    <thead>
+                                        <tr>
+                                            <th>Role</th>
+                                            <th>Utilisateurs</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($roles as $role)
+                                            <tr>
+                                                <td>
+                                                    <form method="POST" action="{{ route('administration.roles.update', $role) }}" class="stack js-confirm-save" data-confirm-title="Modifier ce role ?">
                                                         @csrf
-                                                        @method('DELETE')
+                                                        @method('PUT')
                                                         <input type="hidden" name="tab" value="admin-roles">
-                                                        <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                                        <input name="name" value="{{ $role->name }}" class="form-control-custom" required>
+                                                </td>
+                                                <td>{{ $role->users_count }}</td>
+                                                <td>
+                                                        <div class="actions" style="flex-wrap:nowrap">
+                                                            <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" title="Modifier"><i class="fas fa-pen"></i></button>
                                                     </form>
-                                                </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="muted">Aucun role disponible.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                                            <form method="POST" action="{{ route('administration.roles.destroy', $role) }}" class="js-confirm-delete" data-confirm-title="Supprimer ce role ?" data-confirm-text="Cette action est irreversible.">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <input type="hidden" name="tab" value="admin-roles">
+                                                                <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                                            </form>
+                                                        </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="3" class="empty-state"><i class="fas fa-inbox fa-2x mb-3" style="display:block;color:#ccc"></i>Aucun role disponible.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="margin-top:18px;">
@@ -204,73 +211,77 @@
                     </form>
 
                     <div class="list-scroll">
-                        <table class="table-unify">
-                            <thead>
-                                <tr>
-                                    <th>Utilisateur</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Mot de passe</th>
-                                    <th>Confirmation</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($users as $user)
-                                    <tr>
-                                        <td>
-                                            <input form="user-update-{{ $user->id }}" name="name" value="{{ $user->name }}" class="form-control-custom" required>
-                                        </td>
-                                        <td>
-                                            <input form="user-update-{{ $user->id }}" name="email" type="email" value="{{ $user->email }}" class="form-control-custom" required>
-                                        </td>
-                                        <td>
-                                            <select form="user-update-{{ $user->id }}" name="role_id" class="form-control-custom" required>
-                                                @foreach ($rolesForSelect as $role)
-                                                    <option value="{{ $role->id }}" @selected($user->role_id === $role->id)>{{ $role->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div class="password-toggle-group">
-                                                <input id="user-password-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
-                                                <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="password-toggle-group">
-                                                <input id="user-password-confirmation-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
-                                                <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-confirmation-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="inline-user-actions">
-                                                <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}" class="js-confirm-save" data-confirm-title="Modifier cet utilisateur ?">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="tab" value="admin-users">
-                                                    <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" aria-label="Modifier" title="Modifier">
-                                                        <i class="fas fa-pen"></i>
-                                                    </button>
-                                                </form>
-                                                <form method="POST" action="{{ route('administration.users.destroy', $user) }}" class="js-confirm-delete" data-confirm-title="Supprimer cet utilisateur ?" data-confirm-text="Cette action est irreversible.">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <input type="hidden" name="tab" value="admin-users">
-                                                    <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" aria-label="Supprimer" title="Supprimer">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="muted">Aucun utilisateur disponible.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <div class="table-card">
+                            <div class="table-responsive">
+                                <table class="table-unify">
+                                    <thead>
+                                        <tr>
+                                            <th>Utilisateur</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Mot de passe</th>
+                                            <th>Confirmation</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($users as $user)
+                                            <tr>
+                                                <td>
+                                                    <input form="user-update-{{ $user->id }}" name="name" value="{{ $user->name }}" class="form-control-custom" required>
+                                                </td>
+                                                <td>
+                                                    <input form="user-update-{{ $user->id }}" name="email" type="email" value="{{ $user->email }}" class="form-control-custom" required>
+                                                </td>
+                                                <td>
+                                                    <select form="user-update-{{ $user->id }}" name="role_id" class="form-control-custom" required>
+                                                        @foreach ($rolesForSelect as $role)
+                                                            <option value="{{ $role->id }}" @selected($user->role_id === $role->id)>{{ $role->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <div class="password-toggle-group">
+                                                        <input id="user-password-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password" type="password" class="form-control-custom" placeholder="Laisser vide pour conserver">
+                                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="password-toggle-group">
+                                                        <input id="user-password-confirmation-{{ $user->id }}" form="user-update-{{ $user->id }}" name="password_confirmation" type="password" class="form-control-custom" placeholder="Confirmation">
+                                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user-password-confirmation-{{ $user->id }}" aria-label="Afficher le mot de passe">Voir</button>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="inline-user-actions">
+                                                        <form id="user-update-{{ $user->id }}" method="POST" action="{{ route('administration.users.update', $user) }}" class="js-confirm-save" data-confirm-title="Modifier cet utilisateur ?">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="tab" value="admin-users">
+                                                            <button type="submit" class="btn-gfa btn-primary-gfa icon-btn" aria-label="Modifier" title="Modifier">
+                                                                <i class="fas fa-pen"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" action="{{ route('administration.users.destroy', $user) }}" class="js-confirm-delete" data-confirm-title="Supprimer cet utilisateur ?" data-confirm-text="Cette action est irreversible.">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <input type="hidden" name="tab" value="admin-users">
+                                                            <button type="submit" class="btn-gfa btn-danger-gfa icon-btn" aria-label="Supprimer" title="Supprimer">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="empty-state"><i class="fas fa-inbox fa-2x mb-3" style="display:block;color:#ccc"></i>Aucun utilisateur disponible.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="margin-top:18px;">

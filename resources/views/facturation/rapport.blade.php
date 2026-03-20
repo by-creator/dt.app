@@ -31,6 +31,18 @@
             .rapport-page .r-status { margin:12px 0; padding:10px 14px; border-radius:8px; display:none; font-size:13px; }
             .rapport-page .r-status-ok  { background:var(--dt-success-bg); color:var(--dt-success-text); border:1px solid var(--dt-success-border); }
             .rapport-page .r-status-err { background:var(--dt-danger-bg);  color:var(--dt-danger-text);  border:1px solid var(--dt-danger-border); }
+            .rapport-page .table-card { background:var(--dt-panel-bg); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); overflow:hidden; }
+            .rapport-page .table-responsive { overflow:auto; }
+            .rapport-page .table-card table { margin:0; width:100%; border-collapse:collapse; }
+            .rapport-page .table-card thead th { background:var(--dt-table-head-bg); font-size:12px; font-weight:700; color:var(--dt-page-text); border-bottom:2px solid var(--dt-border); white-space:nowrap; text-align:left; padding:14px 16px; }
+            .rapport-page .table-card tbody td { font-size:13px; vertical-align:middle; padding:14px 16px; border-top:1px solid var(--dt-border); color:var(--dt-page-text); }
+            .rapport-page .empty-state { text-align:center; padding:48px; color:var(--dt-soft-text); }
+            .rapport-page .pagination-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 16px 16px; font-size:13px; color:var(--dt-muted-text); }
+            .rapport-page .pagination-pages { display:flex; gap:4px; align-items:center; }
+            .rapport-page .page-btn { border:1px solid var(--dt-border); background:var(--dt-panel-alt-bg); border-radius:6px; padding:4px 10px; font-size:13px; cursor:pointer; color:var(--dt-page-text); }
+            .rapport-page .page-btn:hover { background:var(--dt-table-head-bg); border-color:#4B49AC; color:#818cf8; }
+            .rapport-page .page-btn.active { background:#4B49AC; color:#fff; border-color:#4B49AC; }
+            .rapport-page .page-btn:disabled { opacity:.4; cursor:default; }
         </style>
 
         <div class="dt-page-header" style="text-align:center">
@@ -54,8 +66,8 @@
                     <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter Excel</a>
                 </div>
 
-                <div class="dt-table-card">
-                    <div class="dt-table-responsive">
+                <div class="table-card">
+                    <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
@@ -70,13 +82,13 @@
                                 </tr>
                             </thead>
                             <tbody id="rapport-tbody">
-                                <tr><td colspan="8" class="dt-empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>
+                                <tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="dt-pagination-bar" id="rapport-pagination-bar" style="display:none">
+                    <div class="pagination-bar" id="rapport-pagination-bar" style="display:none">
                         <span id="rapport-count-info"></span>
-                        <div class="dt-pagination-pages" id="rapport-pagination-pages"></div>
+                        <div class="pagination-pages" id="rapport-pagination-pages"></div>
                     </div>
                 </div>
             </div>
@@ -136,7 +148,7 @@
 
             async function loadRapports() {
                 const tbody = document.getElementById('rapport-tbody');
-                tbody.innerHTML = '<tr><td colspan="8" class="dt-empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
                 try {
                     const searchParam = rapportSearch ? `&search=${encodeURIComponent(rapportSearch)}` : '';
                     const res = await fetch(`/facturation/api/rapports?page=0&size=9999${searchParam}`);
@@ -144,7 +156,7 @@
                     allRapports = data.content || [];
                     renderRapportPage(1);
                 } catch {
-                    tbody.innerHTML = '<tr><td colspan="8" class="dt-empty-state">Erreur de chargement.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Erreur de chargement.</td></tr>';
                 }
             }
 
@@ -158,7 +170,7 @@
                 const tbody = document.getElementById('rapport-tbody');
 
                 if (total === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="dt-empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
                 } else {
                     tbody.innerHTML = slice.map(r => `<tr>
                         <td>${escHtml(r.terminal)}</td>
@@ -176,15 +188,15 @@
                 bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
                 document.getElementById('rapport-count-info').textContent = `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}`;
 
-                let html = `<button class="dt-page-btn" onclick="renderRapportPage(${rapportCurrentPage - 1})" ${rapportCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+                let html = `<button class="page-btn" onclick="renderRapportPage(${rapportCurrentPage - 1})" ${rapportCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
                 for (let p = 1; p <= pages; p++) {
                     if (pages <= 7 || p === 1 || p === pages || Math.abs(p - rapportCurrentPage) <= 1) {
-                        html += `<button class="dt-page-btn ${p === rapportCurrentPage ? 'active' : ''}" onclick="renderRapportPage(${p})">${p}</button>`;
+                        html += `<button class="page-btn ${p === rapportCurrentPage ? 'active' : ''}" onclick="renderRapportPage(${p})">${p}</button>`;
                     } else if (Math.abs(p - rapportCurrentPage) === 2) {
                         html += '<span style="padding:4px 6px;color:var(--dt-muted-text)">...</span>';
                     }
                 }
-                html += `<button class="dt-page-btn" onclick="renderRapportPage(${rapportCurrentPage + 1})" ${rapportCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+                html += `<button class="page-btn" onclick="renderRapportPage(${rapportCurrentPage + 1})" ${rapportCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
                 document.getElementById('rapport-pagination-pages').innerHTML = html;
             }
 

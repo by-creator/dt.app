@@ -117,6 +117,7 @@
                     'route' => route('facturation.unify'),
                     'icon' => 'clipboard-document-list',
                     'keywords' => 'unify tiers',
+                    'navigate' => false,
                 ],
                 [
                     'title' => 'Gestion IES',
@@ -217,6 +218,7 @@
                         'route' => route('facturation.unify'),
                         'icon' => 'clipboard-document-list',
                         'keywords' => 'unify tiers',
+                        'navigate' => false,
                     ],
                     [
                         'title' => 'Gestion IES',
@@ -231,6 +233,7 @@
                         'route' => route('facturation.gfa-admin'),
                         'icon' => 'server-stack',
                         'keywords' => 'gfa admin facturation',
+                        'navigate' => false,
                     ],
                 ],
             ],
@@ -412,10 +415,10 @@
                         <a href="{{ $link['route'] }}"
                            class="admin-menu-card"
                            data-menu-card
-                           data-keywords="{{ strtolower($link['title'].' '.$link['keywords']) }}"
+                           data-keywords="{{ strtolower($link['title'].' '.$link['description'].' '.$link['keywords']) }}"
                            @if (!empty($link['target'])) target="{{ $link['target'] }}" @endif
                            @if (!empty($link['rel'])) rel="{{ $link['rel'] }}" @endif
-                           wire:navigate>
+                           @if (($link['navigate'] ?? true) === true) wire:navigate @endif>
                             <span class="admin-menu-icon">
                                 <flux:icon :name="$link['icon']" class="h-6 w-6" />
                             </span>
@@ -439,25 +442,47 @@
             </section>
 
             <script>
-                const adminMenuSearch = document.getElementById('admin-menu-search');
-                const adminMenuCards = [...document.querySelectorAll('[data-menu-card]')];
-                const adminMenuEmpty = document.getElementById('admin-menu-empty');
+                function normalizeMenuText(value) {
+                    return (value || '')
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .trim();
+                }
 
-                if (adminMenuSearch) {
-                    adminMenuSearch.addEventListener('input', function () {
-                        const query = this.value.trim().toLowerCase();
+                function initAdminMenuSearch() {
+                    const adminMenuSearch = document.getElementById('admin-menu-search');
+                    const adminMenuEmpty = document.getElementById('admin-menu-empty');
+
+                    if (!adminMenuSearch || adminMenuSearch.dataset.bound === 'true') {
+                        return;
+                    }
+
+                    adminMenuSearch.dataset.bound = 'true';
+
+                    const filterCards = () => {
+                        const query = normalizeMenuText(adminMenuSearch.value);
+                        const adminMenuCards = [...document.querySelectorAll('[data-menu-card]')];
                         let visibleCount = 0;
 
                         adminMenuCards.forEach(card => {
-                            const keywords = card.dataset.keywords || '';
+                            const keywords = normalizeMenuText(card.dataset.keywords || '');
                             const match = !query || keywords.includes(query);
                             card.style.display = match ? '' : 'none';
                             if (match) visibleCount++;
                         });
 
-                        adminMenuEmpty.style.display = visibleCount === 0 ? 'block' : 'none';
-                    });
+                        if (adminMenuEmpty) {
+                            adminMenuEmpty.style.display = visibleCount === 0 ? 'block' : 'none';
+                        }
+                    };
+
+                    adminMenuSearch.addEventListener('input', filterCards);
+                    filterCards();
                 }
+
+                initAdminMenuSearch();
+                document.addEventListener('livewire:navigated', initAdminMenuSearch);
             </script>
         @endif
     </div>

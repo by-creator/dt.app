@@ -288,11 +288,26 @@
                 }
             }
 
-            document.getElementById('reject-modal').addEventListener('click', function (e) {
-                if (e.target === this) closeRejectModal();
-            });
+            function initValidationsPage() {
+                const tbody = document.getElementById('demandes-tbody');
+                const rejectModal = document.getElementById('reject-modal');
 
-            loadDemandes();
+                if (!tbody || !rejectModal) {
+                    return;
+                }
+
+                if (rejectModal.dataset.bound !== 'true') {
+                    rejectModal.addEventListener('click', function (e) {
+                        if (e.target === this) closeRejectModal();
+                    });
+                    rejectModal.dataset.bound = 'true';
+                }
+
+                loadDemandes();
+            }
+
+            initValidationsPage();
+            document.addEventListener('livewire:navigated', initValidationsPage);
         </script>
     </div>
 </x-layouts::app>

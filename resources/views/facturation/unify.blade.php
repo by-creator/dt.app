@@ -43,10 +43,30 @@
             .unify-page .status-box { margin:12px 0; padding:10px; border-radius:8px; display:none; }
             .unify-page .status-success { background:var(--dt-success-bg); color:var(--dt-success-text); border:1px solid var(--dt-success-border); }
             .unify-page .status-error { background:var(--dt-danger-bg); color:var(--dt-danger-text); border:1px solid var(--dt-danger-border); }
-            .unify-page .pagination { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; align-items:center; }
-            .unify-page .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-            .unify-page .unify-admin-card { border:1px solid var(--dt-border); background:var(--dt-panel-alt-bg); border-radius:10px; padding:16px; display:flex; flex-direction:column; }
+            .unify-page .table-card { background:var(--dt-panel-bg); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); overflow:hidden; }
+            .unify-page .table-responsive { overflow:auto; }
+            .unify-page .table-card table { margin:0; width:100%; border-collapse:collapse; }
+            .unify-page .table-card thead th { background:var(--dt-table-head-bg); font-size:12px; font-weight:700; color:var(--dt-page-text); border-bottom:2px solid var(--dt-border); white-space:nowrap; text-align:left; padding:14px 16px; }
+            .unify-page .table-card tbody td { font-size:13px; vertical-align:middle; padding:14px 16px; border-top:1px solid var(--dt-border); color:var(--dt-page-text); }
+            .unify-page .empty-state { text-align:center; padding:48px; color:var(--dt-soft-text); }
+            .unify-page .pagination-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:12px 16px 16px; font-size:13px; color:var(--dt-muted-text); }
+            .unify-page .pagination-pages { display:flex; gap:4px; align-items:center; }
+            .unify-page .page-btn { border:1px solid var(--dt-border); background:var(--dt-panel-alt-bg); border-radius:6px; padding:4px 10px; font-size:13px; cursor:pointer; color:var(--dt-page-text); }
+            .unify-page .page-btn:hover { background:var(--dt-table-head-bg); border-color:#4B49AC; color:#818cf8; }
+            .unify-page .page-btn.active { background:#4B49AC; color:#fff; border-color:#4B49AC; }
+            .unify-page .page-btn:disabled { opacity:.4; cursor:default; }
+            .unify-page .admin-split-grid { display:grid; grid-template-columns:minmax(320px, 0.9fr) minmax(0, 1.35fr); gap:16px; align-items:start; max-width:1200px; margin:0 auto; }
+            .unify-page .admin-card { border:1px solid var(--dt-border); border-radius:10px; padding:16px; background:var(--dt-panel-alt-bg); }
+            .unify-page .search-toolbar { margin:18px 0 14px; }
+            .unify-page .list-card { min-height:100%; }
+            .unify-page .list-scroll { overflow-x:auto; }
+            .unify-page .actions { display:flex; flex-wrap:wrap; gap:8px; }
+            .unify-page .stack { display:grid; gap:10px; }
             .unify-page .card-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:auto; padding-top:12px; }
+            .unify-page .icon-btn { justify-content:center; min-width:44px; padding:10px 12px; }
+            .unify-page .icon-btn i { font-size:14px; }
+            .unify-page .inline-user-actions { display:flex; gap:8px; flex-wrap:nowrap; align-items:center; }
+            .unify-page .btn-danger-gfa { background:#dc3545; color:#fff; }
             .unify-page .tiers-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
             .unify-page .table-meta { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
             .unify-page iframe.tutorial-pdf { width:100%; min-height:620px; border:1px solid var(--dt-border); border-radius:10px; background:var(--dt-panel-alt-bg); }
@@ -57,9 +77,10 @@
                 #unify-admin > div { grid-template-columns:1fr !important; }
             }
             @media (max-width: 768px) {
-                .unify-page .form-grid-layout, .unify-page .admin-grid { grid-template-columns:1fr; }
+                .unify-page .form-grid-layout, .unify-page .admin-split-grid { grid-template-columns:1fr; }
                 .unify-page iframe.tutorial-pdf { min-height:420px; }
                 .unify-page .wizard-footer { flex-direction:column; }
+                .unify-page .actions, .unify-page .inline-user-actions { flex-direction:column; }
             }
         </style>
 
@@ -140,19 +161,19 @@
                     <input id="tiers-search" class="form-control-custom tiers-search-input" type="search" placeholder="Rechercher un tiers (raison sociale, compte...)">
                     <button type="button" class="btn-gfa btn-primary-gfa" id="tiers-refresh"><i class="fas fa-sync-alt"></i> Actualiser</button>
                 </div>
-                <div class="dt-table-card">
-                    <div class="dt-table-responsive">
+                <div class="table-card">
+                    <div class="table-responsive">
                         <table>
                             <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th></tr></thead>
                             <tbody id="tiers-tbody"></tbody>
                         </table>
                     </div>
-                    <div class="dt-pagination-bar">
+                    <div class="pagination-bar">
                         <span id="tiers-count-info"></span>
-                        <div class="dt-pagination-pages">
-                            <button type="button" class="dt-page-btn" id="tiers-prev">Precedent</button>
+                        <div class="pagination-pages">
+                            <button type="button" class="page-btn" id="tiers-prev">Precedent</button>
                             <span id="tiers-page-info" style="padding:0 8px;font-size:13px;color:var(--dt-muted-text)"></span>
-                            <button type="button" class="dt-page-btn" id="tiers-next">Suivant</button>
+                            <button type="button" class="page-btn" id="tiers-next">Suivant</button>
                         </div>
                     </div>
                 </div>
@@ -169,11 +190,12 @@
 
         @if ($isAdmin)
             <div id="unify-admin" class="module-pane">
-                <div style="display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.4fr);gap:16px;max-width:1200px;margin:0 auto;align-items:start">
+                <div class="admin-split-grid">
                     <div class="simple-card" style="margin:0">
                         <h3 class="unify-section-title"><i class="fas fa-cog" style="color:#4B49AC"></i> Administration Unify</h3>
+                        <p class="muted" style="margin-bottom:16px;">Gerez les tiers dans le meme esprit visuel que le module Administration.</p>
                         <div id="admin-status" class="status-box"></div>
-                        <div class="unify-admin-card" style="margin-bottom:16px">
+                        <div class="admin-card" style="margin-bottom:16px">
                             <h5 style="margin-bottom:12px;font-weight:700">Ajout manuel d'un tiers</h5>
                             <div class="form-group-custom"><label for="admin-raison">Raison sociale *</label><input id="admin-raison" class="form-control-custom"></div>
                             <div class="form-group-custom"><label for="admin-ipaki">Compte Ipaki *</label><input id="admin-ipaki" class="form-control-custom"></div>
@@ -182,7 +204,7 @@
                                 <button type="button" id="admin-add-btn" class="btn-gfa btn-primary-gfa">Enregistrer</button>
                             </div>
                         </div>
-                        <div class="unify-admin-card">
+                        <div class="admin-card">
                             <h5 style="margin-bottom:12px;font-weight:700">Import / Export tiers</h5>
                             <p class="muted" style="margin-bottom:10px">Importer un fichier CSV de tiers puis exporter les donnees en XLSX.</p>
                             <input type="file" id="admin-import-file" accept=".csv" class="form-control-custom" style="height:auto;padding:8px;">
@@ -192,25 +214,28 @@
                             </div>
                         </div>
                     </div>
-                    <div class="simple-card" style="margin:0">
+                    <div class="simple-card list-card" style="margin:0">
                         <h3 class="unify-section-title"><i class="fas fa-list" style="color:#4B49AC"></i> Liste des tiers</h3>
-                        <div class="tiers-toolbar">
+                        <p class="muted" style="margin-bottom:16px;">Consultez et mettez a jour les tiers existants.</p>
+                        <div class="search-toolbar">
                             <input id="admin-tiers-search" class="form-control-custom tiers-search-input" type="search" placeholder="Rechercher...">
                         </div>
                         <div id="admin-edit-status" class="status-box"></div>
-                        <div class="dt-table-card">
-                            <div class="dt-table-responsive">
-                                <table>
-                                    <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th><th>Neptune</th><th style="width:110px">Actions</th></tr></thead>
-                                    <tbody id="admin-tiers-tbody"></tbody>
-                                </table>
-                            </div>
-                            <div class="dt-pagination-bar">
-                                <span id="admin-tiers-count"></span>
-                                <div class="dt-pagination-pages">
-                                    <button type="button" class="dt-page-btn" id="admin-tiers-prev">Precedent</button>
-                                    <span id="admin-tiers-page" style="padding:0 8px;font-size:13px;color:var(--dt-muted-text)"></span>
-                                    <button type="button" class="dt-page-btn" id="admin-tiers-next">Suivant</button>
+                        <div class="list-scroll">
+                            <div class="table-card">
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead><tr><th>Compte Ipaki</th><th>Raison sociale</th><th>Neptune</th><th style="width:110px">Actions</th></tr></thead>
+                                        <tbody id="admin-tiers-tbody"></tbody>
+                                    </table>
+                                </div>
+                                <div class="pagination-bar">
+                                    <span id="admin-tiers-count"></span>
+                                    <div class="pagination-pages">
+                                        <button type="button" class="page-btn" id="admin-tiers-prev">Precedent</button>
+                                        <span id="admin-tiers-page" style="padding:0 8px;font-size:13px;color:var(--dt-muted-text)"></span>
+                                        <button type="button" class="page-btn" id="admin-tiers-next">Suivant</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -329,12 +354,12 @@
                 const searchParam = tiersSearch ? `&search=${encodeURIComponent(tiersSearch)}` : '';
                 const res = await fetch(`/facturation/api/tiers-unify?page=${tiersPage}&size=${tiersSize}${searchParam}`);
                 if (!res.ok) {
-                    tbody.innerHTML = '<tr><td colspan="2" class="muted">Erreur de chargement.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="2" class="empty-state"><i class="fas fa-exclamation-triangle fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Erreur de chargement.</td></tr>';
                     return;
                 }
                 const page = await res.json();
                 if (!page.content || page.content.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="2" class="muted">Aucun tiers disponible.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="2" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucun tiers disponible.</td></tr>';
                 } else {
                     tbody.innerHTML = page.content.map(t => `<tr><td>${t.compteIpaki ?? ''}</td><td>${t.raisonSociale ?? ''}</td></tr>`).join('');
                 }
@@ -415,16 +440,16 @@
                 if (!tbody) return;
                 const searchParam = adminTiersSearch ? `&search=${encodeURIComponent(adminTiersSearch)}` : '';
                 const res = await fetch(`/facturation/api/tiers-unify?page=${adminTiersPage}&size=${adminTiersSize}${searchParam}`);
-                if (!res.ok) { tbody.innerHTML = '<tr><td colspan="4" class="muted">Erreur de chargement.</td></tr>'; return; }
+                if (!res.ok) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-exclamation-triangle fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Erreur de chargement.</td></tr>'; return; }
                 const page = await res.json();
                 if (!page.content || page.content.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="muted">Aucun tiers.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucun tiers.</td></tr>';
                 } else {
                     tbody.innerHTML = page.content.map(t => `<tr id="atr-${t.id}">
                         <td><input id="aipaki-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.compteIpaki ?? '').replace(/"/g,'&quot;')}"></td>
                         <td><input id="araison-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.raisonSociale ?? '').replace(/"/g,'&quot;')}"></td>
                         <td><input id="aneptune-${t.id}" class="form-control-custom" style="height:32px;padding:4px 8px;font-size:12px" value="${(t.compteNeptune ?? '').replace(/"/g,'&quot;')}"></td>
-                        <td style="white-space:nowrap"><button type="button" class="btn-gfa btn-primary-gfa" style="padding:4px 8px;font-size:12px;min-height:32px" onclick="adminUpdateTiers(${t.id})"><i class="fas fa-pen"></i></button> <button type="button" class="btn-gfa" style="background:#dc3545;color:#fff;padding:4px 8px;font-size:12px;min-height:32px" onclick="adminDeleteTiers(${t.id})"><i class="fas fa-trash"></i></button></td>
+                        <td><div class="inline-user-actions"><button type="button" class="btn-gfa btn-primary-gfa icon-btn" onclick="adminUpdateTiers(${t.id})" title="Modifier"><i class="fas fa-pen"></i></button><button type="button" class="btn-gfa btn-danger-gfa icon-btn" onclick="adminDeleteTiers(${t.id})" title="Supprimer"><i class="fas fa-trash"></i></button></div></td>
                     </tr>`).join('');
                 }
                 document.getElementById('admin-tiers-count').textContent = `${page.totalElements ?? 0} tiers`;

@@ -201,15 +201,17 @@
                 };
             }
 
-            window.addEventListener('DOMContentLoaded', function () {
+            function applyDefaultRemiseFilter() {
                 const sel = document.getElementById('filter-statut');
+                if (!sel) {
+                    return;
+                }
                 if (isFacturation && !isAdmin) {
                     sel.value = 'EN_ATTENTE_VALIDATION_FACTURATION';
                 } else if (isDirection && !isAdmin) {
                     sel.value = 'EN_ATTENTE_VALIDATION_DIRECTION';
                 }
-                loadRemises();
-            });
+            }
 
             function fmtDate(iso) {
                 if (!iso) return '-';
@@ -402,11 +404,31 @@
                 directionTargetId = null;
             }
 
-            document.querySelectorAll('.modal-overlay').forEach(m => {
-                m.addEventListener('click', e => {
-                    if (e.target === m) closeModal(m.id);
+            function initRemisesPage() {
+                const tbody = document.getElementById('remises-tbody');
+
+                if (!tbody) {
+                    return;
+                }
+
+                applyDefaultRemiseFilter();
+
+                document.querySelectorAll('.modal-overlay').forEach(m => {
+                    if (m.dataset.bound === 'true') {
+                        return;
+                    }
+
+                    m.addEventListener('click', e => {
+                        if (e.target === m) closeModal(m.id);
+                    });
+                    m.dataset.bound = 'true';
                 });
-            });
+
+                loadRemises();
+            }
+
+            initRemisesPage();
+            document.addEventListener('livewire:navigated', initRemisesPage);
         </script>
     </div>
 </x-layouts::app>
