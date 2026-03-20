@@ -109,27 +109,27 @@
         </div>
         <div class="field-group">
             <label>Maison de transit</label>
-            <input type="text" name="maisonTransit" placeholder="Votre maison de transit"/>
+            <input type="text" name="maisonTransit" placeholder="Votre maison de transit" required/>
         </div>
         <div class="field-group">
             <span class="file-label">DEMANDE MANUSCRITE</span>
-            <div class="file-wrap"><input type="file" name="fileDemandeManuscrite" accept=".pdf,.jpg,.jpeg,.png"/></div>
+            <div class="file-wrap"><input type="file" name="fileDemandeManuscrite" accept=".pdf,.jpg,.jpeg,.png" required/></div>
         </div>
         <div class="field-group">
             <span class="file-label">BAD SHIPPING</span>
-            <div class="file-wrap"><input type="file" name="fileBadShipping" accept=".pdf,.jpg,.jpeg,.png"/></div>
+            <div class="file-wrap"><input type="file" name="fileBadShipping" accept=".pdf,.jpg,.jpeg,.png" required/></div>
         </div>
         <div class="field-group">
             <span class="file-label">BL</span>
-            <div class="file-wrap"><input type="file" name="fileBl" accept=".pdf,.jpg,.jpeg,.png"/></div>
+            <div class="file-wrap"><input type="file" name="fileBl" accept=".pdf,.jpg,.jpeg,.png" required/></div>
         </div>
         <div class="field-group">
             <span class="file-label">FACTURE</span>
-            <div class="file-wrap"><input type="file" name="fileFacture" accept=".pdf,.jpg,.jpeg,.png"/></div>
+            <div class="file-wrap"><input type="file" name="fileFacture" accept=".pdf,.jpg,.jpeg,.png" required/></div>
         </div>
         <div class="field-group">
             <span class="file-label">DECLARATION</span>
-            <div class="file-wrap"><input type="file" name="fileDeclaration" accept=".pdf,.jpg,.jpeg,.png"/></div>
+            <div class="file-wrap"><input type="file" name="fileDeclaration" accept=".pdf,.jpg,.jpeg,.png" required/></div>
         </div>
         <button type="submit" class="btn-submit">ENVOYER LA DEMANDE DE REMISE</button>
     </form>

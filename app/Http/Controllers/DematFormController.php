@@ -62,12 +62,12 @@ class DematFormController extends Controller
             'prenom' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:150'],
             'numeroBl' => ['required', 'string', 'max:100'],
-            'maisonTransit' => ['nullable', 'string', 'max:100'],
-            'fileDemandeManuscrite' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'fileBadShipping' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'fileBl' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'fileFacture' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'fileDeclaration' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'maisonTransit' => ['required', 'string', 'max:100'],
+            'fileDemandeManuscrite' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'fileBadShipping' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'fileBl' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'fileFacture' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'fileDeclaration' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $submission = $this->attemptCreateSubmission($request, $validated, 'REMISE', 'EN_ATTENTE_VALIDATION_FACTURATION');

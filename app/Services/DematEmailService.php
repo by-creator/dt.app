@@ -89,7 +89,7 @@ class DematEmailService
             fichiers: $files,
         );
 
-        $this->sendToAll($subject, $html, $attachments, [$this->directorEmail()]);
+        $this->sendToOne($this->directorEmail(), $subject, $html, $attachments);
     }
 
     public function sendValidationApprovedEmail(string $toEmail, ?string $nom, ?string $prenom, string $bl): void
