@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $recentUsers = User::query()
             ->with('role')
             ->latest()
-            ->take(8)
+            ->take(5)
             ->get();
 
         $adminRoleId = Role::query()
