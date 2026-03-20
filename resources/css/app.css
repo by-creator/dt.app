@@ -136,23 +136,21 @@ select:focus[data-flux-control] {
     }
 
     .dt-sidebar {
-        @apply border-slate-200/70 bg-white/82 backdrop-blur-2xl;
-        background-image:
-            linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(244,247,255,0.88) 100%),
-            radial-gradient(circle at top left, rgba(99, 102, 241, 0.14), transparent 30%);
+        @apply border-transparent text-white backdrop-blur-2xl;
+        background:
+            linear-gradient(180deg, rgba(45, 63, 133, 0.99) 0%, rgba(41, 57, 121, 0.99) 100%);
         box-shadow:
-            24px 0 60px -36px rgba(15, 23, 42, 0.42),
-            inset -1px 0 0 rgba(255,255,255,0.55);
+            24px 0 60px -36px rgba(15, 23, 42, 0.55),
+            inset -1px 0 0 rgba(255,255,255,0.08);
     }
 
     .dark .dt-sidebar {
-        @apply border-slate-700/70 bg-slate-950/78;
-        background-image:
-            linear-gradient(180deg, rgba(2,6,23,0.92) 0%, rgba(15,23,42,0.88) 100%),
-            radial-gradient(circle at top left, rgba(129, 140, 248, 0.16), transparent 32%);
+        @apply border-transparent text-white;
+        background:
+            linear-gradient(180deg, rgba(45, 63, 133, 0.99) 0%, rgba(41, 57, 121, 0.99) 100%);
         box-shadow:
             24px 0 60px -36px rgba(2, 6, 23, 0.88),
-            inset -1px 0 0 rgba(148,163,184,0.08);
+            inset -1px 0 0 rgba(255,255,255,0.08);
     }
 
     .dt-topbar {
@@ -167,13 +165,14 @@ select:focus[data-flux-control] {
 
     .dt-sidebar [data-flux-sidebar-group-heading],
     .dt-mobile-nav [data-flux-sidebar-group-heading] {
-        @apply px-3 text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-slate-400 dark:text-slate-500;
+        @apply px-3 text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-white/70 dark:text-white/70;
     }
 
     .dt-sidebar [data-flux-sidebar-item],
     .dt-mobile-nav [data-flux-sidebar-item],
     .dt-topbar [data-flux-navbar-item] {
-        @apply rounded-2xl border border-transparent text-slate-600 transition-all duration-300 dark:text-slate-300;
+        @apply rounded-2xl border border-transparent transition-all duration-300;
+        color: white !important;
         min-height: 3rem;
         padding-inline: 0.95rem;
         font-weight: 600;
@@ -183,47 +182,55 @@ select:focus[data-flux-control] {
     .dt-sidebar [data-flux-sidebar-item]:hover,
     .dt-mobile-nav [data-flux-sidebar-item]:hover,
     .dt-topbar [data-flux-navbar-item]:hover {
-        @apply border-indigo-200/80 bg-white text-indigo-700 dark:border-indigo-400/30 dark:bg-indigo-500/10 dark:text-indigo-100;
+        background-color: white !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+        color: #18181b !important; /* zinc-900 */
         transform: translateX(3px);
         box-shadow:
-            0 16px 32px -26px rgba(79, 70, 229, 0.45),
-            inset 0 1px 0 rgba(255,255,255,0.4);
+            0 16px 32px -26px rgba(15, 23, 42, 0.45),
+            inset 0 1px 0 rgba(255,255,255,0.82);
     }
 
-    .dt-sidebar [data-current] [data-flux-sidebar-item],
-    .dt-mobile-nav [data-current] [data-flux-sidebar-item],
-    .dt-topbar [data-current] [data-flux-navbar-item] {
-        @apply border-indigo-200/80 text-indigo-700 dark:border-indigo-400/30 dark:text-indigo-100;
-        background:
-            linear-gradient(135deg, rgba(238,242,255,0.98) 0%, rgba(255,255,255,0.92) 100%);
+    /* data-current est sur l'item lui-même, pas sur un parent */
+    .dt-sidebar [data-flux-sidebar-item][data-current],
+    .dt-mobile-nav [data-flux-sidebar-item][data-current],
+    .dt-topbar [data-flux-navbar-item][data-current] {
+        @apply border-white/30 bg-white dark:border-white/30 dark:bg-white;
+        color: #18181b !important; /* zinc-900 */
         box-shadow:
-            0 18px 34px -28px rgba(79, 70, 229, 0.55),
-            inset 3px 0 0 rgba(79, 70, 229, 0.92);
+            0 18px 34px -28px rgba(15, 23, 42, 0.5),
+            inset 3px 0 0 rgba(45, 63, 133, 0.8);
     }
 
-    .dark .dt-sidebar [data-current] [data-flux-sidebar-item],
-    .dark .dt-mobile-nav [data-current] [data-flux-sidebar-item],
-    .dark .dt-topbar [data-current] [data-flux-navbar-item] {
-        background:
-            linear-gradient(135deg, rgba(49,46,129,0.32) 0%, rgba(15,23,42,0.78) 100%);
-        box-shadow:
-            0 18px 34px -28px rgba(99, 102, 241, 0.45),
-            inset 3px 0 0 rgba(165, 180, 252, 0.95);
+    /* Icônes : blanc par défaut, noir au hover et actif */
+    .dt-sidebar [data-flux-sidebar-item] [data-flux-icon],
+    .dt-mobile-nav [data-flux-sidebar-item] [data-flux-icon],
+    .dt-topbar [data-flux-navbar-item] [data-flux-icon] {
+        color: white !important;
     }
 
-    .dt-sidebar [data-flux-sidebar-item] svg,
-    .dt-mobile-nav [data-flux-sidebar-item] svg,
-    .dt-topbar [data-flux-navbar-item] svg {
-        @apply text-slate-400 dark:text-slate-500;
+    .dt-sidebar [data-flux-sidebar-item][data-current] [data-flux-icon],
+    .dt-mobile-nav [data-flux-sidebar-item][data-current] [data-flux-icon],
+    .dt-topbar [data-flux-navbar-item][data-current] [data-flux-icon],
+    .dt-sidebar [data-flux-sidebar-item]:hover [data-flux-icon],
+    .dt-mobile-nav [data-flux-sidebar-item]:hover [data-flux-icon],
+    .dt-topbar [data-flux-navbar-item]:hover [data-flux-icon] {
+        color: #18181b !important; /* zinc-900 */
     }
 
-    .dt-sidebar [data-current] [data-flux-sidebar-item] svg,
-    .dt-mobile-nav [data-current] [data-flux-sidebar-item] svg,
-    .dt-topbar [data-current] [data-flux-navbar-item] svg,
-    .dt-sidebar [data-flux-sidebar-item]:hover svg,
-    .dt-mobile-nav [data-flux-sidebar-item]:hover svg,
-    .dt-topbar [data-flux-navbar-item]:hover svg {
-        @apply text-indigo-500 dark:text-indigo-300;
+    /* Texte (div[data-content] et spans) héritent du parent */
+    .dt-sidebar [data-flux-sidebar-item] [data-content],
+    .dt-mobile-nav [data-flux-sidebar-item] [data-content] {
+        color: inherit !important;
+    }
+
+    /* Profil utilisateur (Admin) : texte et icône noirs */
+    .dt-user-panel [data-flux-sidebar-profile] span {
+        color: #18181b !important; /* zinc-900 */
+    }
+
+    .dt-user-panel [data-flux-sidebar-profile] [data-flux-icon] {
+        color: #52525b !important; /* zinc-600 */
     }
 
     .dt-brand {
@@ -235,11 +242,11 @@ select:focus[data-flux-control] {
     }
 
     .dt-brand-mark {
-        @apply flex w-full items-center justify-center rounded-[1.7rem] border border-white/70 bg-white/92 px-5 py-5 dark:border-slate-700/70 dark:bg-slate-950/88;
+        @apply flex w-full items-center justify-center rounded-[1.7rem] border border-white/80 bg-white px-5 py-5 dark:border-white/80 dark:bg-white;
         min-height: 5.75rem;
         box-shadow:
-            0 22px 44px -34px rgba(15,23,42,0.38),
-            inset 0 1px 0 rgba(255,255,255,0.72);
+            0 22px 44px -34px rgba(15,23,42,0.42),
+            inset 0 1px 0 rgba(255,255,255,0.82);
     }
 
     .dt-brand-image {
@@ -251,7 +258,10 @@ select:focus[data-flux-control] {
 
     .dt-user-panel [data-flux-sidebar-profile],
     .dt-user-menu [data-flux-profile] {
-        @apply rounded-[1.4rem] border border-slate-200/70 bg-white/78 shadow-[0_20px_42px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700/70 dark:bg-slate-900/72;
+        @apply rounded-[1.4rem];
+        background-color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        box-shadow: 0 20px 42px -32px rgba(15, 23, 42, 0.45);
     }
 
     .dt-main {

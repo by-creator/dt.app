@@ -24,12 +24,12 @@
 </div>
 
 <div class="pm-tabs">
-    <button type="button" class="pm-tab active"><i class="fas fa-cog"></i> Parametres</button>
+    <button type="button" class="pm-tab active"><i class="fas fa-file"></i> Fichier</button>
 </div>
 
 <div class="pm-card">
     <h3><i class="fas fa-file-arrow-up"></i> Import du manifeste</h3>
-    <p class="pm-muted">Chargez un manifeste au format PDF, XLSX, XLS ou CSV.</p>
+    <p class="pm-muted">Chargez un manifeste.</p>
 
     @if(session('success'))
         <div class="pm-status-ok"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>

@@ -2,8 +2,12 @@
 
 @if($isAuth)
 <x-layouts::app :title="__('Upload Manifest')">
-    <div class="plani-manifest flex h-full w-full flex-1 flex-col gap-6 pb-8">
-        @include('planification._manifest-form')
+    <div class="flex h-full w-full flex-1 items-start justify-center px-6 py-8">
+        <div class="w-full max-w-3xl rounded-2xl border border-slate-200/70 bg-white shadow-[0_20px_48px_-32px_rgba(15,23,42,0.18)]">
+            <div class="plani-manifest p-6">
+                @include('planification._manifest-form')
+            </div>
+        </div>
     </div>
 </x-layouts::app>
 @else
@@ -47,15 +51,26 @@
         }
 
         .plani-shell {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px 60px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .plani-card-outer {
+            width: 100%;
+            max-width: 860px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 24px 56px -32px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(148, 163, 184, 0.18);
+            padding: 36px 36px 32px;
         }
 
         .plani-logo {
             display: flex;
             justify-content: center;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
 
         .plani-logo img {
@@ -67,11 +82,13 @@
 </head>
 <body>
     <div class="plani-shell">
-        <div class="plani-logo">
-            <img src="{{ asset('img/image.png') }}" alt="Dakar Terminal">
-        </div>
-        <div class="plani-manifest">
-            @include('planification._manifest-form')
+        <div class="plani-card-outer">
+            <div class="plani-logo">
+                <img src="{{ asset('img/image.png') }}" alt="Dakar Terminal">
+            </div>
+            <div class="plani-manifest">
+                @include('planification._manifest-form')
+            </div>
         </div>
     </div>
 </body>
