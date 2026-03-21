@@ -22,13 +22,18 @@
         return {
             background: style.getPropertyValue('--dt-panel-bg').trim() || '#ffffff',
             color: style.getPropertyValue('--dt-page-text').trim() || '#1e293b',
+            confirmButtonColor: style.getPropertyValue('--dt-primary').trim() || '#4B49AC',
             cancelButtonColor: '#64748b',
+            customClass: {
+                popup: 'dt-swal-popup',
+            },
+            buttonsStyling: true,
         };
     }
 
     // Surcharge globale de window.alert et window.confirm
     window.alert = function (message) {
-        Swal.fire({ ...dtSwalTheme(), icon: 'info', title: message, confirmButtonColor: '#4B49AC' });
+        Swal.fire({ ...dtSwalTheme(), icon: 'info', text: message });
     };
 
     window.confirm = function (message) {
@@ -47,22 +52,35 @@
             showCancelButton: true,
             confirmButtonText: options.confirmText || 'Confirmer',
             cancelButtonText: options.cancelText || 'Annuler',
-            confirmButtonColor: options.confirmColor || '#4B49AC',
+            confirmButtonColor: options.confirmColor || (getComputedStyle(document.documentElement).getPropertyValue('--dt-primary').trim() || '#4B49AC'),
         });
         return result.isConfirmed;
     };
 
+    window.dtNotify = function (options = {}) {
+        return Swal.fire({
+            ...dtSwalTheme(),
+            icon: options.icon || 'info',
+            title: options.title || '',
+            text: options.text || '',
+            html: options.html,
+            toast: options.toast || false,
+            position: options.position || (options.toast ? 'top-end' : 'center'),
+            showConfirmButton: options.showConfirmButton ?? !options.toast,
+            timer: options.timer ?? (options.toast ? 3000 : undefined),
+            timerProgressBar: options.toast ?? false,
+        });
+    };
+
     // Helper global pour les notifications toast
     window.dtToast = function (message, type = 'success') {
-        Swal.fire({
-            ...dtSwalTheme(),
+        return dtNotify({
             toast: true,
             position: 'top-end',
             icon: type,
             title: message,
             showConfirmButton: false,
             timer: 3000,
-            timerProgressBar: true,
         });
     };
 </script>
