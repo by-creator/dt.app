@@ -59,6 +59,7 @@
 
         <div class="module-tabs">
             <button type="button" class="module-tab active" data-target="rapport-suivi"><i class="fas fa-list"></i> Suivi des vides</button>
+            <button type="button" class="module-tab" data-target="rapport-stationnement"><i class="fas fa-square-parking"></i> Suivi stationnement</button>
             @if ($isAdmin)
                 <button type="button" class="module-tab" data-target="rapport-admin"><i class="fas fa-cog"></i> Admin</button>
             @endif
@@ -179,6 +180,16 @@
             </div>
         </div>
 
+        <div id="rapport-stationnement" class="module-pane">
+            <div class="r-card r-card-fluid">
+                <div class="r-card-title"><i class="fas fa-square-parking" style="color:#4B49AC"></i> Suivi stationnement</div>
+                <div class="empty-state">
+                    <i class="fas fa-warehouse fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>
+                    Aucun contenu n'est encore configure pour le suivi stationnement.
+                </div>
+            </div>
+        </div>
+
         @if ($isAdmin)
             <div id="rapport-admin" class="module-pane">
                 <div class="r-card">
@@ -210,7 +221,7 @@
                     tab.classList.add('active');
                     const target = document.getElementById(tab.dataset.target);
                     if (target) target.classList.add('active');
-                    if (tab.dataset.target === 'rapport-suivi') loadRapports();
+                    if (tab.dataset.target === 'rapport-suivi') renderRapportPage(rapportCurrentPage);
                 });
             });
 
