@@ -1,7 +1,12 @@
 <x-layouts::app :title="__('Menu')">
     @php
         $roleName = auth()->user()?->role?->name;
+        $userEmail = strtolower((string) auth()->user()?->email);
         $menuSection = $menuSection ?? null;
+        $canAccessFacturationRemisesMenu = $roleName === 'ADMIN' || in_array($userEmail, [
+            'aliounebadara.sy@dakar-terminal.com',
+            'charles.sarr@dakar-terminal.com',
+        ], true);
 
         $rootMenuByRole = [
             'ADMIN' => [
@@ -103,6 +108,7 @@
                     'route' => route('facturation.remises'),
                     'icon' => 'percent-badge',
                     'keywords' => 'remises facturation',
+                    'visible' => $canAccessFacturationRemisesMenu,
                 ],
                 [
                     'title' => 'Gestion des rapports',
@@ -204,6 +210,7 @@
                         'route' => route('facturation.remises'),
                         'icon' => 'percent-badge',
                         'keywords' => 'remises facturation',
+                        'visible' => $canAccessFacturationRemisesMenu,
                     ],
                     [
                         'title' => 'Gestion des rapports',
@@ -253,7 +260,9 @@
         ];
 
         $submenu = $roleName === 'ADMIN' && $menuSection ? ($adminSubmenus[$menuSection] ?? null) : null;
-        $menuLinks = collect($submenu['links'] ?? ($rootMenuByRole[$roleName] ?? []));
+        $menuLinks = collect($submenu['links'] ?? ($rootMenuByRole[$roleName] ?? []))
+            ->filter(fn (array $link) => $link['visible'] ?? true)
+            ->values();
 
         $pageTitle = $submenu['title'] ?? match ($roleName) {
             'DIRECTION_GENERALE' => 'Menu Direction Generale',
