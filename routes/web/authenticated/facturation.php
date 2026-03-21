@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->prefix('facturation')->group(function () {
     Route::view('dashboard', 'facturation.dashboard')->name('facturation.dashboard');
-    Route::view('validations', 'facturation.validations')->name('facturation.validations');
-    Route::view('remises', 'facturation.remises')->name('facturation.remises');
+    Route::get('validations', [FacturationController::class, 'validations'])->name('facturation.validations');
+    Route::get('remises', [FacturationController::class, 'remises'])->name('facturation.remises');
     Route::view('unify', 'facturation.unify')->name('facturation.unify');
     Route::view('rapport', 'facturation.rapport')->name('facturation.rapport');
     Route::get('ies', [FacturationController::class, 'ies'])->name('facturation.ies');

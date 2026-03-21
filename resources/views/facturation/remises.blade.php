@@ -4,6 +4,8 @@
         $isFacturation = $roleName === 'FACTURATION';
         $isDirection = in_array($roleName, ['DIRECTION_GENERALE', 'DIRECTION_FINANCIERE', 'DIRECTION_EXPLOITATION'], true);
         $isAdmin = in_array($roleName, ['ADMIN', 'SUPER_U'], true);
+        $initialRemisesCollection = collect($initialRemises ?? []);
+        $initialRemisesPage = $initialRemisesCollection->take(10);
         $directionBadge = match ($roleName) {
             'DIRECTION_GENERALE' => 'Direction Generale',
             'DIRECTION_FINANCIERE' => 'Direction Financiere',
@@ -94,9 +96,9 @@
         <div class="toolbar">
             <label style="font-size:13px;font-weight:600;color:var(--dt-page-text);margin:0">Filtrer :</label>
             <select id="filter-statut" onchange="loadRemises()">
-                <option value="">Tous les statuts</option>
-                <option value="EN_ATTENTE_VALIDATION_FACTURATION">En attente (Facturation)</option>
-                <option value="EN_ATTENTE_VALIDATION_DIRECTION">En attente (Direction)</option>
+                <option value="" @selected(($initialRemiseStatut ?? '') === '')>Tous les statuts</option>
+                <option value="EN_ATTENTE_VALIDATION_FACTURATION" @selected(($initialRemiseStatut ?? '') === 'EN_ATTENTE_VALIDATION_FACTURATION')>En attente (Facturation)</option>
+                <option value="EN_ATTENTE_VALIDATION_DIRECTION" @selected(($initialRemiseStatut ?? '') === 'EN_ATTENTE_VALIDATION_DIRECTION')>En attente (Direction)</option>
                 <option value="VALIDE">Valide</option>
                 <option value="REJETE">Rejete</option>
             </select>
@@ -119,13 +121,71 @@
                         </tr>
                     </thead>
                     <tbody id="remises-tbody">
-                        <tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x mb-3" style="display:block;color:#ccc"></i>Chargement...</td></tr>
+                        @forelse ($initialRemisesPage as $remise)
+                            <tr>
+                                <td>{{ \Illuminate\Support\Carbon::parse($remise['createdAt'])->format('d/m/Y H:i') }}</td>
+                                <td>{{ $remise['nom'] ?: '-' }}</td>
+                                <td>{{ $remise['prenom'] ?: '-' }}</td>
+                                <td>{{ $remise['email'] ?: '-' }}</td>
+                                <td>{{ $remise['bl'] ?: '-' }}</td>
+                                <td>{{ $remise['maisonTransit'] ?: '-' }}</td>
+                                <td>
+                                    @php
+                                        [$badgeClass, $badgeLabel] = match ($remise['statut']) {
+                                            'EN_ATTENTE_VALIDATION_FACTURATION' => ['badge-en_attente_facturation', 'En attente (Facturation)'],
+                                            'EN_ATTENTE_VALIDATION_DIRECTION' => ['badge-en_attente_direction', 'En attente (Direction)'],
+                                            'VALIDE' => ['badge-valide', 'Valide'],
+                                            'REJETE' => ['badge-rejete', 'Rejete'],
+                                            default => ['badge-en_attente_facturation', $remise['statut']],
+                                        };
+                                    @endphp
+                                    <span class="badge-status {{ $badgeClass }}">{{ $badgeLabel }}</span>
+                                </td>
+                                <td style="max-width:180px;word-break:break-word">
+                                    @if ($remise['statut'] === 'REJETE' && $remise['motifRejet'])
+                                        <span style="color:#dc3545">{{ $remise['motifRejet'] }}</span>
+                                    @elseif ($remise['pourcentage'] !== null)
+                                        <strong style="color:#4B49AC">{{ $remise['pourcentage'] }} %</strong>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td style="white-space:nowrap">
+                                    @if (($isFacturation || $isAdmin) && $remise['statut'] === 'EN_ATTENTE_VALIDATION_FACTURATION')
+                                        <button class="btn-valider" onclick="validerFacturation({{ $remise['id'] }})"><i class="fas fa-check"></i> Valider</button>
+                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }})"><i class="fas fa-times"></i> Rejeter</button>
+                                    @elseif (($isDirection || $isAdmin) && $remise['statut'] === 'EN_ATTENTE_VALIDATION_DIRECTION')
+                                        <button class="btn-valider" onclick="openDirectionModal({{ $remise['id'] }})"><i class="fas fa-check-double"></i> Valider avec %</button>
+                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }})"><i class="fas fa-times"></i> Rejeter</button>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="9" class="empty-state"><i class="fas fa-inbox fa-2x mb-3" style="display:block;color:#ccc"></i>Aucune demande trouvee.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="pagination-bar" id="pagination-bar" style="display:none">
-                <span id="pagination-info"></span>
-                <div class="pagination-pages" id="pagination-pages"></div>
+            <div class="pagination-bar" id="pagination-bar" style="{{ $initialRemisesCollection->count() > 10 ? 'display:flex' : 'display:none' }}">
+                <span id="pagination-info">
+                    @if ($initialRemisesCollection->isNotEmpty())
+                        1-{{ min(10, $initialRemisesCollection->count()) }} sur {{ $initialRemisesCollection->count() }}
+                    @else
+                        0 sur 0
+                    @endif
+                </span>
+                <div class="pagination-pages" id="pagination-pages">
+                    @if ($initialRemisesCollection->count() > 1)
+                        <button class="page-btn" onclick="renderPage(0)" disabled><i class="fas fa-chevron-left"></i></button>
+                        <button class="page-btn active" onclick="renderPage(1)">1</button>
+                        @if ($initialRemisesCollection->count() > 10)
+                            <button class="page-btn" onclick="renderPage(2)">2</button>
+                        @endif
+                        <button class="page-btn" onclick="renderPage(2)" {{ $initialRemisesCollection->count() <= 10 ? 'disabled' : '' }}><i class="fas fa-chevron-right"></i></button>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -158,7 +218,7 @@
 
         <script>
             const PAGE_SIZE = 10;
-            let allData = [];
+            let allData = @json($initialRemisesCollection->values());
             let rejectTargetId = null;
             let directionTargetId = null;
             let currentPage = 1;
@@ -424,7 +484,7 @@
                     m.dataset.bound = 'true';
                 });
 
-                loadRemises();
+                renderPage(1);
             }
 
             initRemisesPage();

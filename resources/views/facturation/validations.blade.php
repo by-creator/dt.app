@@ -1,4 +1,8 @@
 <x-layouts::app :title="__('Gestion des validations')">
+    @php
+        $initialDemandesCollection = collect($initialDemandes ?? []);
+        $initialDemandesPage = $initialDemandesCollection->take(10);
+    @endphp
     <div class="flex h-full w-full flex-1 flex-col gap-6">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -81,13 +85,63 @@
                             </tr>
                         </thead>
                         <tbody id="demandes-tbody">
-                            <tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x mb-3" style="display:block;color:#ccc"></i>Chargement...</td></tr>
+                            @forelse ($initialDemandesPage as $demande)
+                                <tr>
+                                    <td>{{ \Illuminate\Support\Carbon::parse($demande['createdAt'])->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $demande['nom'] ?: '-' }}</td>
+                                    <td>{{ $demande['prenom'] ?: '-' }}</td>
+                                    <td>{{ $demande['email'] ?: '-' }}</td>
+                                    <td>{{ $demande['bl'] ?: '-' }}</td>
+                                    <td>{{ $demande['maisonTransit'] ?: '-' }}</td>
+                                    <td>
+                                        @php
+                                            $badgeClass = match ($demande['statut']) {
+                                                'VALIDE' => 'badge-valide',
+                                                'REJETE' => 'badge-rejete',
+                                                default => 'badge-en_attente',
+                                            };
+                                            $badgeLabel = match ($demande['statut']) {
+                                                'VALIDE' => 'Valide',
+                                                'REJETE' => 'Rejete',
+                                                default => 'En attente',
+                                            };
+                                        @endphp
+                                        <span class="badge-status {{ $badgeClass }}">{{ $badgeLabel }}</span>
+                                    </td>
+                                    <td style="max-width:180px;word-break:break-word">{{ $demande['motifRejet'] ?: '-' }}</td>
+                                    <td style="white-space:nowrap">
+                                        @if ($demande['statut'] === 'EN_ATTENTE')
+                                            <button class="btn-valider" onclick="valider({{ $demande['id'] }})"><i class="fas fa-check"></i> Valider</button>
+                                            <button class="btn-rejeter" onclick="openRejectModal({{ $demande['id'] }})"><i class="fas fa-times"></i> Rejeter</button>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="9" class="empty-state"><i class="fas fa-inbox fa-2x mb-3" style="display:block;color:#ccc"></i>Aucune demande trouvee.</td></tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-                <div class="pagination-bar" id="pagination-bar" style="display:none">
-                    <span id="pagination-info"></span>
-                    <div class="pagination-pages" id="pagination-pages"></div>
+                <div class="pagination-bar" id="pagination-bar" style="{{ $initialDemandesCollection->count() > 10 ? 'display:flex' : 'display:none' }}">
+                    <span id="pagination-info">
+                        @if ($initialDemandesCollection->isNotEmpty())
+                            1-{{ min(10, $initialDemandesCollection->count()) }} sur {{ $initialDemandesCollection->count() }}
+                        @else
+                            0 sur 0
+                        @endif
+                    </span>
+                    <div class="pagination-pages" id="pagination-pages">
+                        @if ($initialDemandesCollection->count() > 1)
+                            <button class="page-btn" onclick="renderPage(0)" disabled><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-btn active" onclick="renderPage(1)">1</button>
+                            @if ($initialDemandesCollection->count() > 10)
+                                <button class="page-btn" onclick="renderPage(2)">2</button>
+                            @endif
+                            <button class="page-btn" onclick="renderPage(2)" {{ $initialDemandesCollection->count() <= 10 ? 'disabled' : '' }}><i class="fas fa-chevron-right"></i></button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -106,7 +160,7 @@
 
         <script>
             var validationsPageSize = 10;
-            var validationsAllData = [];
+            var validationsAllData = @json($initialDemandesCollection->values());
             var validationsRejectTargetId = null;
             var validationsCurrentPage = 1;
 
@@ -313,7 +367,7 @@
                     rejectModal.dataset.bound = 'true';
                 }
 
-                loadDemandes();
+                renderPage(1);
             }
 
             initValidationsPage();
