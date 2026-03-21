@@ -182,24 +182,25 @@ select:focus[data-flux-control] {
     .dt-sidebar [data-flux-sidebar-item]:hover,
     .dt-mobile-nav [data-flux-sidebar-item]:hover,
     .dt-topbar [data-flux-navbar-item]:hover {
-        background-color: white !important;
-        border-color: rgba(255, 255, 255, 0.3) !important;
-        color: #18181b !important; /* zinc-900 */
+        background: rgba(255, 255, 255, 0.14) !important;
+        border-color: rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
         transform: translateX(3px);
         box-shadow:
-            0 16px 32px -26px rgba(15, 23, 42, 0.45),
-            inset 0 1px 0 rgba(255,255,255,0.82);
+            0 16px 32px -26px rgba(15, 23, 42, 0.34),
+            inset 0 1px 0 rgba(255,255,255,0.08);
     }
 
     /* data-current est sur l'item lui-même, pas sur un parent */
     .dt-sidebar [data-flux-sidebar-item][data-current],
     .dt-mobile-nav [data-flux-sidebar-item][data-current],
     .dt-topbar [data-flux-navbar-item][data-current] {
-        @apply border-white/30 bg-white dark:border-white/30 dark:bg-white;
-        color: #18181b !important; /* zinc-900 */
+        border-color: rgba(255, 255, 255, 0.16) !important;
+        background: linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08)) !important;
+        color: #ffffff !important;
         box-shadow:
-            0 18px 34px -28px rgba(15, 23, 42, 0.5),
-            inset 3px 0 0 rgba(45, 63, 133, 0.8);
+            0 18px 34px -28px rgba(15, 23, 42, 0.36),
+            inset 3px 0 0 rgba(255, 255, 255, 0.72);
     }
 
     /* Icônes : blanc par défaut, noir au hover et actif */
@@ -215,7 +216,7 @@ select:focus[data-flux-control] {
     .dt-sidebar [data-flux-sidebar-item]:hover [data-flux-icon],
     .dt-mobile-nav [data-flux-sidebar-item]:hover [data-flux-icon],
     .dt-topbar [data-flux-navbar-item]:hover [data-flux-icon] {
-        color: #18181b !important; /* zinc-900 */
+        color: #ffffff !important;
     }
 
     /* Texte (div[data-content] et spans) héritent du parent */
@@ -231,6 +232,16 @@ select:focus[data-flux-control] {
 
     .dt-user-panel [data-flux-sidebar-profile] [data-flux-icon] {
         color: #52525b !important; /* zinc-600 */
+    }
+
+    .dark .dt-user-panel [data-flux-sidebar-profile] span,
+    .dark .dt-user-menu [data-flux-profile] span {
+        color: #e5eefb !important;
+    }
+
+    .dark .dt-user-panel [data-flux-sidebar-profile] [data-flux-icon],
+    .dark .dt-user-menu [data-flux-profile] [data-flux-icon] {
+        color: #cbd5e1 !important;
     }
 
     .dt-brand {
@@ -262,6 +273,32 @@ select:focus[data-flux-control] {
         background-color: white !important;
         border: 1px solid rgba(255, 255, 255, 0.3) !important;
         box-shadow: 0 20px 42px -32px rgba(15, 23, 42, 0.45);
+    }
+
+    .dark .dt-user-panel [data-flux-sidebar-profile],
+    .dark .dt-user-menu [data-flux-profile] {
+        background: rgba(15, 23, 42, 0.72) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        box-shadow:
+            0 20px 42px -32px rgba(2, 6, 23, 0.88),
+            inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .dt-user-menu [data-flux-menu] {
+        background: var(--dt-panel-bg) !important;
+        color: var(--dt-page-text) !important;
+        border: 1px solid var(--dt-border) !important;
+        box-shadow: var(--dt-shadow) !important;
+    }
+
+    .dt-user-menu [data-flux-menu-item] {
+        border-radius: 12px;
+        color: var(--dt-page-text) !important;
+    }
+
+    .dt-user-menu [data-flux-menu-item]:hover {
+        background: rgba(99, 102, 241, 0.1) !important;
+        color: #818cf8 !important;
     }
 
     .dt-main {
@@ -366,5 +403,292 @@ select:focus[data-flux-control] {
         background: var(--dt-warning-bg);
         border: 1px solid var(--dt-warning-border);
         color: var(--dt-warning-text);
+    }
+
+    .dt-app-shell .table-card,
+    .dt-app-shell .table-wrap,
+    .dt-app-shell .dt-audit-table-card {
+        background: var(--dt-panel-bg) !important;
+        border: 1px solid color-mix(in srgb, var(--dt-border) 100%, transparent) !important;
+        border-radius: 1.5rem !important;
+        box-shadow: 0 20px 45px -28px rgba(15, 23, 42, 0.45) !important;
+        overflow: hidden !important;
+    }
+
+    .dark .dt-app-shell .table-card,
+    .dark .dt-app-shell .table-wrap,
+    .dark .dt-app-shell .dt-audit-table-card {
+        box-shadow: 0 24px 50px -30px rgba(2, 6, 23, 0.85) !important;
+    }
+
+    .dt-app-shell .table-responsive,
+    .dt-app-shell .table-wrap,
+    .dt-app-shell .list-scroll,
+    .dt-app-shell .overflow-x-auto {
+        scrollbar-width: thin;
+    }
+
+    .dt-app-shell .table-card table,
+    .dt-app-shell .table-wrap table,
+    .dt-app-shell table.table-unify,
+    .dt-app-shell table.table,
+    .dt-app-shell .dt-panel table,
+    .dt-app-shell .dt-shell table {
+        width: 100%;
+        min-width: 100%;
+        margin: 0;
+        border-collapse: separate !important;
+        border-spacing: 0;
+        text-align: left;
+    }
+
+    .dt-app-shell .table-card thead th,
+    .dt-app-shell .table-wrap thead th,
+    .dt-app-shell table.table-unify thead th,
+    .dt-app-shell table.table thead th,
+    .dt-app-shell .dt-panel table thead th,
+    .dt-app-shell .dt-shell table thead th {
+        background: rgba(248, 250, 252, 0.88) !important;
+        color: #94a3b8 !important;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+        border-top: none !important;
+        padding: 0.95rem 1rem !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.14em !important;
+        text-transform: uppercase !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .dark .dt-app-shell .table-card thead th,
+    .dark .dt-app-shell .table-wrap thead th,
+    .dark .dt-app-shell table.table-unify thead th,
+    .dark .dt-app-shell table.table thead th,
+    .dark .dt-app-shell .dt-panel table thead th,
+    .dark .dt-app-shell .dt-shell table thead th {
+        background: rgba(15, 23, 42, 0.68) !important;
+        color: #64748b !important;
+        border-bottom-color: rgba(71, 85, 105, 0.34) !important;
+    }
+
+    .dt-app-shell .table-card tbody td,
+    .dt-app-shell .table-wrap tbody td,
+    .dt-app-shell table.table-unify tbody td,
+    .dt-app-shell table.table tbody td,
+    .dt-app-shell .dt-panel table tbody td,
+    .dt-app-shell .dt-shell table tbody td {
+        color: var(--dt-page-text) !important;
+        border-top: 1px solid rgba(148, 163, 184, 0.16) !important;
+        padding: 0.95rem 1rem !important;
+        font-size: 0.835rem !important;
+        vertical-align: middle !important;
+        background: transparent !important;
+    }
+
+    .dark .dt-app-shell .table-card tbody td,
+    .dark .dt-app-shell .table-wrap tbody td,
+    .dark .dt-app-shell table.table-unify tbody td,
+    .dark .dt-app-shell table.table tbody td,
+    .dark .dt-app-shell .dt-panel table tbody td,
+    .dark .dt-app-shell .dt-shell table tbody td {
+        border-top-color: rgba(71, 85, 105, 0.34) !important;
+    }
+
+    .dt-app-shell .table-card tbody tr:hover,
+    .dt-app-shell .table-wrap tbody tr:hover,
+    .dt-app-shell table.table-unify tbody tr:hover,
+    .dt-app-shell table.table tbody tr:hover,
+    .dt-app-shell .dt-panel table tbody tr:hover,
+    .dt-app-shell .dt-shell table tbody tr:hover {
+        background: rgba(75, 73, 172, 0.04) !important;
+    }
+
+    .dark .dt-app-shell .table-card tbody tr:hover,
+    .dark .dt-app-shell .table-wrap tbody tr:hover,
+    .dark .dt-app-shell table.table-unify tbody tr:hover,
+    .dark .dt-app-shell table.table tbody tr:hover,
+    .dark .dt-app-shell .dt-panel table tbody tr:hover,
+    .dark .dt-app-shell .dt-shell table tbody tr:hover {
+        background: rgba(121, 120, 233, 0.08) !important;
+    }
+
+    .dt-app-shell .empty-state,
+    .dt-app-shell .empty {
+        padding: 3rem 1.5rem !important;
+        text-align: center !important;
+        color: var(--dt-muted-text) !important;
+        font-size: 0.9rem !important;
+    }
+
+    .dt-app-shell .pagination-bar,
+    .dt-app-shell .table-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        padding: 0.9rem 1rem 1rem !important;
+        color: var(--dt-muted-text) !important;
+        font-size: 0.84rem !important;
+        border-top: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .dark .dt-app-shell .pagination-bar,
+    .dark .dt-app-shell .table-meta {
+        border-top-color: rgba(71, 85, 105, 0.28);
+    }
+
+    .dt-app-shell .pagination-pages,
+    .dt-app-shell .actions,
+    .dt-app-shell .inline-user-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+    }
+
+    .dt-app-shell .page-btn,
+    .dt-app-shell .btn-refresh,
+    .dt-app-shell .export-btn,
+    .dt-app-shell .table-card .btn,
+    .dt-app-shell .table-card .btn-gfa,
+    .dt-app-shell .table-card .r-btn,
+    .dt-app-shell .table-card .btn-valider,
+    .dt-app-shell .table-card .btn-rejeter,
+    .dt-app-shell .table-card .btn-cancel,
+    .dt-app-shell .table-card .btn-confirm,
+    .dt-app-shell .table-card .btn-confirm-reject,
+    .dt-app-shell .table-wrap .btn,
+    .dt-app-shell .table-wrap .btn-gfa,
+    .dt-app-shell .table-wrap .btn-valider,
+    .dt-app-shell .table-wrap .btn-rejeter {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.4rem !important;
+        min-height: 2.1rem !important;
+        border-radius: 0.7rem !important;
+        border: 1px solid rgba(148, 163, 184, 0.18) !important;
+        padding: 0.45rem 0.8rem !important;
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        transition: background-color .18s ease, color .18s ease, border-color .18s ease, transform .18s ease !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+        cursor: pointer;
+    }
+
+    .dt-app-shell .page-btn:hover,
+    .dt-app-shell .btn-refresh:hover,
+    .dt-app-shell .export-btn:hover,
+    .dt-app-shell .table-card .btn:hover,
+    .dt-app-shell .table-card .btn-gfa:hover,
+    .dt-app-shell .table-card .r-btn:hover,
+    .dt-app-shell .table-card .btn-valider:hover,
+    .dt-app-shell .table-card .btn-rejeter:hover,
+    .dt-app-shell .table-wrap .btn:hover,
+    .dt-app-shell .table-wrap .btn-gfa:hover,
+    .dt-app-shell .table-wrap .btn-valider:hover,
+    .dt-app-shell .table-wrap .btn-rejeter:hover {
+        transform: translateY(-1px);
+        opacity: 1 !important;
+    }
+
+    .dt-app-shell .page-btn,
+    .dt-app-shell .btn-cancel,
+    .dt-app-shell .table-card .btn-light-gfa,
+    .dt-app-shell .table-card .btn-primary,
+    .dt-app-shell .table-wrap .btn-primary,
+    .dt-app-shell .table-wrap .btn-primary-gfa {
+        background: rgba(241, 245, 249, 0.9) !important;
+        color: #475569 !important;
+        border-color: rgba(148, 163, 184, 0.22) !important;
+    }
+
+    .dark .dt-app-shell .page-btn,
+    .dark .dt-app-shell .btn-cancel,
+    .dark .dt-app-shell .table-card .btn-light-gfa,
+    .dark .dt-app-shell .table-card .btn-primary,
+    .dark .dt-app-shell .table-wrap .btn-primary,
+    .dark .dt-app-shell .table-wrap .btn-primary-gfa {
+        background: rgba(15, 23, 42, 0.78) !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(71, 85, 105, 0.42) !important;
+    }
+
+    .dt-app-shell .btn-refresh,
+    .dt-app-shell .table-card .btn-primary-gfa,
+    .dt-app-shell .table-card .btn-add,
+    .dt-app-shell .table-card .btn-valider,
+    .dt-app-shell .table-card .r-btn-primary,
+    .dt-app-shell .table-card .r-btn-export,
+    .dt-app-shell .table-wrap .btn-add {
+        background: #eef2ff !important;
+        color: #4338ca !important;
+        border-color: rgba(129, 140, 248, 0.28) !important;
+    }
+
+    .dark .dt-app-shell .btn-refresh,
+    .dark .dt-app-shell .table-card .btn-primary-gfa,
+    .dark .dt-app-shell .table-card .btn-add,
+    .dark .dt-app-shell .table-card .btn-valider,
+    .dark .dt-app-shell .table-card .r-btn-primary,
+    .dark .dt-app-shell .table-card .r-btn-export,
+    .dark .dt-app-shell .table-wrap .btn-add {
+        background: rgba(99, 102, 241, 0.16) !important;
+        color: #c7d2fe !important;
+        border-color: rgba(129, 140, 248, 0.26) !important;
+    }
+
+    .dt-app-shell .table-card .btn-rejeter,
+    .dt-app-shell .table-card .btn-danger,
+    .dt-app-shell .table-card .btn-danger-gfa,
+    .dt-app-shell .table-card .btn-confirm-reject,
+    .dt-app-shell .table-wrap .btn-danger {
+        background: rgba(254, 226, 226, 0.96) !important;
+        color: #b91c1c !important;
+        border-color: rgba(248, 113, 113, 0.24) !important;
+    }
+
+    .dark .dt-app-shell .table-card .btn-rejeter,
+    .dark .dt-app-shell .table-card .btn-danger,
+    .dark .dt-app-shell .table-card .btn-danger-gfa,
+    .dark .dt-app-shell .table-card .btn-confirm-reject,
+    .dark .dt-app-shell .table-wrap .btn-danger {
+        background: rgba(127, 29, 29, 0.45) !important;
+        color: #fecaca !important;
+        border-color: rgba(248, 113, 113, 0.24) !important;
+    }
+
+    .dt-app-shell .table-card .btn-confirm {
+        background: rgba(220, 252, 231, 0.96) !important;
+        color: #166534 !important;
+        border-color: rgba(74, 222, 128, 0.24) !important;
+    }
+
+    .dark .dt-app-shell .table-card .btn-confirm {
+        background: rgba(20, 83, 45, 0.46) !important;
+        color: #dcfce7 !important;
+        border-color: rgba(74, 222, 128, 0.22) !important;
+    }
+
+    .dt-app-shell .icon-btn,
+    .dt-app-shell .btn-icon {
+        min-width: 2.2rem !important;
+        padding-inline: 0.65rem !important;
+    }
+
+    .dt-app-shell .page-btn.active {
+        background: #4b49ac !important;
+        color: #fff !important;
+        border-color: #4b49ac !important;
+    }
+
+    .dt-app-shell .page-btn:disabled {
+        opacity: 0.45 !important;
+        cursor: default !important;
+        transform: none !important;
     }
 }

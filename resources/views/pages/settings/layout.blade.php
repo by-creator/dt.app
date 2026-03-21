@@ -13,10 +13,11 @@
 
     .settings-sidebar-card,
     .settings-content-card {
-        background: #fff;
-        border: 1px solid #ececf5;
-        border-radius: 16px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        background: var(--dt-panel-bg);
+        border: 1px solid var(--dt-border);
+        border-radius: 24px;
+        box-shadow: var(--dt-shadow);
+        color: var(--dt-page-text);
     }
 
     .settings-sidebar-card {
@@ -35,20 +36,20 @@
     .settings-title {
         font-size: 28px;
         font-weight: 700;
-        color: #191c24;
+        color: var(--dt-page-text);
         margin: 0;
     }
 
     .settings-subtitle {
         margin: 8px 0 0;
-        color: #6c757d;
+        color: var(--dt-muted-text);
         font-size: 14px;
     }
 
     .settings-card-head {
         margin-bottom: 22px;
         padding-bottom: 18px;
-        border-bottom: 1px solid #eef0f6;
+        border-bottom: 1px solid var(--dt-border);
     }
 
     .settings-form-wrap {
@@ -61,13 +62,79 @@
     .settings-content-card div + form {
         margin-top: 28px;
         padding-top: 24px;
-        border-top: 1px solid #eef0f6;
+        border-top: 1px solid var(--dt-border);
     }
 
     .settings-content-card [data-flux-field],
     .settings-content-card .space-y-6,
     .settings-content-card .space-y-8 {
         width: 100%;
+    }
+
+    .settings-sidebar-card [data-flux-navlist] {
+        display: grid;
+        gap: 8px;
+    }
+
+    .settings-sidebar-card [data-flux-navlist-item] {
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 12px 14px;
+        color: var(--dt-muted-text);
+        background: transparent;
+        transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+    }
+
+    .settings-sidebar-card [data-flux-navlist-item]:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(129, 140, 248, 0.18);
+        color: var(--dt-page-text);
+        transform: translateX(2px);
+    }
+
+    .settings-sidebar-card [data-flux-navlist-item][data-current],
+    .settings-sidebar-card [data-flux-navlist-item][aria-current="page"] {
+        background: rgba(99, 102, 241, 0.14);
+        border-color: rgba(129, 140, 248, 0.28);
+        color: #818cf8;
+        box-shadow: inset 3px 0 0 rgba(99, 102, 241, 0.78);
+    }
+
+    .settings-content-card [data-flux-control],
+    .settings-content-card input,
+    .settings-content-card textarea,
+    .settings-content-card select {
+        background: var(--dt-input-bg) !important;
+        color: var(--dt-page-text) !important;
+        border-color: var(--dt-input-border) !important;
+    }
+
+    .settings-content-card [data-flux-control]::placeholder,
+    .settings-content-card input::placeholder,
+    .settings-content-card textarea::placeholder {
+        color: var(--dt-soft-text) !important;
+    }
+
+    .settings-content-card [data-flux-description],
+    .settings-content-card [data-flux-text],
+    .settings-content-card p,
+    .settings-content-card .text-zinc-500,
+    .settings-content-card .text-zinc-600 {
+        color: var(--dt-muted-text) !important;
+    }
+
+    .settings-content-card [data-flux-label],
+    .settings-content-card [data-flux-heading],
+    .settings-content-card h1,
+    .settings-content-card h2,
+    .settings-content-card h3,
+    .settings-content-card label {
+        color: var(--dt-page-text) !important;
+    }
+
+    .settings-content-card button,
+    .settings-content-card [data-flux-button] {
+        border-radius: 12px;
     }
 
     @media (max-width: 960px) {

@@ -105,12 +105,12 @@
         </div>
 
         <script>
-            const PAGE_SIZE = 10;
-            let allData = [];
-            let rejectTargetId = null;
-            let currentPage = 1;
+            var validationsPageSize = 10;
+            var validationsAllData = [];
+            var validationsRejectTargetId = null;
+            var validationsCurrentPage = 1;
 
-            const swalTheme = {
+            var validationsSwalTheme = {
                 background: getComputedStyle(document.documentElement).getPropertyValue('--dt-panel-bg').trim() || '#0f172a',
                 color: getComputedStyle(document.documentElement).getPropertyValue('--dt-page-text').trim() || '#e5eefb',
                 confirmButtonColor: '#4B49AC',
@@ -119,7 +119,7 @@
 
             function showError(message) {
                 return Swal.fire({
-                    ...swalTheme,
+                    ...validationsSwalTheme,
                     icon: 'error',
                     title: 'Erreur',
                     text: message,
@@ -128,7 +128,7 @@
 
             function showSuccess(message) {
                 return Swal.fire({
-                    ...swalTheme,
+                    ...validationsSwalTheme,
                     icon: 'success',
                     title: 'Succes',
                     text: message,
@@ -162,8 +162,8 @@
 
             function filtered() {
                 const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
-                if (!q) return allData;
-                return allData.filter(r =>
+                if (!q) return validationsAllData;
+                return validationsAllData.filter(r =>
                     (r.nom || '').toLowerCase().includes(q) ||
                     (r.prenom || '').toLowerCase().includes(q) ||
                     (r.email || '').toLowerCase().includes(q) ||
@@ -173,13 +173,13 @@
             }
 
             function renderPage(page) {
-                currentPage = page;
+                validationsCurrentPage = page;
                 const rows = filtered();
                 const total = rows.length;
-                const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-                if (currentPage > pages) currentPage = pages;
-                const start = (currentPage - 1) * PAGE_SIZE;
-                const slice = rows.slice(start, start + PAGE_SIZE);
+                const pages = Math.max(1, Math.ceil(total / validationsPageSize));
+                if (validationsCurrentPage > pages) validationsCurrentPage = pages;
+                const start = (validationsCurrentPage - 1) * validationsPageSize;
+                const slice = rows.slice(start, start + validationsPageSize);
                 const tbody = document.getElementById('demandes-tbody');
 
                 if (total === 0) {
@@ -196,28 +196,38 @@
                 }
 
                 const bar = document.getElementById('pagination-bar');
-                bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
-                document.getElementById('pagination-info').textContent = `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}`;
+                bar.style.display = total > validationsPageSize ? 'flex' : 'none';
+                document.getElementById('pagination-info').textContent = `${start + 1}-${Math.min(start + validationsPageSize, total)} sur ${total}`;
 
-                let pagesHtml = `<button class="page-btn" onclick="renderPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+                let pagesHtml = `<button class="page-btn" onclick="renderPage(${validationsCurrentPage - 1})" ${validationsCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
                 for (let p = 1; p <= pages; p++) {
-                    if (pages <= 7 || p === 1 || p === pages || Math.abs(p - currentPage) <= 1) {
-                        pagesHtml += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="renderPage(${p})">${p}</button>`;
-                    } else if (Math.abs(p - currentPage) === 2) {
+                    if (pages <= 7 || p === 1 || p === pages || Math.abs(p - validationsCurrentPage) <= 1) {
+                        pagesHtml += `<button class="page-btn ${p === validationsCurrentPage ? 'active' : ''}" onclick="renderPage(${p})">${p}</button>`;
+                    } else if (Math.abs(p - validationsCurrentPage) === 2) {
                         pagesHtml += '<span style="padding:4px 6px;color:#aaa">...</span>';
                     }
                 }
-                pagesHtml += `<button class="page-btn" onclick="renderPage(${currentPage + 1})" ${currentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+                pagesHtml += `<button class="page-btn" onclick="renderPage(${validationsCurrentPage + 1})" ${validationsCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
                 document.getElementById('pagination-pages').innerHTML = pagesHtml;
             }
 
             async function loadDemandes() {
                 const statut = document.getElementById('filter-statut').value;
                 const url = '/facturation/api/rattachements' + (statut ? '?statut=' + encodeURIComponent(statut) : '');
+                document.getElementById('demandes-tbody').innerHTML =
+                    '<tr><td colspan="9" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x mb-3" style="display:block;color:#ccc"></i>Chargement...</td></tr>';
                 try {
-                    const res = await fetch(url);
+                    const res = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                    });
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
                     const data = await res.json();
-                    allData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    validationsAllData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     renderPage(1);
                 } catch (e) {
                     document.getElementById('demandes-tbody').innerHTML =
@@ -227,7 +237,7 @@
 
             async function valider(id) {
                 const result = await Swal.fire({
-                    ...swalTheme,
+                    ...validationsSwalTheme,
                     icon: 'question',
                     title: 'Confirmer la validation',
                     text: 'Voulez-vous confirmer la validation de ce dossier ?',
@@ -253,14 +263,14 @@
             }
 
             function openRejectModal(id) {
-                rejectTargetId = id;
+                validationsRejectTargetId = id;
                 document.getElementById('motif-input').value = '';
                 document.getElementById('reject-modal').classList.add('open');
                 document.getElementById('motif-input').focus();
             }
 
             function closeRejectModal() {
-                rejectTargetId = null;
+                validationsRejectTargetId = null;
                 document.getElementById('reject-modal').classList.remove('open');
             }
 
@@ -271,7 +281,7 @@
                     return;
                 }
                 try {
-                    const res = await fetch(`/facturation/api/rattachements/${rejectTargetId}/rejeter`, {
+                    const res = await fetch(`/facturation/api/rattachements/${validationsRejectTargetId}/rejeter`, {
                         method: 'PATCH',
                         headers: csrfHeaders({ 'Content-Type':'application/json' }),
                         body: JSON.stringify({ motif })
