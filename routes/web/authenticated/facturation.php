@@ -13,7 +13,7 @@ Route::middleware(['auth', 'verified'])->prefix('facturation')->group(function (
     Route::get('validations', [FacturationController::class, 'validations'])->name('facturation.validations');
     Route::get('remises', [FacturationController::class, 'remises'])->name('facturation.remises');
     Route::view('unify', 'facturation.unify')->name('facturation.unify');
-    Route::view('rapport', 'facturation.rapport')->name('facturation.rapport');
+    Route::get('rapport', [FacturationController::class, 'rapport'])->name('facturation.rapport');
     Route::get('ies', [FacturationController::class, 'ies'])->name('facturation.ies');
     Route::post('ies/lien-acces', [FacturationController::class, 'sendIesAccessLink'])->name('facturation.ies.link');
     Route::post('ies/creation-compte', [FacturationController::class, 'sendIesAccountCreated'])->name('facturation.ies.create');

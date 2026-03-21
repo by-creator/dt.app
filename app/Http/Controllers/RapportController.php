@@ -12,7 +12,7 @@ class RapportController extends Controller
     public function index(Request $request): JsonResponse
     {
         $search = $request->string('search')->toString() ?: null;
-        $size = $request->integer('size') ?: 15;
+        $size = $request->integer('size') ?: 10;
         $page = $request->integer('page') + 1;
 
         $query = SuiviVide::query()->orderByDesc('created_at');
@@ -71,27 +71,42 @@ class RapportController extends Controller
     public function exportExcel(): \Illuminate\Http\Response
     {
         $rows = SuiviVide::query()->orderByDesc('created_at')->get();
+        $handle = fopen('php://temp', 'r+');
 
-        $headers = ['Terminal', 'EquipmentNumber', 'EquipmentTypeSize', 'EventCode', 'EventName', 'EventFamily', 'EventDate', 'Booking Sec No'];
-        $headerRow = '<tr>'.implode('', array_map(fn ($h) => '<th>'.e($h).'</th>', $headers)).'</tr>';
+        // BOM UTF-8 pour une ouverture propre dans Excel.
+        fwrite($handle, "\xEF\xBB\xBF");
 
-        $bodyRows = $rows->map(fn (SuiviVide $r) => '<tr>'
-            .'<td>'.e($r->terminal ?? '').'</td>'
-            .'<td>'.e($r->equipment_number ?? '').'</td>'
-            .'<td>'.e($r->equipment_type_size ?? '').'</td>'
-            .'<td>'.e($r->event_code ?? '').'</td>'
-            .'<td>'.e($r->event_name ?? '').'</td>'
-            .'<td>'.e($r->event_family ?? '').'</td>'
-            .'<td>'.e($r->event_date ?? '').'</td>'
-            .'<td>'.e($r->booking_sec_no ?? '').'</td>'
-            .'</tr>'
-        )->implode('');
+        fputcsv($handle, [
+            'Terminal',
+            'EquipmentNumber',
+            'EquipmentTypeSize',
+            'EventCode',
+            'EventName',
+            'EventFamily',
+            'EventDate',
+            'Booking Sec No',
+        ], ';');
 
-        $html = '<table><thead>'.$headerRow.'</thead><tbody>'.$bodyRows.'</tbody></table>';
+        foreach ($rows as $r) {
+            fputcsv($handle, [
+                $r->terminal ?? '',
+                $r->equipment_number ?? '',
+                $r->equipment_type_size ?? '',
+                $r->event_code ?? '',
+                $r->event_name ?? '',
+                $r->event_family ?? '',
+                $r->event_date ?? '',
+                $r->booking_sec_no ?? '',
+            ], ';');
+        }
 
-        return response($html, 200, [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="suivi-vides-'.now()->format('YmdHis').'.xls"',
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="suivi-vides-'.now()->format('YmdHis').'.csv"',
         ]);
     }
 
@@ -199,6 +214,7 @@ class RapportController extends Controller
 
         foreach ($xpath->query('//s:sheetData/s:row') as $xmlRow) {
             $rowData = [];
+            $cellIndex = 0;
 
             foreach ($xpath->query('s:c', $xmlRow) as $cell) {
                 if (! $cell instanceof \DOMElement) {
@@ -206,14 +222,14 @@ class RapportController extends Controller
                 }
 
                 $ref = $cell->getAttribute('r');
-                if (empty($ref)) {
-                    continue;
+                if (! empty($ref) && preg_match('/^([A-Z]+)/', $ref, $m)) {
+                    $colIdx = $this->colLetterToIndex($m[1]);
+                } else {
+                    // Certains fichiers XLSX n'incluent pas l'attribut "r" sur les cellules.
+                    // Dans ce cas, on retombe sur l'ordre naturel des cellules de la ligne.
+                    $colIdx = $cellIndex;
                 }
-                preg_match('/^([A-Z]+)/', $ref, $m);
-                if (empty($m)) {
-                    continue;
-                }
-                $colIdx = $this->colLetterToIndex($m[1]);
+
                 $type = $cell->getAttribute('t');
                 $vNode = $xpath->query('s:v', $cell)->item(0);
                 $vRaw = $vNode ? $vNode->nodeValue : '';
@@ -228,6 +244,7 @@ class RapportController extends Controller
                 }
 
                 $rowData[$colIdx] = $val;
+                $cellIndex = $colIdx + 1;
             }
 
             if (empty($rowData)) {
@@ -256,6 +273,11 @@ class RapportController extends Controller
             $data = [];
             foreach ($columnMap as $dbCol => $idx) {
                 $val = (string) ($rowValues[$idx] ?? '');
+                if ($dbCol === 'event_date') {
+                    $data[$dbCol] = $this->normalizeEventDate($val);
+                    continue;
+                }
+
                 $data[$dbCol] = $val !== '' ? $val : null;
             }
 
@@ -326,6 +348,25 @@ class RapportController extends Controller
     private function authorizeAdmin(Request $request): void
     {
         abort_unless($request->user()?->role?->name === 'ADMIN', 403);
+    }
+
+    private function normalizeEventDate(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            $excelSerial = (float) $value;
+
+            if ($excelSerial > 0) {
+                $seconds = (int) round(($excelSerial - 25569) * 86400);
+
+                return gmdate('d/m/Y H:i', $seconds);
+            }
+        }
+
+        return $value;
     }
 
     private function toArray(SuiviVide $r): array

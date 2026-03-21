@@ -1,1 +1,3 @@
 NOTES
+
+Je souhaite importer les données du fichier excel data.xlsx se trouvant à la racine du projet la table rapport_facturation_suivi_vides en passant par le formulaire se trouvant sur la route

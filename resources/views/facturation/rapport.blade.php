@@ -1,6 +1,8 @@
 <x-layouts::app :title="__('Gestion des rapports')">
     @php
         $isAdmin = auth()->user()?->role?->name === 'ADMIN';
+        $initialRapportsCollection = collect($initialRapports ?? []);
+        $initialRapportsPage = $initialRapportsCollection->take(10);
     @endphp
 
     <div class="rapport-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
@@ -16,11 +18,17 @@
             .rapport-page .module-pane.active { display:block; animation:tabPaneFade .25s ease forwards; }
             @keyframes tabPaneFade { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
             .rapport-page .r-card { background:var(--dt-panel-bg); color:var(--dt-page-text); border:1px solid var(--dt-border); border-radius:12px; box-shadow:var(--dt-shadow); padding:24px; max-width:1200px; margin:0 auto; }
+            .rapport-page .r-card-fluid { max-width:none; width:100%; margin:0; }
             .rapport-page .r-card-title { font-size:20px; font-weight:700; color:var(--dt-page-text); display:flex; align-items:center; gap:10px; margin-bottom:16px; }
             .rapport-page .r-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
             .rapport-page .r-toolbar-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
             .rapport-page .r-search { width:260px; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:7px; padding:7px 12px; font-size:13px; outline:none; }
             .rapport-page .r-search:focus { border-color:#4B49AC; box-shadow:0 0 0 4px var(--dt-ring); }
+            .rapport-page .r-filter-field { position:relative; min-width:130px; }
+            .rapport-page .r-filter-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--dt-soft-text); font-size:12px; pointer-events:none; }
+            .rapport-page .r-column-search { width:100%; min-width:130px; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:8px 10px 8px 30px; font-size:12px; outline:none; }
+            .rapport-page .r-column-search:focus { border-color:#4B49AC; box-shadow:0 0 0 4px var(--dt-ring); }
+            .rapport-page .r-column-search::placeholder { color:var(--dt-soft-text); }
             .rapport-page .r-btn { border:none; border-radius:7px; padding:8px 14px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:7px; min-height:36px; text-decoration:none; transition:opacity .15s; }
             .rapport-page .r-btn:hover { opacity:.88; }
             .rapport-page .r-btn-primary { background:#4B49AC; color:#fff; }
@@ -50,20 +58,19 @@
         </div>
 
         <div class="module-tabs">
-            <button type="button" class="module-tab active" data-target="rapport-suivi"><i class="fas fa-list"></i> Liste</button>
+            <button type="button" class="module-tab active" data-target="rapport-suivi"><i class="fas fa-list"></i> Suivi des vides</button>
             @if ($isAdmin)
                 <button type="button" class="module-tab" data-target="rapport-admin"><i class="fas fa-cog"></i> Admin</button>
             @endif
         </div>
 
         <div id="rapport-suivi" class="module-pane active">
-            <div class="r-card">
+            <div class="r-card r-card-fluid">
                 <div class="r-toolbar">
                     <div class="r-toolbar-left">
-                        <input id="rapport-search" class="r-search" type="search" placeholder="Rechercher...">
                         <button type="button" class="r-btn r-btn-primary" id="rapport-refresh"><i class="fas fa-sync-alt"></i> Actualiser</button>
                     </div>
-                    <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter Excel</a>
+                    <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter CSV</a>
                 </div>
 
                 <div class="table-card">
@@ -80,15 +87,93 @@
                                     <th>Event Date</th>
                                     <th>Booking Sec No</th>
                                 </tr>
+                                <tr>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="terminal" type="search" placeholder="Terminal" aria-label="Filtrer Terminal">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="equipmentNumber" type="search" placeholder="Equipment Number" aria-label="Filtrer Equipment Number">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="equipmentTypeSize" type="search" placeholder="Type / Size" aria-label="Filtrer Type / Size">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="eventCode" type="search" placeholder="Event Code" aria-label="Filtrer Event Code">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="eventName" type="search" placeholder="Event Name" aria-label="Filtrer Event Name">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="eventFamily" type="search" placeholder="Event Family" aria-label="Filtrer Event Family">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="eventDate" type="date" aria-label="Filtrer Event Date">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="bookingSecNo" type="search" placeholder="Booking Sec No" aria-label="Filtrer Booking Sec No">
+                                        </div>
+                                    </th>
+                                </tr>
                             </thead>
                             <tbody id="rapport-tbody">
-                                <tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>
+                                @forelse ($initialRapportsPage as $rapport)
+                                    <tr>
+                                        <td>{{ $rapport['terminal'] ?: '-' }}</td>
+                                        <td>{{ $rapport['equipmentNumber'] ?: '-' }}</td>
+                                        <td>{{ $rapport['equipmentTypeSize'] ?: '-' }}</td>
+                                        <td>{{ $rapport['eventCode'] ?: '-' }}</td>
+                                        <td>{{ $rapport['eventName'] ?: '-' }}</td>
+                                        <td>{{ $rapport['eventFamily'] ?: '-' }}</td>
+                                        <td>{{ $rapport['eventDate'] ?: '-' }}</td>
+                                        <td>{{ $rapport['bookingSecNo'] ?: '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="8" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
-                    <div class="pagination-bar" id="rapport-pagination-bar" style="display:none">
-                        <span id="rapport-count-info"></span>
-                        <div class="pagination-pages" id="rapport-pagination-pages"></div>
+                    <div class="pagination-bar" id="rapport-pagination-bar" style="{{ $initialRapportsCollection->count() > 10 ? 'display:flex' : 'display:none' }}">
+                        <span id="rapport-count-info">
+                            @if ($initialRapportsCollection->isNotEmpty())
+                                1-{{ min(10, $initialRapportsCollection->count()) }} sur {{ $initialRapportsCollection->count() }}
+                            @else
+                                0 sur 0
+                            @endif
+                        </span>
+                        <div class="pagination-pages" id="rapport-pagination-pages">
+                            @if ($initialRapportsCollection->count() > 1)
+                                <button class="page-btn" onclick="renderRapportPage(0)" disabled><i class="fas fa-chevron-left"></i></button>
+                                <button class="page-btn active" onclick="renderRapportPage(1)">1</button>
+                                @if ($initialRapportsCollection->count() > 10)
+                                    <button class="page-btn" onclick="renderRapportPage(2)">2</button>
+                                @endif
+                                <button class="page-btn" onclick="renderRapportPage(2)" {{ $initialRapportsCollection->count() <= 10 ? 'disabled' : '' }}><i class="fas fa-chevron-right"></i></button>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -108,7 +193,7 @@
                         <input type="file" id="admin-import-file" accept=".csv,.xlsx" class="r-file-input">
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
                             <button type="button" id="admin-import-btn" class="r-btn r-btn-primary"><i class="fas fa-upload"></i> Importer</button>
-                            <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter Excel</a>
+                            <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter CSV</a>
                         </div>
                     </div>
                 </div>
@@ -141,17 +226,23 @@
                 return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
             }
 
-            const PAGE_SIZE = 15;
-            let allRapports = [];
+            function currentFilters() {
+                const filters = {};
+                document.querySelectorAll('.rapport-column-search').forEach(input => {
+                    filters[input.dataset.key] = input.value.trim().toLowerCase();
+                });
+                return filters;
+            }
+
+            const PAGE_SIZE = 10;
+            let allRapports = @json($initialRapportsCollection->values());
             let rapportCurrentPage = 1;
-            let rapportSearch = '';
 
             async function loadRapports() {
                 const tbody = document.getElementById('rapport-tbody');
                 tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
                 try {
-                    const searchParam = rapportSearch ? `&search=${encodeURIComponent(rapportSearch)}` : '';
-                    const res = await fetch(`/facturation/api/rapports?page=0&size=9999${searchParam}`);
+                    const res = await fetch('/facturation/api/rapports?page=0&size=9999');
                     const data = await res.json();
                     allRapports = data.content || [];
                     renderRapportPage(1);
@@ -162,11 +253,18 @@
 
             function renderRapportPage(page) {
                 rapportCurrentPage = page;
-                const total = allRapports.length;
+                const filters = currentFilters();
+                const rows = allRapports.filter(r =>
+                    Object.entries(filters).every(([key, value]) => {
+                        if (!value) return true;
+                        return String(r[key] ?? '').toLowerCase().includes(value);
+                    })
+                );
+                const total = rows.length;
                 const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
                 if (rapportCurrentPage > pages) rapportCurrentPage = pages;
                 const start = (rapportCurrentPage - 1) * PAGE_SIZE;
-                const slice = allRapports.slice(start, start + PAGE_SIZE);
+                const slice = rows.slice(start, start + PAGE_SIZE);
                 const tbody = document.getElementById('rapport-tbody');
 
                 if (total === 0) {
@@ -200,10 +298,16 @@
                 document.getElementById('rapport-pagination-pages').innerHTML = html;
             }
 
-            document.getElementById('rapport-refresh').onclick = () => loadRapports();
-            document.getElementById('rapport-search').addEventListener('input', function () {
-                rapportSearch = this.value.trim();
-                loadRapports();
+            document.getElementById('rapport-refresh').onclick = () => {
+                document.querySelectorAll('.rapport-column-search').forEach(input => {
+                    input.value = '';
+                });
+                window.location.reload();
+            };
+            document.querySelectorAll('.rapport-column-search').forEach(input => {
+                input.addEventListener('input', () => {
+                    renderRapportPage(1);
+                });
             });
 
             const adminImportBtn = document.getElementById('admin-import-btn');
@@ -233,7 +337,7 @@
                 };
             }
 
-            loadRapports();
+            renderRapportPage(1);
         </script>
     </div>
 </x-layouts::app>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RattachementBl;
+use App\Models\SuiviVide;
 use App\Services\DematEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -64,6 +65,29 @@ class FacturationController extends Controller
         return view('facturation.remises', [
             'initialRemises' => $mapped,
             'initialRemiseStatut' => $initialStatut,
+        ]);
+    }
+
+    public function rapport(): View
+    {
+        $rapports = SuiviVide::query()
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (SuiviVide $r) => [
+                'id' => $r->id,
+                'terminal' => $r->terminal,
+                'equipmentNumber' => $r->equipment_number,
+                'equipmentTypeSize' => $r->equipment_type_size,
+                'eventCode' => $r->event_code,
+                'eventName' => $r->event_name,
+                'eventFamily' => $r->event_family,
+                'eventDate' => $r->event_date,
+                'bookingSecNo' => $r->booking_sec_no,
+            ])
+            ->values();
+
+        return view('facturation.rapport', [
+            'initialRapports' => $rapports,
         ]);
     }
 
