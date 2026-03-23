@@ -32,6 +32,7 @@
             --auth-footer: #94a3b8;
         }
 
+        html, body { height: 100%; overflow: hidden; }
         .dt-auth-shell { width: min(100%, 38rem); margin: 0 auto; }
         .dt-auth-card { background: var(--auth-card-bg); border: 1px solid var(--auth-card-border); border-radius: 1.75rem; box-shadow: var(--auth-card-shadow); overflow: hidden; backdrop-filter: blur(14px); }
         .dt-auth-body { padding: 3rem 3rem 2.75rem; }
