@@ -173,7 +173,7 @@ class DematEmailService
             'Traitee le <strong>'.$this->escape($this->nowFormatted()).'</strong>',
         );
 
-        $this->sendToConfiguredAndUser($toEmail, $subject, $html);
+        $this->sendToDirectorAndUser($toEmail, $subject, $html);
     }
 
     public function sendRemiseRejectedEmail(string $toEmail, ?string $nom, ?string $prenom, string $bl, ?string $motif): void
@@ -190,7 +190,7 @@ class DematEmailService
             successMessage: 'Votre demande de remise a ete rejetee.',
         );
 
-        $this->sendToConfiguredAndUser($toEmail, $subject, $html);
+        $this->sendToDirectorAndUser($toEmail, $subject, $html);
     }
 
     public function directorEmail(): string
@@ -266,6 +266,21 @@ class DematEmailService
         $recipients = array_unique(array_filter(array_merge([$toEmail], $this->configuredRecipients())));
 
         Log::info('Demat mail multi-recipient prepared.', [
+            'subject' => $subject,
+            'recipients' => array_values($recipients),
+            'attachments_count' => count($attachments),
+        ]);
+
+        foreach ($recipients as $recipient) {
+            $this->sendToOne($recipient, $subject, $html, $attachments);
+        }
+    }
+
+    private function sendToDirectorAndUser(string $toEmail, string $subject, string $html, array $attachments = []): void
+    {
+        $recipients = array_unique(array_filter([$toEmail, $this->directorEmail()]));
+
+        Log::info('Demat mail remise result prepared.', [
             'subject' => $subject,
             'recipients' => array_values($recipients),
             'attachments_count' => count($attachments),

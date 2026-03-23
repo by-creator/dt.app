@@ -125,19 +125,19 @@ class EdiRecord
         $record->data['number_of_yard_items'] = is_numeric($nyi) ? $nyi : '1';
         $record->data['number_of_packages']   = $record->data['number_of_yard_items'];
 
-        // ── ImportExport + Final Destination Country ──────────────────────────
+        // ── ImportExport ──────────────────────────────────────────────────────
         $raw = trim($record->data['import_export_raw'] ?? '');
         if (str_starts_with($raw, 'TS')) {
-            $record->data['import_export']             = 'TRANSBO';
-            $record->data['final_destination_country'] = trim(substr($raw, 2));
+            $record->data['import_export'] = 'TRANSBO';
         } elseif (str_starts_with($raw, 'TR')) {
-            $record->data['import_export']             = 'IMPORT TRANSIT';
-            $record->data['final_destination_country'] = trim(substr($raw, 2));
+            $record->data['import_export'] = 'IMPORT TRANSIT';
         } else {
-            $record->data['import_export']             = 'IMPORT';
-            $record->data['final_destination_country'] = '';
+            $record->data['import_export'] = 'IMPORT';
         }
         unset($record->data['import_export_raw']);
+
+        // ── Final Destination Country : reprend adresse_5 ────────────────────
+        $record->data['final_destination_country'] = trim($record->data['adresse_5'] ?? '');
 
         // ── YardItemType : déduit du mode de transport ────────────────────────
         $mode     = trim($record->data['transport_mode'] ?? '');
@@ -149,13 +149,14 @@ class EdiRecord
         $record->data['blitem_allow_invalid'] = 'VRAI';
 
         // ── BLItem Commodity : tranches de poids (véhicules uniquement) ───────
+        // $weight est en tonnes (÷1 000 000). Seuils convertis en tonnes.
         if ($yardType === 'VEHICULE' && $weight > 0) {
             $record->data['blitem_commodity'] = match (true) {
-                $weight <= 1500  => 'VEH 0-1500Kgs',
-                $weight <= 3000  => 'VEH 1501-3000Kgs',
-                $weight <= 6000  => 'VEH 3001-6000Kgs',
-                $weight <= 9000  => 'VEH 6001-9000Kgs',
-                $weight <= 30000 => 'VEH 9001-30000Kgs',
+                $weight <= 1.5   => 'VEH 0-1500Kgs',
+                $weight <= 3.0   => 'VEH 1501-3000Kgs',
+                $weight <= 6.0   => 'VEH 3001-6000Kgs',
+                $weight <= 9.0   => 'VEH 6001-9000Kgs',
+                $weight <= 30.0  => 'VEH 9001-30000Kgs',
                 default          => 'VEH +30000Kgs',
             };
         } else {
