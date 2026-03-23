@@ -1,3 +1,18 @@
 NOTES
 
-Je souhaite importer les données du fichier excel data.xlsx se trouvant à la racine du projet la table rapport_facturation_suivi_vides en passant par le formulaire se trouvant sur la route
+Je souhaite que tu effectues deux tâches 
+
+1ère tâche
+
+En te basant sur le dossier my_dt_app-main modifie ma page d'accueil sur la route / pour qu'elle ressemble à la route / de ce
+dit dossier en respectant la logique important les images de ce dossier vers le dossier public/img et les js associés pour la 
+partie estimations vers le dossier pulic/js de mon projet ainsi que tous les fichiers interdépendants selon une certaine
+logique si nécessaire.
+
+2e tâche 
+
+Je souhaite que tu crée le modèle suivant : Codification(call_number(varchar), manifest(file), xlsx(file), edi(file)) ensuite en
+te basant sur le dossier my_dt_app-main analyse la gestion des fichiers edi effectuée sur la route /edi qui par correspondance 
+à mon projet est /planification/upload-manifest qui consiste à l'importation d'un fichier txt et qui le transforme en .xlsx et
+.edi une fois que cela est fait ça enregistre au niveau du modèle sachant que call_number a pour valeur une donnée qui ressemble
+à GSE0226 comme exemple ensuite manifest sera le fichier txt uploadé, xlsx sera le fichier xlsx généré et edi sera le fichier edi généré 
