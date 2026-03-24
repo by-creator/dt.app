@@ -52,9 +52,9 @@ trait ParsesXlsx
 
         $stream = $zip->getStream('xl/worksheets/sheet1.xml')
                ?: $zip->getStream('xl/worksheets/Sheet1.xml');
-        $zip->close();
 
         if ($stream === false) {
+            $zip->close();
             unlink($sheetTmp);
             throw new \RuntimeException('Feuille de calcul introuvable dans le fichier XLSX.');
         }
@@ -63,6 +63,7 @@ trait ParsesXlsx
         stream_copy_to_stream($stream, $out);
         fclose($out);
         fclose($stream);
+        $zip->close();
 
         // --- XMLReader: one node at a time, O(1) memory ---
         $reader = new \XMLReader();
