@@ -61,8 +61,10 @@ class SuiviStationnementController extends Controller
 
         try {
             if ($extension === 'csv') {
+                SuiviStationnement::truncate();
                 $count = $this->importCsv($file->getRealPath());
             } elseif ($extension === 'xlsx') {
+                SuiviStationnement::truncate();
                 $count = $this->importXlsx($file->getRealPath());
             } elseif ($extension === 'xls') {
                 return response('Le format XLS n\'est pas pris en charge actuellement. Utilisez un fichier CSV ou XLSX.', 422);
