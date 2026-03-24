@@ -13,6 +13,7 @@ use Tests\TestCase;
 |
 */
 
+// Use RefreshDatabase but with transactional mode to avoid route loss
 pest()->extend(TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');

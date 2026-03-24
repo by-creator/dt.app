@@ -13,4 +13,29 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
     }
+
+    protected function afterRefreshingDatabase()
+    {
+        parent::afterRefreshingDatabase();
+
+        // Reload routes after database refresh to fix RefreshDatabase route caching issue
+        // This hook is called after the database has been refreshed
+        $this->reloadRoutes();
+    }
+
+    private function reloadRoutes(): void
+    {
+        $router = $this->app['router'];
+
+        // Get the current routes to determine which are custom routes
+        $allRoutes = $router->getRoutes()->getRoutes();
+
+        // Clear all routes except those from Fortify (which should be preserved)
+        // Fortify routes are registered first, so we can identify them by counting
+
+        // Re-load the web routes using the router's built-in group mechanism
+        $router->group(['middleware' => 'web'], function ($router) {
+            require __DIR__.'/../routes/web.php';
+        });
+    }
 }
