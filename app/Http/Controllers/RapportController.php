@@ -13,20 +13,25 @@ class RapportController extends Controller
     use \App\Http\Controllers\Concerns\ParsesXlsx;
     public function index(Request $request): JsonResponse
     {
-        $search = $request->string('search')->toString() ?: null;
-        $size = $request->integer('size') ?: 10;
+        $size = $request->integer('size') ?: 5;
         $page = $request->integer('page') + 1;
 
         $query = SuiviVide::query()->orderByDesc('created_at');
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('terminal', 'like', '%'.$search.'%')
-                    ->orWhere('equipment_number', 'like', '%'.$search.'%')
-                    ->orWhere('event_code', 'like', '%'.$search.'%')
-                    ->orWhere('event_name', 'like', '%'.$search.'%')
-                    ->orWhere('booking_sec_no', 'like', '%'.$search.'%');
-            });
+        foreach ([
+            'terminal'          => 'terminal',
+            'equipmentNumber'   => 'equipment_number',
+            'equipmentTypeSize' => 'equipment_type_size',
+            'eventCode'         => 'event_code',
+            'eventName'         => 'event_name',
+            'eventFamily'       => 'event_family',
+            'eventDate'         => 'event_date',
+            'bookingSecNo'      => 'booking_sec_no',
+        ] as $param => $column) {
+            $val = $request->string($param)->toString() ?: null;
+            if ($val !== null) {
+                $query->where($column, 'like', '%'.$val.'%');
+            }
         }
 
         $paginator = $query->paginate($size, ['*'], 'page', $page);
@@ -115,7 +120,7 @@ class RapportController extends Controller
 
         $rows = [];
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-            if (array_filter($row) === []) {
+            if (array_filter($row) === [] || $this->isMetaRowVides($row)) {
                 continue;
             }
             $data = [];
@@ -146,6 +151,10 @@ class RapportController extends Controller
         $insertRows = [];
 
         $this->parseXlsx($path, function (array $rowValues) use (&$header, &$columnMap, &$insertRows) {
+            if ($this->isMetaRowVides($rowValues)) {
+                return;
+            }
+
             if ($header === null) {
                 $header    = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
                 $columnMap = $this->buildColumnMap($header);
@@ -182,6 +191,13 @@ class RapportController extends Controller
         }
 
         return SuiviVide::query()->count();
+    }
+
+    private function isMetaRowVides(array $rowValues): bool
+    {
+        $first = strtolower(trim((string) ($rowValues[0] ?? '')));
+
+        return str_starts_with($first, 'filtres') || str_starts_with($first, 'aucun filtre');
     }
 
     private function normalizeHeader(string $header): string

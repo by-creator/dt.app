@@ -153,10 +153,10 @@
                                 <td style="white-space:nowrap">
                                     @if (($isFacturation || $isAdmin) && $remise['statut'] === 'EN_ATTENTE_VALIDATION_FACTURATION')
                                         <button class="btn-valider" onclick="validerFacturation({{ $remise['id'] }})"><i class="fas fa-check"></i> Valider</button>
-                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }})"><i class="fas fa-times"></i> Rejeter</button>
+                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }}, '{{ $remise['statut'] }}')"><i class="fas fa-times"></i> Rejeter</button>
                                     @elseif (($isDirection || $isAdmin) && $remise['statut'] === 'EN_ATTENTE_VALIDATION_DIRECTION')
                                         <button class="btn-valider" onclick="openDirectionModal({{ $remise['id'] }})"><i class="fas fa-check-double"></i> Valider avec %</button>
-                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }})"><i class="fas fa-times"></i> Rejeter</button>
+                                        <button class="btn-rejeter" onclick="openRejectModal({{ $remise['id'] }}, '{{ $remise['statut'] }}')"><i class="fas fa-times"></i> Rejeter</button>
                                     @else
                                         -
                                     @endif
@@ -193,7 +193,13 @@
             <div class="modal-box">
                 <h5 style="color:#dc3545"><i class="fas fa-times-circle"></i> Motif du rejet</h5>
                 <p style="font-size:13px;color:var(--dt-muted-text);margin-bottom:10px">Veuillez preciser le motif du rejet :</p>
-                <textarea id="motif-input" placeholder="Saisissez le motif du rejet..."></textarea>
+                <select id="motif-select" style="display:none;width:100%;border:1px solid var(--dt-input-border);background:var(--dt-input-bg);color:var(--dt-page-text);border-radius:8px;padding:10px 12px;font-size:13px;outline:none">
+                    <option value="">-- Choisir un motif --</option>
+                    <option value="Dossier incomplet">Dossier incomplet</option>
+                    <option value="Non paiement de la facture d'acconage">Non paiement de la facture d'acconage</option>
+                    <option value="Frais de stationnement inferieurs au seuil requis">Frais de stationnement inferieurs au seuil requis</option>
+                </select>
+                <textarea id="motif-input" style="display:none" placeholder="Saisissez le motif du rejet..."></textarea>
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal('reject-modal')">Annuler</button>
                     <button class="btn-confirm-reject" onclick="confirmReject()">Confirmer le rejet</button>
@@ -293,11 +299,11 @@
             function actionsHtml(r) {
                 if ((isFacturation || isAdmin) && r.statut === 'EN_ATTENTE_VALIDATION_FACTURATION') {
                     return `<button class="btn-valider" onclick="validerFacturation(${r.id})"><i class="fas fa-check"></i> Valider</button>`
-                        + `<button class="btn-rejeter" onclick="openRejectModal(${r.id})"><i class="fas fa-times"></i> Rejeter</button>`;
+                        + `<button class="btn-rejeter" onclick="openRejectModal(${r.id}, '${r.statut}')"><i class="fas fa-times"></i> Rejeter</button>`;
                 }
                 if ((isDirection || isAdmin) && r.statut === 'EN_ATTENTE_VALIDATION_DIRECTION') {
                     return `<button class="btn-valider" onclick="openDirectionModal(${r.id})"><i class="fas fa-check-double"></i> Valider avec %</button>`
-                        + `<button class="btn-rejeter" onclick="openRejectModal(${r.id})"><i class="fas fa-times"></i> Rejeter</button>`;
+                        + `<button class="btn-rejeter" onclick="openRejectModal(${r.id}, '${r.statut}')"><i class="fas fa-times"></i> Rejeter</button>`;
                 }
                 return '-';
             }
@@ -427,17 +433,25 @@
                 }
             }
 
-            function openRejectModal(id) {
+            function openRejectModal(id, statut) {
                 rejectTargetId = id;
-                document.getElementById('motif-input').value = '';
+                const select = document.getElementById('motif-select');
+                const textarea = document.getElementById('motif-input');
+                const useSelect = statut === 'EN_ATTENTE_VALIDATION_FACTURATION';
+                select.style.display = useSelect ? 'block' : 'none';
+                textarea.style.display = useSelect ? 'none' : 'block';
+                select.value = '';
+                textarea.value = '';
                 document.getElementById('reject-modal').classList.add('open');
-                document.getElementById('motif-input').focus();
+                (useSelect ? select : textarea).focus();
             }
 
             async function confirmReject() {
-                const motif = document.getElementById('motif-input').value.trim();
+                const select = document.getElementById('motif-select');
+                const textarea = document.getElementById('motif-input');
+                const motif = select.style.display !== 'none' ? select.value.trim() : textarea.value.trim();
                 if (!motif) {
-                    showError('Veuillez saisir un motif de rejet.');
+                    showError('Veuillez preciser le motif du rejet.');
                     return;
                 }
                 try {

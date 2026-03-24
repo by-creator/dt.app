@@ -13,19 +13,26 @@ class SuiviStationnementController extends Controller
     use \App\Http\Controllers\Concerns\ParsesXlsx;
     public function index(Request $request): JsonResponse
     {
-        $search = $request->string('search')->toString() ?: null;
-        $size = $request->integer('size') ?: 10;
+        $size = $request->integer('size') ?: 5;
         $page = $request->integer('page') + 1;
 
         $query = SuiviStationnement::query()->orderByDesc('created_at');
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('terminal', 'like', '%'.$search.'%')
-                    ->orWhere('bl_number', 'like', '%'.$search.'%')
-                    ->orWhere('shipowner', 'like', '%'.$search.'%')
-                    ->orWhere('item_number', 'like', '%'.$search.'%');
-            });
+        foreach ([
+            'terminal'    => 'terminal',
+            'billingDate' => 'billing_date',
+            'shipowner'   => 'shipowner',
+            'blNumber'    => 'bl_number',
+            'itemNumber'  => 'item_number',
+            'itemType'    => 'item_type',
+            'type'        => 'type',
+            'entryDate'   => 'entry_date',
+            'exitDate'    => 'exit_date',
+        ] as $param => $column) {
+            $val = $request->string($param)->toString() ?: null;
+            if ($val !== null) {
+                $query->where($column, 'like', '%'.$val.'%');
+            }
         }
 
         $paginator = $query->paginate($size, ['*'], 'page', $page);
@@ -112,7 +119,7 @@ class SuiviStationnementController extends Controller
 
         $rows = [];
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-            if (array_filter($row) === []) {
+            if (array_filter($row) === [] || $this->isMetaRowStationnement($row)) {
                 continue;
             }
             $data = $this->buildRow($row, $columnInfo);
@@ -141,6 +148,10 @@ class SuiviStationnementController extends Controller
         $insertRows = [];
 
         $this->parseXlsx($path, function (array $rowValues) use (&$columnInfo, &$insertRows) {
+            if ($this->isMetaRowStationnement($rowValues)) {
+                return;
+            }
+
             if ($columnInfo === null) {
                 $headers    = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
                 $columnInfo = $this->buildColumnInfo($headers);
@@ -228,7 +239,7 @@ class SuiviStationnementController extends Controller
             if ($dbCol === 'days_since_in') {
                 $data[$dbCol] = is_numeric($val) ? (float) $val : null;
             } elseif (in_array($dbCol, $monthCols, true)) {
-                $data[$dbCol] = $val !== '' ? $this->englishMonthToFrench($val) : null;
+                $data[$dbCol] = $val !== '' ? $this->normalizeToFrenchMonth($val) : null; // normalizeToFrenchMonth returns ?string
             } else {
                 $data[$dbCol] = $val !== '' ? $val : null;
             }
@@ -239,6 +250,26 @@ class SuiviStationnementController extends Controller
         }
 
         return $data;
+    }
+
+    private function normalizeToFrenchMonth(string $value): ?string
+    {
+        if (is_numeric($value)) {
+            $excelSerial = (float) $value;
+            if ($excelSerial > 0) {
+                $seconds = (int) round(($excelSerial - 25569) * 86400);
+                return $this->englishMonthToFrench(gmdate('F', $seconds));
+            }
+
+            return null;
+        }
+
+        $ts = strtotime($value);
+        if ($ts !== false) {
+            return $this->englishMonthToFrench(date('F', $ts));
+        }
+
+        return $this->englishMonthToFrench($value);
     }
 
     private function englishMonthToFrench(string $month): string
@@ -257,6 +288,15 @@ class SuiviStationnementController extends Controller
             'November'  => 'Novembre',
             'December'  => 'Decembre',
         ][$month] ?? $month;
+    }
+
+    private function isMetaRowStationnement(array $rowValues): bool
+    {
+        $first = strtolower(trim((string) ($rowValues[0] ?? '')));
+
+        return str_starts_with($first, 'aucun filtre')
+            || str_starts_with($first, 'filtres')
+            || $first === 'total';
     }
 
     private function normalizeHeader(string $header): string

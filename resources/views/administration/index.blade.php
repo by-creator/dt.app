@@ -22,10 +22,10 @@
             .admin-page .status-warning { background:var(--dt-warning-bg); color:var(--dt-warning-text); border:1px solid var(--dt-warning-border); }
             .admin-page .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
             .admin-page .admin-card { border:1px solid var(--dt-border); border-radius:10px; padding:16px; background:var(--dt-panel-alt-bg); }
-            .admin-page .split-grid { display:grid; grid-template-columns:minmax(320px, 0.9fr) minmax(0, 1.35fr); gap:16px; align-items:start; }
+            .admin-page .split-grid { display:grid; grid-template-columns:minmax(240px, 1fr) minmax(0, 2fr); gap:16px; align-items:start; }
             .admin-page .form-grid-layout { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px 24px; align-items:start; }
             .admin-page .form-group-custom label { font-size:13px; font-weight:600; color:var(--dt-page-text); display:block; margin-bottom:8px; }
-            .admin-page .form-control-custom { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:9px 13px; font-size:13px; min-height:42px; box-sizing:border-box; }
+            .admin-page .form-control-custom { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:9px 13px; font-size:13px; min-height:42px; box-sizing:border-box; min-width:0; }
             .admin-page .form-control-custom:focus { border-color:#4B49AC; outline:none; box-shadow:0 0 0 4px var(--dt-ring); }
             .admin-page .btn-gfa { border:none; border-radius:7px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
             .admin-page .btn-primary-gfa { background:#4B49AC; color:#fff; }
@@ -162,8 +162,8 @@
                         <form method="POST" action="{{ route('administration.users.store') }}">
                             @csrf
                             <input type="hidden" name="tab" value="admin-users">
-                            <div class="form-grid-layout">
-                                <div class="form-group-custom field-span-2">
+                            <div class="stack">
+                                <div class="form-group-custom">
                                     <label for="user_role">Role *</label>
                                     <select id="user_role" name="role_id" class="form-control-custom" required>
                                         @foreach ($rolesForSelect as $role)
@@ -180,17 +180,17 @@
                                     <input id="user_email" name="email" type="email" class="form-control-custom" required>
                                 </div>
                                 <div class="form-group-custom">
-                                    <label for="user_password_confirmation">Confirmation *</label>
-                                    <div class="password-toggle-group">
-                                        <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
-                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user_password_confirmation" aria-label="Afficher le mot de passe">Voir</button>
-                                    </div>
-                                </div>
-                                <div class="form-group-custom">
                                     <label for="user_password">Mot de passe *</label>
                                     <div class="password-toggle-group">
                                         <input id="user_password" name="password" type="password" class="form-control-custom" required>
                                         <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user_password" aria-label="Afficher le mot de passe">Voir</button>
+                                    </div>
+                                </div>
+                                <div class="form-group-custom">
+                                    <label for="user_password_confirmation">Confirmation *</label>
+                                    <div class="password-toggle-group">
+                                        <input id="user_password_confirmation" name="password_confirmation" type="password" class="form-control-custom" required>
+                                        <button type="button" class="password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="user_password_confirmation" aria-label="Afficher le mot de passe">Voir</button>
                                     </div>
                                 </div>
                             </div>
@@ -213,7 +213,15 @@
                     <div class="list-scroll">
                         <div class="table-card">
                             <div class="table-responsive">
-                                <table class="table-unify">
+                                <table class="table-unify" style="table-layout:fixed;width:100%">
+                                    <colgroup>
+                                        <col style="width:13%">
+                                        <col style="width:22%">
+                                        <col style="width:16%">
+                                        <col style="width:18%">
+                                        <col style="width:18%">
+                                        <col style="width:13%">
+                                    </colgroup>
                                     <thead>
                                         <tr>
                                             <th>Utilisateur</th>

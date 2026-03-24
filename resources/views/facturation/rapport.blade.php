@@ -378,18 +378,19 @@
 
         <script>
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const PAGE_SIZE = 5;
 
-            document.querySelectorAll('.module-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.module-pane').forEach(p => p.classList.remove('active'));
-                    tab.classList.add('active');
-                    const target = document.getElementById(tab.dataset.target);
-                    if (target) target.classList.add('active');
-                    if (tab.dataset.target === 'rapport-suivi') renderRapportPage(rapportCurrentPage);
-                    if (tab.dataset.target === 'rapport-stationnement') renderStatPage(statCurrentPage);
-                });
-            });
+            let rapportCurrentPage = 1;
+            let rapportDebounce = null;
+            let statCurrentPage = 1;
+            let statDebounce = null;
+            let statLoaded = false;
+
+            function escHtml(str) {
+                if (str == null) return '-';
+                const s = String(str);
+                return s === '' ? '-' : s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
 
             function setStatus(el, message, success) {
                 if (!el) return;
@@ -398,213 +399,222 @@
                 el.style.display = 'block';
             }
 
-            function escHtml(str) {
-                if (str == null) return '';
-                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            function buildPagination(currentPage, totalPages, goFn) {
+                let html = `<button class="page-btn" onclick="${goFn}(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+                for (let p = 1; p <= totalPages; p++) {
+                    if (totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) {
+                        html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="${goFn}(${p})">${p}</button>`;
+                    } else if (Math.abs(p - currentPage) === 2) {
+                        html += '<span style="padding:4px 6px;color:var(--dt-muted-text)">...</span>';
+                    }
+                }
+                html += `<button class="page-btn" onclick="${goFn}(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+                return html;
             }
 
             // ===== SUIVI VIDES =====
-            const PAGE_SIZE = 5;
-            let allRapports = @json($initialRapportsCollection->values());
-            let rapportCurrentPage = 1;
-
-            function currentFilters() {
-                const filters = {};
-                document.querySelectorAll('.rapport-column-search').forEach(input => {
-                    filters[input.dataset.key] = input.value.trim().toLowerCase();
+            function getRapportParams(page) {
+                const p = new URLSearchParams({ page: page - 1, size: PAGE_SIZE });
+                document.querySelectorAll('.rapport-column-search').forEach(el => {
+                    if (el.value.trim()) p.set(el.dataset.key, el.value.trim());
                 });
-                return filters;
+                return p;
             }
 
-            async function loadRapports() {
+            async function loadRapports(page) {
+                rapportCurrentPage = page;
                 const tbody = document.getElementById('rapport-tbody');
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
+                if (!tbody) return;
+                tbody.style.opacity = '0.5';
+                tbody.style.pointerEvents = 'none';
                 try {
-                    const res = await fetch('/facturation/api/rapports?page=0&size=9999');
+                    const res = await fetch('/facturation/api/rapports?' + getRapportParams(page));
                     const data = await res.json();
-                    allRapports = data.content || [];
-                    renderRapportPage(1);
+                    const rows = data.content || [];
+                    const total = data.totalElements ?? 0;
+                    const totalPages = data.totalPages ?? 1;
+                    const start = (rapportCurrentPage - 1) * PAGE_SIZE;
+
+                    if (rows.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
+                    } else {
+                        tbody.innerHTML = rows.map(r => `<tr>
+                            <td>${escHtml(r.terminal)}</td>
+                            <td>${escHtml(r.equipmentNumber)}</td>
+                            <td>${escHtml(r.equipmentTypeSize)}</td>
+                            <td>${escHtml(r.eventCode)}</td>
+                            <td>${escHtml(r.eventName)}</td>
+                            <td>${escHtml(r.eventFamily)}</td>
+                            <td>${escHtml(r.eventDate)}</td>
+                            <td>${escHtml(r.bookingSecNo)}</td>
+                        </tr>`).join('');
+                    }
+
+                    const bar = document.getElementById('rapport-pagination-bar');
+                    bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
+                    document.getElementById('rapport-count-info').textContent =
+                        total > 0 ? `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}` : '0 sur 0';
+                    document.getElementById('rapport-pagination-pages').innerHTML =
+                        total > PAGE_SIZE ? buildPagination(rapportCurrentPage, totalPages, 'loadRapports') : '';
                 } catch {
                     tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Erreur de chargement.</td></tr>';
+                } finally {
+                    tbody.style.opacity = '';
+                    tbody.style.pointerEvents = '';
                 }
             }
-
-            function renderRapportPage(page) {
-                rapportCurrentPage = page;
-                const filters = currentFilters();
-                const rows = allRapports.filter(r =>
-                    Object.entries(filters).every(([key, value]) => {
-                        if (!value) return true;
-                        return String(r[key] ?? '').toLowerCase().includes(value);
-                    })
-                );
-                const total = rows.length;
-                const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-                if (rapportCurrentPage > pages) rapportCurrentPage = pages;
-                const start = (rapportCurrentPage - 1) * PAGE_SIZE;
-                const slice = rows.slice(start, start + PAGE_SIZE);
-                const tbody = document.getElementById('rapport-tbody');
-
-                if (total === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
-                } else {
-                    tbody.innerHTML = slice.map(r => `<tr>
-                        <td>${escHtml(r.terminal)}</td>
-                        <td>${escHtml(r.equipmentNumber)}</td>
-                        <td>${escHtml(r.equipmentTypeSize)}</td>
-                        <td>${escHtml(r.eventCode)}</td>
-                        <td>${escHtml(r.eventName)}</td>
-                        <td>${escHtml(r.eventFamily)}</td>
-                        <td>${escHtml(r.eventDate)}</td>
-                        <td>${escHtml(r.bookingSecNo)}</td>
-                    </tr>`).join('');
-                }
-
-                const bar = document.getElementById('rapport-pagination-bar');
-                bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
-                document.getElementById('rapport-count-info').textContent = `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}`;
-
-                let html = `<button class="page-btn" onclick="renderRapportPage(${rapportCurrentPage - 1})" ${rapportCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-                for (let p = 1; p <= pages; p++) {
-                    if (pages <= 7 || p === 1 || p === pages || Math.abs(p - rapportCurrentPage) <= 1) {
-                        html += `<button class="page-btn ${p === rapportCurrentPage ? 'active' : ''}" onclick="renderRapportPage(${p})">${p}</button>`;
-                    } else if (Math.abs(p - rapportCurrentPage) === 2) {
-                        html += '<span style="padding:4px 6px;color:var(--dt-muted-text)">...</span>';
-                    }
-                }
-                html += `<button class="page-btn" onclick="renderRapportPage(${rapportCurrentPage + 1})" ${rapportCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
-                document.getElementById('rapport-pagination-pages').innerHTML = html;
-            }
-
-            document.getElementById('rapport-refresh').onclick = () => { window.location.reload(); };
-            document.querySelectorAll('.rapport-column-search').forEach(el => {
-                el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { renderRapportPage(1); });
-            });
 
             // ===== SUIVI STATIONNEMENT =====
-            let allStationnements = @json($initialStationnementsCollection->values());
-            let statCurrentPage = 1;
-
-            function currentStatFilters() {
-                const filters = {};
-                document.querySelectorAll('.stat-column-search').forEach(input => {
-                    filters[input.dataset.key] = input.value.trim().toLowerCase();
+            function getStatParams(page) {
+                const p = new URLSearchParams({ page: page - 1, size: PAGE_SIZE });
+                document.querySelectorAll('.stat-column-search').forEach(el => {
+                    if (el.value.trim()) p.set(el.dataset.key, el.value.trim());
                 });
-                return filters;
+                return p;
             }
 
-            async function loadStationnements() {
+            async function loadStationnements(page) {
+                statCurrentPage = page;
+                statLoaded = true;
                 const tbody = document.getElementById('stat-tbody');
-                tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
+                if (!tbody) return;
+                tbody.style.opacity = '0.5';
+                tbody.style.pointerEvents = 'none';
                 try {
-                    const res = await fetch('/facturation/api/suivi-stationnements?page=0&size=9999');
+                    const res = await fetch('/facturation/api/suivi-stationnements?' + getStatParams(page));
                     const data = await res.json();
-                    allStationnements = data.content || [];
-                    renderStatPage(1);
+                    const rows = data.content || [];
+                    const total = data.totalElements ?? 0;
+                    const totalPages = data.totalPages ?? 1;
+                    const start = (statCurrentPage - 1) * PAGE_SIZE;
+
+                    if (rows.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
+                    } else {
+                        tbody.innerHTML = rows.map(r => `<tr>
+                            <td>${escHtml(r.terminal)}</td>
+                            <td>${escHtml(r.billingDate)}</td>
+                            <td>${escHtml(r.shipowner)}</td>
+                            <td>${escHtml(r.blNumber)}</td>
+                            <td>${escHtml(r.itemNumber)}</td>
+                            <td>${escHtml(r.itemType)}</td>
+                            <td>${escHtml(r.type)}</td>
+                            <td>${escHtml(r.entryDate)}</td>
+                            <td>${escHtml(r.exitDate)}</td>
+                            <td>${escHtml(r.daysSinceIn)}</td>
+                        </tr>`).join('');
+                    }
+
+                    const bar = document.getElementById('stat-pagination-bar');
+                    bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
+                    document.getElementById('stat-count-info').textContent =
+                        total > 0 ? `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}` : '0 sur 0';
+                    document.getElementById('stat-pagination-pages').innerHTML =
+                        total > PAGE_SIZE ? buildPagination(statCurrentPage, totalPages, 'loadStationnements') : '';
                 } catch {
                     tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Erreur de chargement.</td></tr>';
+                } finally {
+                    tbody.style.opacity = '';
+                    tbody.style.pointerEvents = '';
                 }
             }
 
-            function renderStatPage(page) {
-                statCurrentPage = page;
-                const filters = currentStatFilters();
-                const rows = allStationnements.filter(r =>
-                    Object.entries(filters).every(([key, value]) => {
-                        if (!value) return true;
-                        return String(r[key] ?? '').toLowerCase().includes(value);
-                    })
-                );
-                const total = rows.length;
-                const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-                if (statCurrentPage > pages) statCurrentPage = pages;
-                const start = (statCurrentPage - 1) * PAGE_SIZE;
-                const slice = rows.slice(start, start + PAGE_SIZE);
-                const tbody = document.getElementById('stat-tbody');
+            // ===== INIT (réattache tous les listeners à chaque navigation) =====
+            function initRapportPage() {
+                if (!document.getElementById('rapport-tbody')) return;
 
-                if (total === 0) {
-                    tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
-                } else {
-                    tbody.innerHTML = slice.map(r => `<tr>
-                        <td>${escHtml(r.terminal)}</td>
-                        <td>${escHtml(r.billingDate)}</td>
-                        <td>${escHtml(r.shipowner)}</td>
-                        <td>${escHtml(r.blNumber)}</td>
-                        <td>${escHtml(r.itemNumber)}</td>
-                        <td>${escHtml(r.itemType)}</td>
-                        <td>${escHtml(r.type)}</td>
-                        <td>${escHtml(r.entryDate)}</td>
-                        <td>${escHtml(r.exitDate)}</td>
-                        <td>${escHtml(r.daysSinceIn)}</td>
-                    </tr>`).join('');
-                }
+                statLoaded = false;
 
-                const bar = document.getElementById('stat-pagination-bar');
-                bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
-                document.getElementById('stat-count-info').textContent = `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}`;
-
-                let html = `<button class="page-btn" onclick="renderStatPage(${statCurrentPage - 1})" ${statCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-                for (let p = 1; p <= pages; p++) {
-                    if (pages <= 7 || p === 1 || p === pages || Math.abs(p - statCurrentPage) <= 1) {
-                        html += `<button class="page-btn ${p === statCurrentPage ? 'active' : ''}" onclick="renderStatPage(${p})">${p}</button>`;
-                    } else if (Math.abs(p - statCurrentPage) === 2) {
-                        html += '<span style="padding:4px 6px;color:var(--dt-muted-text)">...</span>';
-                    }
-                }
-                html += `<button class="page-btn" onclick="renderStatPage(${statCurrentPage + 1})" ${statCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
-                document.getElementById('stat-pagination-pages').innerHTML = html;
-            }
-
-            document.getElementById('stat-refresh').onclick = () => { window.location.reload(); };
-            document.querySelectorAll('.stat-column-search').forEach(el => {
-                el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { renderStatPage(1); });
-            });
-
-            // ===== ADMIN IMPORT =====
-            const adminImportBtn = document.getElementById('admin-import-btn');
-            if (adminImportBtn) {
-                adminImportBtn.onclick = async () => {
-                    const fileInput = document.getElementById('admin-import-file');
-                    const rapportType = document.getElementById('admin-rapport-type').value;
-                    const adminStatus = document.getElementById('admin-status');
-
-                    if (!fileInput.files.length) {
-                        setStatus(adminStatus, 'Selectionnez un fichier a importer.', false);
-                        return;
-                    }
-
-                    const endpoint = rapportType === 'suivi-stationnements'
-                        ? '/facturation/api/suivi-stationnements/import'
-                        : '/facturation/api/rapports/import';
-
-                    adminImportBtn.disabled = true;
-                    adminImportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Import en cours...';
-
-                    const formData = new FormData();
-                    formData.append('file', fileInput.files[0]);
-                    formData.append('_token', csrfToken);
-
-                    const resp = await fetch(endpoint, { method: 'POST', body: formData });
-                    const msg = await resp.text();
-                    setStatus(adminStatus, msg, resp.ok);
-
-                    if (resp.ok) {
-                        fileInput.value = '';
-                        dtToast(msg, 'success');
-                        if (rapportType === 'suivi-stationnements') {
-                            loadStationnements();
-                        } else {
-                            loadRapports();
+                // Onglets
+                document.querySelectorAll('.module-tab').forEach(tab => {
+                    tab.onclick = () => {
+                        document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.module-pane').forEach(p => p.classList.remove('active'));
+                        tab.classList.add('active');
+                        const target = document.getElementById(tab.dataset.target);
+                        if (target) target.classList.add('active');
+                        if (tab.dataset.target === 'rapport-stationnement' && !statLoaded) {
+                            loadStationnements(1);
                         }
-                    }
+                    };
+                });
 
-                    adminImportBtn.disabled = false;
-                    adminImportBtn.innerHTML = '<i class="fas fa-upload"></i> Importer';
-                };
+                // Boutons actualiser
+                const rapportRefresh = document.getElementById('rapport-refresh');
+                if (rapportRefresh) rapportRefresh.onclick = () => loadRapports(1);
+                const statRefresh = document.getElementById('stat-refresh');
+                if (statRefresh) statRefresh.onclick = () => loadStationnements(1);
+
+                // Filtres suivi vides
+                document.querySelectorAll('.rapport-column-search').forEach(el => {
+                    const handler = () => {
+                        clearTimeout(rapportDebounce);
+                        rapportDebounce = setTimeout(() => loadRapports(1), 300);
+                    };
+                    if (el.tagName === 'SELECT') { el.onchange = handler; }
+                    else { el.oninput = handler; }
+                });
+
+                // Filtres stationnement
+                document.querySelectorAll('.stat-column-search').forEach(el => {
+                    const handler = () => {
+                        clearTimeout(statDebounce);
+                        statDebounce = setTimeout(() => loadStationnements(1), 300);
+                    };
+                    if (el.tagName === 'SELECT') { el.onchange = handler; }
+                    else { el.oninput = handler; }
+                });
+
+                // Admin import
+                const adminImportBtn = document.getElementById('admin-import-btn');
+                if (adminImportBtn) {
+                    adminImportBtn.onclick = async () => {
+                        const fileInput = document.getElementById('admin-import-file');
+                        const rapportType = document.getElementById('admin-rapport-type').value;
+                        const adminStatus = document.getElementById('admin-status');
+
+                        if (!fileInput.files.length) {
+                            setStatus(adminStatus, 'Selectionnez un fichier a importer.', false);
+                            return;
+                        }
+
+                        const endpoint = rapportType === 'suivi-stationnements'
+                            ? '/facturation/api/suivi-stationnements/import'
+                            : '/facturation/api/rapports/import';
+
+                        adminImportBtn.disabled = true;
+                        adminImportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Import en cours...';
+
+                        const formData = new FormData();
+                        formData.append('file', fileInput.files[0]);
+                        formData.append('_token', csrfToken);
+
+                        const resp = await fetch(endpoint, { method: 'POST', body: formData });
+                        const msg = await resp.text();
+                        setStatus(adminStatus, msg, resp.ok);
+
+                        if (resp.ok) {
+                            fileInput.value = '';
+                            if (rapportType === 'suivi-stationnements') {
+                                loadStationnements(1);
+                            } else {
+                                loadRapports(1);
+                            }
+                        }
+
+                        adminImportBtn.disabled = false;
+                        adminImportBtn.innerHTML = '<i class="fas fa-upload"></i> Importer';
+                    };
+                }
+
+                // Chargement initial des données
+                loadRapports(1);
             }
 
-            renderRapportPage(1);
-            renderStatPage(1);
+            // Eviter l'accumulation de listeners sur le document lors des navigations successives
+            document.removeEventListener('livewire:navigated', initRapportPage);
+            document.addEventListener('livewire:navigated', initRapportPage);
+            initRapportPage();
         </script>
     </div>
 </x-layouts::app>
