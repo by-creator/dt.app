@@ -73,6 +73,7 @@ class FacturationController extends Controller
     {
         $rapports = SuiviVide::query()
             ->orderByDesc('created_at')
+            ->limit(5)
             ->get()
             ->map(fn (SuiviVide $r) => [
                 'id' => $r->id,
@@ -89,6 +90,7 @@ class FacturationController extends Controller
 
         $stationnements = SuiviStationnement::query()
             ->orderByDesc('created_at')
+            ->limit(5)
             ->get()
             ->map(fn (SuiviStationnement $r) => [
                 'id'          => $r->id,
