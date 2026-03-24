@@ -10,8 +10,45 @@ use Illuminate\View\View;
 class RepasController extends Controller
 {
     private const RECIPIENTS = [
-        'noreplysitedt@gmail.com',
-        'iosid242@gmail.com',
+        'assane.diouf@dakar-terminal.com',
+        'clarisse.ngueabo@dakar-terminal.com',
+        'philippe.napolitano@dakar-terminal.com',
+        'jeannette.ndong@dakar-terminal.com',
+        'aminata.ndiathe@dakar-terminal.com',
+        'marc.bongoyeba@dakar-terminal.com',
+        'moussa.thiaw@dakar-terminal.com',
+        'cheikh.aw@dakar-terminal.com',
+        'sophie-yande.diouf@dakar-terminal.com',
+        'alioune-badara.dia@dakar-terminal.com',
+        'fatou-kine.niang@dakar-terminal.com',
+        'ramatoulaye.diallo@dakar-terminal.com',
+        'christian.sarr@dakar-terminal.com',
+        'mor-kebe.fall@dakar-terminal.com',
+        'ousmane.tall@dakar-terminal.com',
+        'fatou.konte@dakar-terminal.com',
+        'mame-aminata.ndaw@dakar-terminal.com',
+        'mamadou-bafou.fall@dakar-terminal.com',
+        'elhadji-babacar.sane@dakar-terminal.com',
+        'mouhameth.mbengue@dakar-terminal.com',
+        'ndeye-marieme.gueye@dakar-terminal.com',
+        'aby.traore@dakar-terminal.com',
+        'fatou.gueye@dakar-terminal.com',
+        'rokhaya.cisse@dakar-terminal.com',
+        'abdourahmane.diouf@dakar-terminal.com',
+        'mohamed.ngom@dakar-terminal.com',
+        'mamadou.diouf16@dakar-terminal.com',
+        'aissata.ba@dakar-terminal.com',
+        'basile.manga@dakar-terminal.com',
+        'maimouna.fall@dakar-terminal.com',
+        'ababacar.fall@dakar-terminal.com',
+        'fatoumata-yaya.gueye@dakar-terminal.com',
+        'charles.sarr@dakar-terminal.com',
+        'aliounebadara.sy@dakar-terminal.com',
+        'serigne.ndiaye@dakar-terminal.com',
+        'marie.diop@dakar-terminal.com',
+        'adama.n@dakar-terminal.com'
+
+        
     ];
 
     public function index(): View
