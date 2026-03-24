@@ -133,21 +133,10 @@
                                         </div>
                                     </th>
                                     <th>
-                                        <select class="r-month-select rapport-column-search" data-key="eventDate" aria-label="Filtrer Event Date">
-                                            <option value="">-- Mois --</option>
-                                            <option value="Janvier">Janvier</option>
-                                            <option value="Fevrier">Fevrier</option>
-                                            <option value="Mars">Mars</option>
-                                            <option value="Avril">Avril</option>
-                                            <option value="Mai">Mai</option>
-                                            <option value="Juin">Juin</option>
-                                            <option value="Juillet">Juillet</option>
-                                            <option value="Aout">Aout</option>
-                                            <option value="Septembre">Septembre</option>
-                                            <option value="Octobre">Octobre</option>
-                                            <option value="Novembre">Novembre</option>
-                                            <option value="Decembre">Decembre</option>
-                                        </select>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search rapport-column-search" data-key="eventDate" type="search" placeholder="ex: Avril 2025" aria-label="Filtrer Event Date">
+                                        </div>
                                     </th>
                                     <th>
                                         <div class="r-filter-field">
@@ -232,21 +221,10 @@
                                         </div>
                                     </th>
                                     <th>
-                                        <select class="r-month-select stat-column-search" data-key="billingDate" aria-label="Filtrer Billing Date">
-                                            <option value="">-- Mois --</option>
-                                            <option value="Janvier">Janvier</option>
-                                            <option value="Fevrier">Fevrier</option>
-                                            <option value="Mars">Mars</option>
-                                            <option value="Avril">Avril</option>
-                                            <option value="Mai">Mai</option>
-                                            <option value="Juin">Juin</option>
-                                            <option value="Juillet">Juillet</option>
-                                            <option value="Aout">Aout</option>
-                                            <option value="Septembre">Septembre</option>
-                                            <option value="Octobre">Octobre</option>
-                                            <option value="Novembre">Novembre</option>
-                                            <option value="Decembre">Decembre</option>
-                                        </select>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="billingDate" type="search" placeholder="ex: 01/2025" aria-label="Filtrer Billing Date">
+                                        </div>
                                     </th>
                                     <th>
                                         <div class="r-filter-field">
@@ -279,38 +257,16 @@
                                         </div>
                                     </th>
                                     <th>
-                                        <select class="r-month-select stat-column-search" data-key="entryDate" aria-label="Filtrer Entry Date">
-                                            <option value="">-- Mois --</option>
-                                            <option value="Janvier">Janvier</option>
-                                            <option value="Fevrier">Fevrier</option>
-                                            <option value="Mars">Mars</option>
-                                            <option value="Avril">Avril</option>
-                                            <option value="Mai">Mai</option>
-                                            <option value="Juin">Juin</option>
-                                            <option value="Juillet">Juillet</option>
-                                            <option value="Aout">Aout</option>
-                                            <option value="Septembre">Septembre</option>
-                                            <option value="Octobre">Octobre</option>
-                                            <option value="Novembre">Novembre</option>
-                                            <option value="Decembre">Decembre</option>
-                                        </select>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="entryDate" type="search" placeholder="ex: 01/2025" aria-label="Filtrer Entry Date">
+                                        </div>
                                     </th>
                                     <th>
-                                        <select class="r-month-select stat-column-search" data-key="exitDate" aria-label="Filtrer Exit Date">
-                                            <option value="">-- Mois --</option>
-                                            <option value="Janvier">Janvier</option>
-                                            <option value="Fevrier">Fevrier</option>
-                                            <option value="Mars">Mars</option>
-                                            <option value="Avril">Avril</option>
-                                            <option value="Mai">Mai</option>
-                                            <option value="Juin">Juin</option>
-                                            <option value="Juillet">Juillet</option>
-                                            <option value="Aout">Aout</option>
-                                            <option value="Septembre">Septembre</option>
-                                            <option value="Octobre">Octobre</option>
-                                            <option value="Novembre">Novembre</option>
-                                            <option value="Decembre">Decembre</option>
-                                        </select>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="exitDate" type="search" placeholder="ex: 01/2025" aria-label="Filtrer Exit Date">
+                                        </div>
                                     </th>
                                     <th></th>
                                 </tr>

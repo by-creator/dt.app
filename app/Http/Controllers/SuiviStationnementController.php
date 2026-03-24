@@ -191,32 +191,51 @@ class SuiviStationnementController extends Controller
      *   Item_Number  | Item_Type              | Type      |
      *   EntryDate - Month | ExitDate - Month  | DaysSinceIn
      */
+    /**
+     * Build a column index map from normalized headers.
+     *
+     * Direct DB columns are mapped as-is.
+     * Date sub-columns (Year / Month / Day) use "_" prefix keys so that
+     * buildRow() can reconstruct them into a single dd/mm/yyyy string.
+     */
     private function buildColumnInfo(array $normalizedHeaders): array
     {
         $aliases = [
-            'terminalname'          => 'terminal',
-            'terminal'              => 'terminal',
-            'shipowner'             => 'shipowner',
-            'blnumber'              => 'bl_number',
-            'bl'                    => 'bl_number',
-            'itemnumber'            => 'item_number',
-            'itemtype'              => 'item_type',
-            'type'                  => 'type',
-            // "BilingDateTime - Month" normalizes to "bilingdatetimemonth"
-            'bilingdatetimemonth'   => 'billing_date',
-            'billingdatetimemonth'  => 'billing_date',
-            'billingdatemonth'      => 'billing_date',
-            'bilingdatemonth'       => 'billing_date',
-            // "EntryDate - Month" normalizes to "entrydatemonth"
-            'entrydatemonth'        => 'entry_date',
-            'entrydate'             => 'entry_date',
-            // "ExitDate - Month" normalizes to "exitdatemonth"
-            'exitdatemonth'         => 'exit_date',
-            'exitdate'              => 'exit_date',
-            // "DaysSinceIn" normalizes to "dayssincein"
-            'dayssincein'           => 'days_since_in',
-            'sommedayssincein'      => 'days_since_in',
-            'totaldayssincein'      => 'days_since_in',
+            'terminalname'           => 'terminal',
+            'terminal'               => 'terminal',
+            'shipowner'              => 'shipowner',
+            'blnumber'               => 'bl_number',
+            'bl'                     => 'bl_number',
+            'itemnumber'             => 'item_number',
+            'itemtype'               => 'item_type',
+            'type'                   => 'type',
+            // Billing date sub-columns
+            'bilingdatetimeyear'     => '_billing_year',
+            'billingdatetimeyear'    => '_billing_year',
+            'bilingyear'             => '_billing_year',
+            'billingyear'            => '_billing_year',
+            'bilingdatetimemonth'    => '_billing_month',
+            'billingdatetimemonth'   => '_billing_month',
+            'billingdatemonth'       => '_billing_month',
+            'bilingdatemonth'        => '_billing_month',
+            'bilingdatetimeday'      => '_billing_day',
+            'billingdatetimeday'     => '_billing_day',
+            'billingdateday'         => '_billing_day',
+            'bilingdateday'          => '_billing_day',
+            // Entry date sub-columns
+            'entrydateyear'          => '_entry_year',
+            'entrydatemonth'         => '_entry_month',
+            'entrydate'              => '_entry_month',
+            'entrydateday'           => '_entry_day',
+            // Exit date sub-columns
+            'exitdateyear'           => '_exit_year',
+            'exitdatemonth'          => '_exit_month',
+            'exitdate'               => '_exit_month',
+            'exitdateday'            => '_exit_day',
+            // Days
+            'dayssincein'            => 'days_since_in',
+            'sommedayssincein'       => 'days_since_in',
+            'totaldayssincein'       => 'days_since_in',
         ];
 
         $map = [];
@@ -231,17 +250,39 @@ class SuiviStationnementController extends Controller
 
     private function buildRow(array $rowValues, array $columnMap): ?array
     {
-        $monthCols = ['billing_date', 'entry_date', 'exit_date'];
         $data = [];
 
-        foreach ($columnMap as $dbCol => $idx) {
-            $val = (string) ($rowValues[$idx] ?? '');
-            if ($dbCol === 'days_since_in') {
-                $data[$dbCol] = is_numeric($val) ? (float) $val : null;
-            } elseif (in_array($dbCol, $monthCols, true)) {
-                $data[$dbCol] = $val !== '' ? $this->normalizeToFrenchMonth($val) : null; // normalizeToFrenchMonth returns ?string
+        // Direct columns
+        foreach (['terminal', 'shipowner', 'bl_number', 'item_number', 'item_type', 'type', 'days_since_in'] as $dbCol) {
+            if (! isset($columnMap[$dbCol])) {
+                continue;
+            }
+            $val = (string) ($rowValues[$columnMap[$dbCol]] ?? '');
+            $data[$dbCol] = ($dbCol === 'days_since_in')
+                ? (is_numeric($val) ? (float) $val : null)
+                : ($val !== '' ? $val : null);
+        }
+
+        // Compound date columns: Year + Month + Day → dd/mm/yyyy
+        foreach ([
+            'billing_date' => ['_billing_year', '_billing_month', '_billing_day'],
+            'entry_date'   => ['_entry_year',   '_entry_month',   '_entry_day'],
+            'exit_date'    => ['_exit_year',    '_exit_month',    '_exit_day'],
+        ] as $dbCol => [$yearKey, $monthKey, $dayKey]) {
+            $year  = isset($columnMap[$yearKey])  ? trim((string) ($rowValues[$columnMap[$yearKey]]  ?? '')) : '';
+            $month = isset($columnMap[$monthKey]) ? trim((string) ($rowValues[$columnMap[$monthKey]] ?? '')) : '';
+            $day   = isset($columnMap[$dayKey])   ? trim((string) ($rowValues[$columnMap[$dayKey]]   ?? '')) : '';
+
+            if ($year !== '' && $month !== '' && $day !== '') {
+                $monthNum = $this->englishMonthToNumber($month);
+                $data[$dbCol] = $monthNum
+                    ? sprintf('%02d/%02d/%04d', (int) $day, $monthNum, (int) $year)
+                    : null;
+            } elseif ($month !== '') {
+                // Fallback: month-only column (old format without Year/Day)
+                $data[$dbCol] = $this->normalizeToFrenchMonth($month);
             } else {
-                $data[$dbCol] = $val !== '' ? $val : null;
+                $data[$dbCol] = null;
             }
         }
 
@@ -252,12 +293,25 @@ class SuiviStationnementController extends Controller
         return $data;
     }
 
+    private function englishMonthToNumber(string $month): ?int
+    {
+        return [
+            'january' => 1, 'february' => 2, 'march' => 3, 'april' => 4,
+            'may' => 5, 'june' => 6, 'july' => 7, 'august' => 8,
+            'september' => 9, 'october' => 10, 'november' => 11, 'december' => 12,
+            'janvier' => 1, 'fevrier' => 2, 'mars' => 3, 'avril' => 4,
+            'mai' => 5, 'juin' => 6, 'juillet' => 7, 'aout' => 8,
+            'septembre' => 9, 'octobre' => 10, 'novembre' => 11, 'decembre' => 12,
+        ][strtolower($month)] ?? null;
+    }
+
     private function normalizeToFrenchMonth(string $value): ?string
     {
         if (is_numeric($value)) {
             $excelSerial = (float) $value;
             if ($excelSerial > 0) {
                 $seconds = (int) round(($excelSerial - 25569) * 86400);
+
                 return $this->englishMonthToFrench(gmdate('F', $seconds));
             }
 

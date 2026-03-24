@@ -252,14 +252,15 @@ class RapportController extends Controller
             if ($excelSerial > 0) {
                 $seconds = (int) round(($excelSerial - 25569) * 86400);
 
-                return $this->englishMonthToFrench(gmdate('F', $seconds));
+                return $this->englishMonthToFrench(gmdate('F', $seconds)).' '.gmdate('Y', $seconds);
             }
+
+            return null;
         }
 
-        // Already a text value — try to extract month if it's a parseable date
         $ts = strtotime($value);
         if ($ts !== false) {
-            return $this->englishMonthToFrench(date('F', $ts));
+            return $this->englishMonthToFrench(date('F', $ts)).' '.date('Y', $ts);
         }
 
         return $this->englishMonthToFrench($value) ?? $value;
