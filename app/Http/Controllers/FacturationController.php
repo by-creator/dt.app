@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RattachementBl;
+use App\Models\SuiviStationnement;
 use App\Models\SuiviVide;
 use App\Services\DematEmailService;
 use Illuminate\Http\RedirectResponse;
@@ -86,8 +87,27 @@ class FacturationController extends Controller
             ])
             ->values();
 
+        $stationnements = SuiviStationnement::query()
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (SuiviStationnement $r) => [
+                'id'          => $r->id,
+                'terminal'    => $r->terminal,
+                'billingDate' => $r->billing_date,
+                'shipowner'   => $r->shipowner,
+                'blNumber'    => $r->bl_number,
+                'itemNumber'  => $r->item_number,
+                'itemType'    => $r->item_type,
+                'type'        => $r->type,
+                'entryDate'   => $r->entry_date,
+                'exitDate'    => $r->exit_date,
+                'daysSinceIn' => $r->days_since_in,
+            ])
+            ->values();
+
         return view('facturation.rapport', [
-            'initialRapports' => $rapports,
+            'initialRapports'       => $rapports,
+            'initialStationnements' => $stationnements,
         ]);
     }
 

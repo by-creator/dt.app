@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuiviVide;
+use App\Models\SuiviStationnement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-class RapportController extends Controller
+class SuiviStationnementController extends Controller
 {
     use \App\Http\Controllers\Concerns\StreamsXlsx;
     public function index(Request $request): JsonResponse
@@ -16,22 +16,21 @@ class RapportController extends Controller
         $size = $request->integer('size') ?: 10;
         $page = $request->integer('page') + 1;
 
-        $query = SuiviVide::query()->orderByDesc('created_at');
+        $query = SuiviStationnement::query()->orderByDesc('created_at');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('terminal', 'like', '%'.$search.'%')
-                    ->orWhere('equipment_number', 'like', '%'.$search.'%')
-                    ->orWhere('event_code', 'like', '%'.$search.'%')
-                    ->orWhere('event_name', 'like', '%'.$search.'%')
-                    ->orWhere('booking_sec_no', 'like', '%'.$search.'%');
+                    ->orWhere('bl_number', 'like', '%'.$search.'%')
+                    ->orWhere('shipowner', 'like', '%'.$search.'%')
+                    ->orWhere('item_number', 'like', '%'.$search.'%');
             });
         }
 
         $paginator = $query->paginate($size, ['*'], 'page', $page);
 
         return response()->json([
-            'content' => collect($paginator->items())->map(fn (SuiviVide $r) => $this->toArray($r))->values(),
+            'content' => collect($paginator->items())->map(fn (SuiviStationnement $r) => $this->toArray($r))->values(),
             'page' => $paginator->currentPage() - 1,
             'size' => $paginator->perPage(),
             'totalElements' => $paginator->total(),
@@ -72,17 +71,17 @@ class RapportController extends Controller
     public function exportExcel(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         return $this->streamXlsx(
-            'suivi-vides-'.now()->format('YmdHis').'.xlsx',
-            ['Terminal', 'EquipmentNumber', 'EquipmentTypeSize', 'EventCode', 'EventName', 'EventFamily', 'EventDate', 'Booking Sec No'],
+            'suivi-stationnements-'.now()->format('YmdHis').'.xlsx',
+            ['Terminal', 'BillingDate', 'Shipowner', 'BLNumber', 'Item_Number', 'Item_Type', 'Type', 'EntryDate', 'ExitDate', 'DaysSinceIn'],
             function (callable $write) {
-                SuiviVide::query()->orderByDesc('created_at')->cursor()->each(function (SuiviVide $r) use ($write) {
-                    $write([$r->terminal, $r->equipment_number, $r->equipment_type_size, $r->event_code, $r->event_name, $r->event_family, $r->event_date, $r->booking_sec_no]);
+                SuiviStationnement::query()->orderByDesc('created_at')->cursor()->each(function (SuiviStationnement $r) use ($write) {
+                    $write([$r->terminal, $r->billing_date, $r->shipowner, $r->bl_number, $r->item_number, $r->item_type, $r->type, $r->entry_date, $r->exit_date, $r->days_since_in]);
                 });
             }
         );
     }
 
-    public function destroy(Request $request, SuiviVide $suivi): Response
+    public function destroy(Request $request, SuiviStationnement $suivi): Response
     {
         $this->authorizeAdmin($request);
         $suivi->delete();
@@ -97,34 +96,31 @@ class RapportController extends Controller
             throw new \RuntimeException('Impossible d\'ouvrir le fichier.');
         }
 
-        // Detect delimiter
         $firstLine = fgets($handle);
         rewind($handle);
         $delimiter = substr_count($firstLine, ';') >= substr_count($firstLine, ',') ? ';' : ',';
 
-        // Read header
         $rawHeader = fgetcsv($handle, 0, $delimiter);
         if (! $rawHeader) {
             fclose($handle);
             throw new \RuntimeException('En-tete du fichier introuvable.');
         }
 
-        $header = array_map(fn ($h) => $this->normalizeHeader($h), $rawHeader);
-        $columnMap = $this->buildColumnMap($header);
+        $normalizedHeaders = array_map(fn ($h) => $this->normalizeHeader($h), $rawHeader);
+        $columnInfo = $this->buildColumnInfo($normalizedHeaders);
 
         $rows = [];
         while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
             if (array_filter($row) === []) {
                 continue;
             }
-            $data = [];
-            foreach ($columnMap as $dbCol => $idx) {
-                $data[$dbCol] = isset($row[$idx]) && $row[$idx] !== '' ? $row[$idx] : null;
+            $data = $this->buildRow($row, $columnInfo);
+            if ($data !== null) {
+                $rows[] = $data;
             }
-            $rows[] = $data;
 
             if (count($rows) >= 200) {
-                SuiviVide::query()->insert($rows);
+                SuiviStationnement::query()->insert($rows);
                 $rows = [];
             }
         }
@@ -132,10 +128,10 @@ class RapportController extends Controller
         fclose($handle);
 
         if (! empty($rows)) {
-            SuiviVide::query()->insert($rows);
+            SuiviStationnement::query()->insert($rows);
         }
 
-        return SuiviVide::query()->count();
+        return SuiviStationnement::query()->count();
     }
 
     private function importXlsx(string $path): int
@@ -145,10 +141,8 @@ class RapportController extends Controller
             throw new \RuntimeException('Impossible d\'ouvrir le fichier XLSX (format invalide).');
         }
 
-        // Namespace OOXML
         $ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 
-        // Shared strings via DOMXPath (gere le namespace)
         $sharedStrings = [];
         $ssRaw = $zip->getFromName('xl/sharedStrings.xml');
         if ($ssRaw !== false) {
@@ -166,7 +160,6 @@ class RapportController extends Controller
             }
         }
 
-        // Trouver la premiere feuille
         $sheetRaw = $zip->getFromName('xl/worksheets/sheet1.xml')
             ?: $zip->getFromName('xl/worksheets/Sheet1.xml');
         $zip->close();
@@ -180,8 +173,7 @@ class RapportController extends Controller
         $xpath = new \DOMXPath($dom);
         $xpath->registerNamespace('s', $ns);
 
-        $header = null;
-        $columnMap = null;
+        $columnInfo = null;
         $insertRows = [];
 
         foreach ($xpath->query('//s:sheetData/s:row') as $xmlRow) {
@@ -197,8 +189,6 @@ class RapportController extends Controller
                 if (! empty($ref) && preg_match('/^([A-Z]+)/', $ref, $m)) {
                     $colIdx = $this->colLetterToIndex($m[1]);
                 } else {
-                    // Certains fichiers XLSX n'incluent pas l'attribut "r" sur les cellules.
-                    // Dans ce cas, on retombe sur l'ordre naturel des cellules de la ligne.
                     $colIdx = $cellIndex;
                 }
 
@@ -232,84 +222,71 @@ class RapportController extends Controller
             ksort($rowData);
             $rowValues = array_values($rowData);
 
-            if ($header === null) {
-                $header = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
-                $columnMap = $this->buildColumnMap($header);
+            if ($columnInfo === null) {
+                $normalizedHeaders = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
+                $columnInfo = $this->buildColumnInfo($normalizedHeaders);
                 continue;
             }
 
-            if (empty($columnMap)) {
-                continue;
-            }
-
-            $data = [];
-            foreach ($columnMap as $dbCol => $idx) {
-                $val = (string) ($rowValues[$idx] ?? '');
-                if ($dbCol === 'event_date') {
-                    $data[$dbCol] = $this->normalizeEventDate($val);
-                    continue;
-                }
-
-                $data[$dbCol] = $val !== '' ? $val : null;
-            }
-
-            if (array_filter($data) === []) {
+            $data = $this->buildRow($rowValues, $columnInfo);
+            if ($data === null) {
                 continue;
             }
 
             $insertRows[] = $data;
 
             if (count($insertRows) >= 200) {
-                SuiviVide::query()->insert($insertRows);
+                SuiviStationnement::query()->insert($insertRows);
                 $insertRows = [];
             }
         }
 
         if (! empty($insertRows)) {
-            SuiviVide::query()->insert($insertRows);
+            SuiviStationnement::query()->insert($insertRows);
         }
 
-        return SuiviVide::query()->count();
+        return SuiviStationnement::query()->count();
     }
 
-    private function colLetterToIndex(string $col): int
-    {
-        $index = 0;
-        for ($i = 0, $len = strlen($col); $i < $len; $i++) {
-            $index = $index * 26 + (ord($col[$i]) - 64);
-        }
-
-        return $index - 1;
-    }
-
-    private function normalizeHeader(string $header): string
-    {
-        // Remove BOM, trim, lowercase, remove spaces/underscores/dashes
-        $h = preg_replace('/^\xEF\xBB\xBF/', '', $header);
-
-        return strtolower(preg_replace('/[\s\-_]+/', '', trim($h)));
-    }
-
-    private function buildColumnMap(array $normalizedHeaders): array
+    /**
+     * Build a simple column index map from normalized headers.
+     *
+     * Handles data(3).xlsx structure:
+     *   TerminalName | BilingDateTime - Month | Shipowner | BLNumber |
+     *   Item_Number  | Item_Type              | Type      |
+     *   EntryDate - Month | ExitDate - Month  | DaysSinceIn
+     */
+    private function buildColumnInfo(array $normalizedHeaders): array
     {
         $aliases = [
-            'terminal'          => 'terminal',
-            'equipmentnumber'   => 'equipment_number',
-            'equipmentno'       => 'equipment_number',
-            'equipmenttypesize' => 'equipment_type_size',
-            'typesize'          => 'equipment_type_size',
-            'eventcode'         => 'event_code',
-            'eventname'         => 'event_name',
-            'eventfamily'       => 'event_family',
-            'eventdate'         => 'event_date',
-            'bookingsecno'      => 'booking_sec_no',
-            'bookingno'         => 'booking_sec_no',
-            'bookingsec'        => 'booking_sec_no',
+            'terminalname'          => 'terminal',
+            'terminal'              => 'terminal',
+            'shipowner'             => 'shipowner',
+            'blnumber'              => 'bl_number',
+            'bl'                    => 'bl_number',
+            'itemnumber'            => 'item_number',
+            'itemtype'              => 'item_type',
+            'type'                  => 'type',
+            // "BilingDateTime - Month" normalizes to "bilingdatetimemonth"
+            'bilingdatetimemonth'   => 'billing_date',
+            'billingdatetimemonth'  => 'billing_date',
+            'billingdatemonth'      => 'billing_date',
+            'bilingdatemonth'       => 'billing_date',
+            // "EntryDate - Month" normalizes to "entrydatemonth"
+            'entrydatemonth'        => 'entry_date',
+            'entrydate'             => 'entry_date',
+            // "ExitDate - Month" normalizes to "exitdatemonth"
+            'exitdatemonth'         => 'exit_date',
+            'exitdate'              => 'exit_date',
+            // "DaysSinceIn" normalizes to "dayssincein"
+            'dayssincein'           => 'days_since_in',
+            'sommedayssincein'      => 'days_since_in',
+            'totaldayssincein'      => 'days_since_in',
         ];
 
         $map = [];
         foreach ($normalizedHeaders as $idx => $h) {
-            if (isset($aliases[$h])) {
+            if (isset($aliases[$h]) && ! isset($map[$aliases[$h]])) {
                 $map[$aliases[$h]] = $idx;
             }
         }
@@ -317,34 +294,27 @@ class RapportController extends Controller
         return $map;
     }
 
-    private function authorizeAdmin(Request $request): void
+    private function buildRow(array $rowValues, array $columnMap): ?array
     {
-        abort_unless($request->user()?->role?->name === 'ADMIN', 403);
-    }
+        $monthCols = ['billing_date', 'entry_date', 'exit_date'];
+        $data = [];
 
-    private function normalizeEventDate(?string $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        if (is_numeric($value)) {
-            $excelSerial = (float) $value;
-
-            if ($excelSerial > 0) {
-                $seconds = (int) round(($excelSerial - 25569) * 86400);
-
-                return $this->englishMonthToFrench(gmdate('F', $seconds));
+        foreach ($columnMap as $dbCol => $idx) {
+            $val = (string) ($rowValues[$idx] ?? '');
+            if ($dbCol === 'days_since_in') {
+                $data[$dbCol] = is_numeric($val) ? (float) $val : null;
+            } elseif (in_array($dbCol, $monthCols, true)) {
+                $data[$dbCol] = $val !== '' ? $this->englishMonthToFrench($val) : null;
+            } else {
+                $data[$dbCol] = $val !== '' ? $val : null;
             }
         }
 
-        // Already a text value — try to extract month if it's a parseable date
-        $ts = strtotime($value);
-        if ($ts !== false) {
-            return $this->englishMonthToFrench(date('F', $ts));
+        if (array_filter($data) === []) {
+            return null;
         }
 
-        return $this->englishMonthToFrench($value) ?? $value;
+        return $data;
     }
 
     private function englishMonthToFrench(string $month): string
@@ -365,18 +335,42 @@ class RapportController extends Controller
         ][$month] ?? $month;
     }
 
-    private function toArray(SuiviVide $r): array
+    private function colLetterToIndex(string $col): int
+    {
+        $index = 0;
+        for ($i = 0, $len = strlen($col); $i < $len; $i++) {
+            $index = $index * 26 + (ord($col[$i]) - 64);
+        }
+
+        return $index - 1;
+    }
+
+    private function normalizeHeader(string $header): string
+    {
+        $h = preg_replace('/^\xEF\xBB\xBF/', '', $header);
+
+        return strtolower(preg_replace('/[\s\-_]+/', '', trim($h)));
+    }
+
+    private function authorizeAdmin(Request $request): void
+    {
+        abort_unless($request->user()?->role?->name === 'ADMIN', 403);
+    }
+
+    private function toArray(SuiviStationnement $r): array
     {
         return [
-            'id'                => $r->id,
-            'terminal'          => $r->terminal,
-            'equipmentNumber'   => $r->equipment_number,
-            'equipmentTypeSize' => $r->equipment_type_size,
-            'eventCode'         => $r->event_code,
-            'eventName'         => $r->event_name,
-            'eventFamily'       => $r->event_family,
-            'eventDate'         => $r->event_date,
-            'bookingSecNo'      => $r->booking_sec_no,
+            'id'          => $r->id,
+            'terminal'    => $r->terminal,
+            'billingDate' => $r->billing_date,
+            'shipowner'   => $r->shipowner,
+            'blNumber'    => $r->bl_number,
+            'itemNumber'  => $r->item_number,
+            'itemType'    => $r->item_type,
+            'type'        => $r->type,
+            'entryDate'   => $r->entry_date,
+            'exitDate'    => $r->exit_date,
+            'daysSinceIn' => $r->days_since_in,
         ];
     }
 }

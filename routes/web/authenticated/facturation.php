@@ -4,6 +4,7 @@ use App\Http\Controllers\FacturationApiController;
 use App\Http\Controllers\FacturationController;
 use App\Http\Controllers\GfaDisplayController;
 use App\Http\Controllers\RapportController;
+use App\Http\Controllers\SuiviStationnementController;
 use App\Http\Controllers\TiersUnifyController;
 use App\Http\Controllers\UnifyPrintController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,10 @@ Route::middleware(['auth', 'verified'])->prefix('facturation')->group(function (
         Route::post('rapports/import', [RapportController::class, 'import']);
         Route::get('rapports/export', [RapportController::class, 'exportExcel']);
         Route::delete('rapports/{suivi}', [RapportController::class, 'destroy']);
+        Route::get('suivi-stationnements', [SuiviStationnementController::class, 'index']);
+        Route::post('suivi-stationnements/import', [SuiviStationnementController::class, 'import']);
+        Route::get('suivi-stationnements/export', [SuiviStationnementController::class, 'exportExcel']);
+        Route::delete('suivi-stationnements/{suivi}', [SuiviStationnementController::class, 'destroy']);
         Route::get('rattachements', [FacturationApiController::class, 'listRattachements'])->name('facturation.api.rattachements.index');
         Route::patch('rattachements/{rattachement}/valider', [FacturationApiController::class, 'validateRattachement'])->name('facturation.api.rattachements.validate');
         Route::patch('rattachements/{rattachement}/rejeter', [FacturationApiController::class, 'rejectRattachement'])->name('facturation.api.rattachements.reject');

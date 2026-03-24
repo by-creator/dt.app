@@ -2,7 +2,9 @@
     @php
         $isAdmin = auth()->user()?->role?->name === 'ADMIN';
         $initialRapportsCollection = collect($initialRapports ?? []);
-        $initialRapportsPage = $initialRapportsCollection->take(10);
+        $initialRapportsPage = $initialRapportsCollection->take(5);
+        $initialStationnementsCollection = collect($initialStationnements ?? []);
+        $initialStationnementsPage = $initialStationnementsCollection->take(5);
     @endphp
 
     <div class="rapport-page flex h-full w-full flex-1 flex-col gap-6 pb-8">
@@ -51,6 +53,10 @@
             .rapport-page .page-btn:hover { background:var(--dt-table-head-bg); border-color:#4B49AC; color:#818cf8; }
             .rapport-page .page-btn.active { background:#4B49AC; color:#fff; border-color:#4B49AC; }
             .rapport-page .page-btn:disabled { opacity:.4; cursor:default; }
+            .rapport-page .r-select { border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:8px 12px; font-size:13px; outline:none; width:100%; margin-bottom:14px; }
+            .rapport-page .r-select:focus { border-color:#4B49AC; box-shadow:0 0 0 4px var(--dt-ring); }
+            .rapport-page .r-month-select { width:100%; border:1px solid var(--dt-input-border); background:var(--dt-input-bg); color:var(--dt-page-text); border-radius:8px; padding:7px 8px; font-size:12px; outline:none; cursor:pointer; }
+            .rapport-page .r-month-select:focus { border-color:#4B49AC; box-shadow:0 0 0 4px var(--dt-ring); }
         </style>
 
         <div class="dt-page-header" style="text-align:center">
@@ -65,13 +71,14 @@
             @endif
         </div>
 
+        {{-- ===== ONGLET SUIVI VIDES ===== --}}
         <div id="rapport-suivi" class="module-pane active">
             <div class="r-card r-card-fluid">
                 <div class="r-toolbar">
                     <div class="r-toolbar-left">
                         <button type="button" class="r-btn r-btn-primary" id="rapport-refresh"><i class="fas fa-sync-alt"></i> Actualiser</button>
                     </div>
-                    <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter CSV</a>
+                    <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter Excel</a>
                 </div>
 
                 <div class="table-card">
@@ -126,10 +133,21 @@
                                         </div>
                                     </th>
                                     <th>
-                                        <div class="r-filter-field">
-                                            <i class="fas fa-filter r-filter-icon"></i>
-                                            <input class="r-column-search rapport-column-search" data-key="eventDate" type="date" aria-label="Filtrer Event Date">
-                                        </div>
+                                        <select class="r-month-select rapport-column-search" data-key="eventDate" aria-label="Filtrer Event Date">
+                                            <option value="">-- Mois --</option>
+                                            <option value="Janvier">Janvier</option>
+                                            <option value="Fevrier">Fevrier</option>
+                                            <option value="Mars">Mars</option>
+                                            <option value="Avril">Avril</option>
+                                            <option value="Mai">Mai</option>
+                                            <option value="Juin">Juin</option>
+                                            <option value="Juillet">Juillet</option>
+                                            <option value="Aout">Aout</option>
+                                            <option value="Septembre">Septembre</option>
+                                            <option value="Octobre">Octobre</option>
+                                            <option value="Novembre">Novembre</option>
+                                            <option value="Decembre">Decembre</option>
+                                        </select>
                                     </th>
                                     <th>
                                         <div class="r-filter-field">
@@ -157,10 +175,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="pagination-bar" id="rapport-pagination-bar" style="{{ $initialRapportsCollection->count() > 10 ? 'display:flex' : 'display:none' }}">
+                    <div class="pagination-bar" id="rapport-pagination-bar" style="{{ $initialRapportsCollection->count() > 5 ? 'display:flex' : 'display:none' }}">
                         <span id="rapport-count-info">
                             @if ($initialRapportsCollection->isNotEmpty())
-                                1-{{ min(10, $initialRapportsCollection->count()) }} sur {{ $initialRapportsCollection->count() }}
+                                1-{{ min(5, $initialRapportsCollection->count()) }} sur {{ $initialRapportsCollection->count() }}
                             @else
                                 0 sur 0
                             @endif
@@ -169,10 +187,10 @@
                             @if ($initialRapportsCollection->count() > 1)
                                 <button class="page-btn" onclick="renderRapportPage(0)" disabled><i class="fas fa-chevron-left"></i></button>
                                 <button class="page-btn active" onclick="renderRapportPage(1)">1</button>
-                                @if ($initialRapportsCollection->count() > 10)
+                                @if ($initialRapportsCollection->count() > 5)
                                     <button class="page-btn" onclick="renderRapportPage(2)">2</button>
                                 @endif
-                                <button class="page-btn" onclick="renderRapportPage(2)" {{ $initialRapportsCollection->count() <= 10 ? 'disabled' : '' }}><i class="fas fa-chevron-right"></i></button>
+                                <button class="page-btn" onclick="renderRapportPage(2)" {{ $initialRapportsCollection->count() <= 5 ? 'disabled' : '' }}><i class="fas fa-chevron-right"></i></button>
                             @endif
                         </div>
                     </div>
@@ -180,31 +198,178 @@
             </div>
         </div>
 
+        {{-- ===== ONGLET SUIVI STATIONNEMENT ===== --}}
         <div id="rapport-stationnement" class="module-pane">
             <div class="r-card r-card-fluid">
-                <div class="r-card-title"><i class="fas fa-square-parking" style="color:#4B49AC"></i> Suivi stationnement</div>
-                <div class="empty-state">
-                    <i class="fas fa-warehouse fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>
-                    Aucun contenu n'est encore configure pour le suivi stationnement.
+                <div class="r-toolbar">
+                    <div class="r-toolbar-left">
+                        <button type="button" class="r-btn r-btn-primary" id="stat-refresh"><i class="fas fa-sync-alt"></i> Actualiser</button>
+                    </div>
+                    <a href="/facturation/api/suivi-stationnements/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter Excel</a>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Terminal</th>
+                                    <th>Billing Date</th>
+                                    <th>Shipowner</th>
+                                    <th>BL Number</th>
+                                    <th>Item Number</th>
+                                    <th>Item Type</th>
+                                    <th>Type</th>
+                                    <th>Entry Date</th>
+                                    <th>Exit Date</th>
+                                    <th>Days Since In</th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="terminal" type="search" placeholder="Terminal">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <select class="r-month-select stat-column-search" data-key="billingDate" aria-label="Filtrer Billing Date">
+                                            <option value="">-- Mois --</option>
+                                            <option value="Janvier">Janvier</option>
+                                            <option value="Fevrier">Fevrier</option>
+                                            <option value="Mars">Mars</option>
+                                            <option value="Avril">Avril</option>
+                                            <option value="Mai">Mai</option>
+                                            <option value="Juin">Juin</option>
+                                            <option value="Juillet">Juillet</option>
+                                            <option value="Aout">Aout</option>
+                                            <option value="Septembre">Septembre</option>
+                                            <option value="Octobre">Octobre</option>
+                                            <option value="Novembre">Novembre</option>
+                                            <option value="Decembre">Decembre</option>
+                                        </select>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="shipowner" type="search" placeholder="Shipowner">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="blNumber" type="search" placeholder="BL Number">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="itemNumber" type="search" placeholder="Item Number">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="itemType" type="search" placeholder="Item Type">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <div class="r-filter-field">
+                                            <i class="fas fa-filter r-filter-icon"></i>
+                                            <input class="r-column-search stat-column-search" data-key="type" type="search" placeholder="Type">
+                                        </div>
+                                    </th>
+                                    <th>
+                                        <select class="r-month-select stat-column-search" data-key="entryDate" aria-label="Filtrer Entry Date">
+                                            <option value="">-- Mois --</option>
+                                            <option value="Janvier">Janvier</option>
+                                            <option value="Fevrier">Fevrier</option>
+                                            <option value="Mars">Mars</option>
+                                            <option value="Avril">Avril</option>
+                                            <option value="Mai">Mai</option>
+                                            <option value="Juin">Juin</option>
+                                            <option value="Juillet">Juillet</option>
+                                            <option value="Aout">Aout</option>
+                                            <option value="Septembre">Septembre</option>
+                                            <option value="Octobre">Octobre</option>
+                                            <option value="Novembre">Novembre</option>
+                                            <option value="Decembre">Decembre</option>
+                                        </select>
+                                    </th>
+                                    <th>
+                                        <select class="r-month-select stat-column-search" data-key="exitDate" aria-label="Filtrer Exit Date">
+                                            <option value="">-- Mois --</option>
+                                            <option value="Janvier">Janvier</option>
+                                            <option value="Fevrier">Fevrier</option>
+                                            <option value="Mars">Mars</option>
+                                            <option value="Avril">Avril</option>
+                                            <option value="Mai">Mai</option>
+                                            <option value="Juin">Juin</option>
+                                            <option value="Juillet">Juillet</option>
+                                            <option value="Aout">Aout</option>
+                                            <option value="Septembre">Septembre</option>
+                                            <option value="Octobre">Octobre</option>
+                                            <option value="Novembre">Novembre</option>
+                                            <option value="Decembre">Decembre</option>
+                                        </select>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="stat-tbody">
+                                @forelse ($initialStationnementsPage as $stat)
+                                    <tr>
+                                        <td>{{ $stat['terminal'] ?: '-' }}</td>
+                                        <td>{{ $stat['billingDate'] ?: '-' }}</td>
+                                        <td>{{ $stat['shipowner'] ?: '-' }}</td>
+                                        <td>{{ $stat['blNumber'] ?: '-' }}</td>
+                                        <td>{{ $stat['itemNumber'] ?: '-' }}</td>
+                                        <td>{{ $stat['itemType'] ?: '-' }}</td>
+                                        <td>{{ $stat['type'] ?: '-' }}</td>
+                                        <td>{{ $stat['entryDate'] ?: '-' }}</td>
+                                        <td>{{ $stat['exitDate'] ?: '-' }}</td>
+                                        <td>{{ $stat['daysSinceIn'] ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="10" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-bar" id="stat-pagination-bar" style="{{ $initialStationnementsCollection->count() > 5 ? 'display:flex' : 'display:none' }}">
+                        <span id="stat-count-info">
+                            @if ($initialStationnementsCollection->isNotEmpty())
+                                1-{{ min(5, $initialStationnementsCollection->count()) }} sur {{ $initialStationnementsCollection->count() }}
+                            @else
+                                0 sur 0
+                            @endif
+                        </span>
+                        <div class="pagination-pages" id="stat-pagination-pages"></div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        {{-- ===== ONGLET ADMIN ===== --}}
         @if ($isAdmin)
             <div id="rapport-admin" class="module-pane">
                 <div class="r-card">
-                    <div class="r-card-title"><i class="fas fa-cog" style="color:#4B49AC"></i> Administration - Suivi des vides</div>
+                    <div class="r-card-title"><i class="fas fa-cog" style="color:#4B49AC"></i> Administration</div>
                     <div id="admin-status" class="r-status"></div>
                     <div class="r-admin-card">
                         <h5 style="margin-bottom:8px;font-weight:700;color:var(--dt-page-text)">Importer un fichier</h5>
                         <p style="font-size:13px;color:var(--dt-muted-text);margin-bottom:14px">
-                            Formats acceptes : <strong>XLSX, CSV</strong> (separateur , ou ;).<br>
-                            Colonnes attendues : Terminal, EquipmentNumber, EquipmentTypeSize, EventCode, EventName, EventFamily, EventDate, Booking Sec No.
+                            Formats acceptes : <strong>XLSX, CSV</strong> (separateur , ou ;).
                         </p>
+                        <label style="font-size:13px;font-weight:600;color:var(--dt-page-text);display:block;margin-bottom:6px">
+                            Rapport a importer
+                        </label>
+                        <select id="admin-rapport-type" class="r-select">
+                            <option value="suivi-vides">Suivi des vides</option>
+                            <option value="suivi-stationnements">Suivi stationnement</option>
+                        </select>
                         <input type="file" id="admin-import-file" accept=".csv,.xlsx" class="r-file-input">
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
                             <button type="button" id="admin-import-btn" class="r-btn r-btn-primary"><i class="fas fa-upload"></i> Importer</button>
-                            <a href="/facturation/api/rapports/export" class="r-btn r-btn-export"><i class="fas fa-file-excel"></i> Exporter CSV</a>
                         </div>
                     </div>
                 </div>
@@ -222,6 +387,7 @@
                     const target = document.getElementById(tab.dataset.target);
                     if (target) target.classList.add('active');
                     if (tab.dataset.target === 'rapport-suivi') renderRapportPage(rapportCurrentPage);
+                    if (tab.dataset.target === 'rapport-stationnement') renderStatPage(statCurrentPage);
                 });
             });
 
@@ -237,6 +403,11 @@
                 return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
             }
 
+            // ===== SUIVI VIDES =====
+            const PAGE_SIZE = 5;
+            let allRapports = @json($initialRapportsCollection->values());
+            let rapportCurrentPage = 1;
+
             function currentFilters() {
                 const filters = {};
                 document.querySelectorAll('.rapport-column-search').forEach(input => {
@@ -244,10 +415,6 @@
                 });
                 return filters;
             }
-
-            const PAGE_SIZE = 10;
-            let allRapports = @json($initialRapportsCollection->values());
-            let rapportCurrentPage = 1;
 
             async function loadRapports() {
                 const tbody = document.getElementById('rapport-tbody');
@@ -309,46 +476,135 @@
                 document.getElementById('rapport-pagination-pages').innerHTML = html;
             }
 
-            document.getElementById('rapport-refresh').onclick = () => {
-                document.querySelectorAll('.rapport-column-search').forEach(input => {
-                    input.value = '';
-                });
-                window.location.reload();
-            };
-            document.querySelectorAll('.rapport-column-search').forEach(input => {
-                input.addEventListener('input', () => {
-                    renderRapportPage(1);
-                });
+            document.getElementById('rapport-refresh').onclick = () => { window.location.reload(); };
+            document.querySelectorAll('.rapport-column-search').forEach(el => {
+                el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { renderRapportPage(1); });
             });
 
+            // ===== SUIVI STATIONNEMENT =====
+            let allStationnements = @json($initialStationnementsCollection->values());
+            let statCurrentPage = 1;
+
+            function currentStatFilters() {
+                const filters = {};
+                document.querySelectorAll('.stat-column-search').forEach(input => {
+                    filters[input.dataset.key] = input.value.trim().toLowerCase();
+                });
+                return filters;
+            }
+
+            async function loadStationnements() {
+                const tbody = document.getElementById('stat-tbody');
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-spinner fa-spin fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Chargement...</td></tr>';
+                try {
+                    const res = await fetch('/facturation/api/suivi-stationnements?page=0&size=9999');
+                    const data = await res.json();
+                    allStationnements = data.content || [];
+                    renderStatPage(1);
+                } catch {
+                    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Erreur de chargement.</td></tr>';
+                }
+            }
+
+            function renderStatPage(page) {
+                statCurrentPage = page;
+                const filters = currentStatFilters();
+                const rows = allStationnements.filter(r =>
+                    Object.entries(filters).every(([key, value]) => {
+                        if (!value) return true;
+                        return String(r[key] ?? '').toLowerCase().includes(value);
+                    })
+                );
+                const total = rows.length;
+                const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (statCurrentPage > pages) statCurrentPage = pages;
+                const start = (statCurrentPage - 1) * PAGE_SIZE;
+                const slice = rows.slice(start, start + PAGE_SIZE);
+                const tbody = document.getElementById('stat-tbody');
+
+                if (total === 0) {
+                    tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox fa-2x" style="display:block;margin-bottom:10px;color:#ccc"></i>Aucune donnee disponible.</td></tr>';
+                } else {
+                    tbody.innerHTML = slice.map(r => `<tr>
+                        <td>${escHtml(r.terminal)}</td>
+                        <td>${escHtml(r.billingDate)}</td>
+                        <td>${escHtml(r.shipowner)}</td>
+                        <td>${escHtml(r.blNumber)}</td>
+                        <td>${escHtml(r.itemNumber)}</td>
+                        <td>${escHtml(r.itemType)}</td>
+                        <td>${escHtml(r.type)}</td>
+                        <td>${escHtml(r.entryDate)}</td>
+                        <td>${escHtml(r.exitDate)}</td>
+                        <td>${escHtml(r.daysSinceIn)}</td>
+                    </tr>`).join('');
+                }
+
+                const bar = document.getElementById('stat-pagination-bar');
+                bar.style.display = total > PAGE_SIZE ? 'flex' : 'none';
+                document.getElementById('stat-count-info').textContent = `${start + 1}-${Math.min(start + PAGE_SIZE, total)} sur ${total}`;
+
+                let html = `<button class="page-btn" onclick="renderStatPage(${statCurrentPage - 1})" ${statCurrentPage <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+                for (let p = 1; p <= pages; p++) {
+                    if (pages <= 7 || p === 1 || p === pages || Math.abs(p - statCurrentPage) <= 1) {
+                        html += `<button class="page-btn ${p === statCurrentPage ? 'active' : ''}" onclick="renderStatPage(${p})">${p}</button>`;
+                    } else if (Math.abs(p - statCurrentPage) === 2) {
+                        html += '<span style="padding:4px 6px;color:var(--dt-muted-text)">...</span>';
+                    }
+                }
+                html += `<button class="page-btn" onclick="renderStatPage(${statCurrentPage + 1})" ${statCurrentPage >= pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+                document.getElementById('stat-pagination-pages').innerHTML = html;
+            }
+
+            document.getElementById('stat-refresh').onclick = () => { window.location.reload(); };
+            document.querySelectorAll('.stat-column-search').forEach(el => {
+                el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { renderStatPage(1); });
+            });
+
+            // ===== ADMIN IMPORT =====
             const adminImportBtn = document.getElementById('admin-import-btn');
             if (adminImportBtn) {
                 adminImportBtn.onclick = async () => {
                     const fileInput = document.getElementById('admin-import-file');
+                    const rapportType = document.getElementById('admin-rapport-type').value;
                     const adminStatus = document.getElementById('admin-status');
+
                     if (!fileInput.files.length) {
                         setStatus(adminStatus, 'Selectionnez un fichier a importer.', false);
                         return;
                     }
+
+                    const endpoint = rapportType === 'suivi-stationnements'
+                        ? '/facturation/api/suivi-stationnements/import'
+                        : '/facturation/api/rapports/import';
+
                     adminImportBtn.disabled = true;
                     adminImportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Import en cours...';
+
                     const formData = new FormData();
                     formData.append('file', fileInput.files[0]);
                     formData.append('_token', csrfToken);
-                    const resp = await fetch('/facturation/api/rapports/import', { method: 'POST', body: formData });
+
+                    const resp = await fetch(endpoint, { method: 'POST', body: formData });
                     const msg = await resp.text();
                     setStatus(adminStatus, msg, resp.ok);
+
                     if (resp.ok) {
                         fileInput.value = '';
                         dtToast(msg, 'success');
-                        loadRapports();
+                        if (rapportType === 'suivi-stationnements') {
+                            loadStationnements();
+                        } else {
+                            loadRapports();
+                        }
                     }
+
                     adminImportBtn.disabled = false;
                     adminImportBtn.innerHTML = '<i class="fas fa-upload"></i> Importer';
                 };
             }
 
             renderRapportPage(1);
+            renderStatPage(1);
         </script>
     </div>
 </x-layouts::app>
