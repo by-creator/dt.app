@@ -10,7 +10,7 @@ class LogoutResponse implements LogoutResponseContract
 {
     public function toResponse($request): JsonResponse|RedirectResponse
     {
-        $target = url('/login');
+        $target = route('home');
 
         return $request->wantsJson()
             ? new JsonResponse(['two_factor' => false, 'redirect' => $target])

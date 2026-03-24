@@ -14,28 +14,22 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-    protected function afterRefreshingDatabase()
+    protected function setUp(): void
     {
-        parent::afterRefreshingDatabase();
+        parent::setUp();
 
-        // Reload routes after database refresh to fix RefreshDatabase route caching issue
-        // This hook is called after the database has been refreshed
-        $this->reloadRoutes();
+        // Re-load routes at the start of each test to ensure they're available
+        // This works around RefreshDatabase clearing routes
+        $this->ensureRoutesLoaded();
     }
 
-    private function reloadRoutes(): void
+    private function ensureRoutesLoaded(): void
     {
-        $router = $this->app['router'];
-
-        // Get the current routes to determine which are custom routes
-        $allRoutes = $router->getRoutes()->getRoutes();
-
-        // Clear all routes except those from Fortify (which should be preserved)
-        // Fortify routes are registered first, so we can identify them by counting
-
-        // Re-load the web routes using the router's built-in group mechanism
-        $router->group(['middleware' => 'web'], function ($router) {
-            require __DIR__.'/../routes/web.php';
-        });
+        // Make sure routes are loaded by making a dummy request
+        try {
+            $this->get('/');
+        } catch (\Exception) {
+            // Ignore any exceptions from the dummy request
+        }
     }
 }
