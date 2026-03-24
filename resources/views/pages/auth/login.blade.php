@@ -88,13 +88,13 @@
 
                     <div class="dt-auth-field">
                         <label for="email">{{ __('Adresse email') }}</label>
-                        <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="email" placeholder="admin@dakarterminal.sn" class="dt-auth-input">
+                        <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="email" placeholder="Entrez votre adresse mail" class="dt-auth-input">
                     </div>
 
                     <div class="dt-auth-field">
                         <label for="password">{{ __('Mot de passe') }}</label>
                         <div class="dt-password-toggle-group">
-                            <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Votre mot de passe" class="dt-auth-input">
+                            <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Entrez votre mot de passe" class="dt-auth-input">
                             <button type="button" class="dt-password-toggle" data-password-toggle data-show-label="Voir" data-hide-label="Masquer" aria-controls="password" aria-label="Afficher le mot de passe">Voir</button>
                         </div>
                     </div>
