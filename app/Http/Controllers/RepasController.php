@@ -21,11 +21,13 @@ class RepasController extends Controller
         'sophie-yande.diouf@dakar-terminal.com',
         'alioune-badara.dia@dakar-terminal.com',
         'fatou-kine.niang@dakar-terminal.com',
+        'dieynaba.sy@dakar-terminal.com',
         'ramatoulaye.diallo@dakar-terminal.com',
         'christian.sarr@dakar-terminal.com',
         'mor-kebe.fall@dakar-terminal.com',
         'ousmane.tall@dakar-terminal.com',
         'fatou.konte@dakar-terminal.com',
+        'aissatou.sow@dakar-terminal.com',
         'mame-aminata.ndaw@dakar-terminal.com',
         'mamadou-bafou.fall@dakar-terminal.com',
         'elhadji-babacar.sane@dakar-terminal.com',
@@ -46,7 +48,8 @@ class RepasController extends Controller
         'aliounebadara.sy@dakar-terminal.com',
         'serigne.ndiaye@dakar-terminal.com',
         'marie.diop@dakar-terminal.com',
-        'adama.n@dakar-terminal.com'
+        'adama.n@dakar-terminal.com',
+        'gaye.maliki@dakar-terminal.com'
 
         
     ];
