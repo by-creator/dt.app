@@ -230,6 +230,25 @@ class DematEmailService
         $this->sendToOne($toEmail, $subject, $html);
     }
 
+    public function sendMenuDuJourEmail(string $toEmail, string $subject, string $html): void
+    {
+        $this->sendToOne($toEmail, $subject, $html);
+    }
+
+    public function buildMenuDuJourHtml(string $plat1, string $plat2): string
+    {
+        return $this->wrapHtml(
+            'Menu du jour',
+            '#4B49AC',
+            implode('', [
+                '<tr><td colspan="2" style="padding:0 0 18px;color:#555;font-size:13px;line-height:1.7">Bonjour,<br>Voici le menu du jour de Dakar Terminal.</td></tr>',
+                $this->infoRow('Plat 1', $plat1),
+                $this->infoRow('Plat 2', $plat2),
+            ]),
+            'Envoye le <strong>'.$this->escape($this->nowFormatted()).'</strong>',
+        );
+    }
+
     public function sendIesPasswordResetEmail(string $toEmail, string $newPassword, string $platformUrl): void
     {
         $subject = '[Dakar Terminal] Reinitialisation de votre mot de passe IES';

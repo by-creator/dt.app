@@ -59,6 +59,13 @@
                     'icon' => 'clipboard-document-list',
                     'keywords' => 'audit journaux traces activite',
                 ],
+                [
+                    'title' => 'Repas',
+                    'description' => 'Envoyez le menu du jour par email.',
+                    'route' => route('repas.index'),
+                    'icon' => 'cake',
+                    'keywords' => 'repas menu du jour plats',
+                ],
             ],
             'DIRECTION_GENERALE' => [
                 [

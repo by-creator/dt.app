@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 class SuiviStationnementController extends Controller
 {
     use \App\Http\Controllers\Concerns\StreamsXlsx;
+    use \App\Http\Controllers\Concerns\ParsesXlsx;
     public function index(Request $request): JsonResponse
     {
         $search = $request->string('search')->toString() ?: null;
@@ -136,101 +137,24 @@ class SuiviStationnementController extends Controller
 
     private function importXlsx(string $path): int
     {
-        $zip = new \ZipArchive();
-        if ($zip->open($path) !== true) {
-            throw new \RuntimeException('Impossible d\'ouvrir le fichier XLSX (format invalide).');
-        }
-
-        $ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-
-        $sharedStrings = [];
-        $ssRaw = $zip->getFromName('xl/sharedStrings.xml');
-        if ($ssRaw !== false) {
-            $ssDom = new \DOMDocument();
-            $ssDom->loadXML($ssRaw, LIBXML_COMPACT | LIBXML_NOWARNING);
-            $ssXpath = new \DOMXPath($ssDom);
-            $ssXpath->registerNamespace('s', $ns);
-            foreach ($ssXpath->query('//s:si') as $si) {
-                $tNodes = $ssXpath->query('s:t|s:r/s:t', $si);
-                $text = '';
-                foreach ($tNodes as $t) {
-                    $text .= $t->nodeValue;
-                }
-                $sharedStrings[] = $text;
-            }
-        }
-
-        $sheetRaw = $zip->getFromName('xl/worksheets/sheet1.xml')
-            ?: $zip->getFromName('xl/worksheets/Sheet1.xml');
-        $zip->close();
-
-        if ($sheetRaw === false) {
-            throw new \RuntimeException('Feuille de calcul introuvable dans le fichier XLSX.');
-        }
-
-        $dom = new \DOMDocument();
-        $dom->loadXML($sheetRaw, LIBXML_COMPACT | LIBXML_NOWARNING);
-        $xpath = new \DOMXPath($dom);
-        $xpath->registerNamespace('s', $ns);
-
         $columnInfo = null;
         $insertRows = [];
 
-        foreach ($xpath->query('//s:sheetData/s:row') as $xmlRow) {
-            $rowData = [];
-            $cellIndex = 0;
-
-            foreach ($xpath->query('s:c', $xmlRow) as $cell) {
-                if (! $cell instanceof \DOMElement) {
-                    continue;
-                }
-
-                $ref = $cell->getAttribute('r');
-                if (! empty($ref) && preg_match('/^([A-Z]+)/', $ref, $m)) {
-                    $colIdx = $this->colLetterToIndex($m[1]);
-                } else {
-                    $colIdx = $cellIndex;
-                }
-
-                $type = $cell->getAttribute('t');
-                $vNode = $xpath->query('s:v', $cell)->item(0);
-                $vRaw = $vNode ? $vNode->nodeValue : '';
-
-                if ($type === 's') {
-                    $val = $sharedStrings[(int) $vRaw] ?? '';
-                } elseif ($type === 'inlineStr') {
-                    $tNode = $xpath->query('s:is/s:t', $cell)->item(0);
-                    $val = $tNode ? $tNode->nodeValue : '';
-                } else {
-                    $val = $vRaw;
-                }
-
-                $rowData[$colIdx] = $val;
-                $cellIndex = $colIdx + 1;
-            }
-
-            if (empty($rowData)) {
-                continue;
-            }
-
-            $maxCol = max(array_keys($rowData));
-            for ($i = 0; $i <= $maxCol; $i++) {
-                if (! isset($rowData[$i])) {
-                    $rowData[$i] = '';
-                }
-            }
-            ksort($rowData);
-            $rowValues = array_values($rowData);
-
+        $this->parseXlsx($path, function (array $rowValues) use (&$columnInfo, &$insertRows) {
             if ($columnInfo === null) {
-                $normalizedHeaders = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
-                $columnInfo = $this->buildColumnInfo($normalizedHeaders);
-                continue;
+                $headers    = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
+                $columnInfo = $this->buildColumnInfo($headers);
+
+                return;
+            }
+
+            if (empty($columnInfo)) {
+                return;
             }
 
             $data = $this->buildRow($rowValues, $columnInfo);
             if ($data === null) {
-                continue;
+                return;
             }
 
             $insertRows[] = $data;
@@ -239,7 +163,7 @@ class SuiviStationnementController extends Controller
                 SuiviStationnement::query()->insert($insertRows);
                 $insertRows = [];
             }
-        }
+        });
 
         if (! empty($insertRows)) {
             SuiviStationnement::query()->insert($insertRows);
@@ -333,16 +257,6 @@ class SuiviStationnementController extends Controller
             'November'  => 'Novembre',
             'December'  => 'Decembre',
         ][$month] ?? $month;
-    }
-
-    private function colLetterToIndex(string $col): int
-    {
-        $index = 0;
-        for ($i = 0, $len = strlen($col); $i < $len; $i++) {
-            $index = $index * 26 + (ord($col[$i]) - 64);
-        }
-
-        return $index - 1;
     }
 
     private function normalizeHeader(string $header): string

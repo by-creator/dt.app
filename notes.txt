@@ -1,44 +1,6 @@
 NOTES
 
-Je souhaite que tu crée la migration suivante : 
-
-rapport_facturation_suivi_stationnements
-(
-    terminal, billing_date, shipowner, bl_number, item_number, item_type, type, entry_date, exit_date, days_since_in
-)
-
-Ensuite sur la route /facturation/rapport je souhaites que tu te bases sur l'onglet suivi vides pour remplir
-l'onglet suivi stationnement par une table contenant les informations de cette migration
-
-Toujours sur la même route au niveau de l'onglet Admin je souhaite que tu modifies le formulaire en rajoutant une
-liste déroulante qui va afficher le rapport à sélectionner pour importation ainsi l'import se fera dans la table 
-qui sera séelctionnée.
-
-Règles d'importation dans la table rapport_facturation_suivi_stationnements
-
-    On prendra pour exemple le fichier contenu dans le dossier others/rapports/data(2).xlsx : 
-
-    terminal = TerminalName,
-    billing_date = Concaténation de la première occurence de Year-Month-Day au format dd/mm/yyyy
-    shipowner = Shipowner
-    bl_number = BLNumber 
-    item_number = Item_Number 
-    item_type = Item_Type 
-    entry_date = Concaténation de la deuxième occurence de Year-Month-Day au format dd/mm/yyyy
-    exit_date = Concaténation de la troisième occurence de Year-Month-Day au format dd/mm/yyyy
-    days_since_in = Somme de DaysSinceIn 
-
-On rappelle que le bouton Actualiser doit rafraîchir la page et ce même au niveau de l'onglet suivi vides, ensuite 
-il faut renommer le bouton Exporter CSV en  EXporter Excel sur les deux onglets
-
-Dans la gestion du rapport de stationnement conformément à la structure du fichier others/rapports/data(3).xlsx
-il y'a des données qui changent lors de l'importation notamment 
-
-billing_date = Concaténation de la première occurence de Month
-entry_date = Concaténation de la deuxième occurence de Month
-exit_date = Concaténation de la troisième occurence de Month
-
-Puis concernant la gestion du rapport suivi vides je souhaite que la colonne event_date lors de l'importation ne 
-garde uniquement le mois ici on predra comme exemple others/rapports/data(4).xlsx
-
-
+Je souhaite que tu rajoutes au niveau du menu admin un card Repas qui va renvoyer vers une vue ayant la même mise 
+en page que /facturation/ies avec un seul onglet précisement creation de compte mais renommé  Menu du jour avec
+champ plat 1 et plat 2 à envoyer par mail à une liste d'utilisateur mais on prendra comme exemple les mails
+suivants "noreplysitedt@gmail.com" et "iosid242@gmail.com"

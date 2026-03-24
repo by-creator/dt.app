@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 class RapportController extends Controller
 {
     use \App\Http\Controllers\Concerns\StreamsXlsx;
+    use \App\Http\Controllers\Concerns\ParsesXlsx;
     public function index(Request $request): JsonResponse
     {
         $search = $request->string('search')->toString() ?: null;
@@ -140,121 +141,32 @@ class RapportController extends Controller
 
     private function importXlsx(string $path): int
     {
-        $zip = new \ZipArchive();
-        if ($zip->open($path) !== true) {
-            throw new \RuntimeException('Impossible d\'ouvrir le fichier XLSX (format invalide).');
-        }
-
-        // Namespace OOXML
-        $ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-
-        // Shared strings via DOMXPath (gere le namespace)
-        $sharedStrings = [];
-        $ssRaw = $zip->getFromName('xl/sharedStrings.xml');
-        if ($ssRaw !== false) {
-            $ssDom = new \DOMDocument();
-            $ssDom->loadXML($ssRaw, LIBXML_COMPACT | LIBXML_NOWARNING);
-            $ssXpath = new \DOMXPath($ssDom);
-            $ssXpath->registerNamespace('s', $ns);
-            foreach ($ssXpath->query('//s:si') as $si) {
-                $tNodes = $ssXpath->query('s:t|s:r/s:t', $si);
-                $text = '';
-                foreach ($tNodes as $t) {
-                    $text .= $t->nodeValue;
-                }
-                $sharedStrings[] = $text;
-            }
-        }
-
-        // Trouver la premiere feuille
-        $sheetRaw = $zip->getFromName('xl/worksheets/sheet1.xml')
-            ?: $zip->getFromName('xl/worksheets/Sheet1.xml');
-        $zip->close();
-
-        if ($sheetRaw === false) {
-            throw new \RuntimeException('Feuille de calcul introuvable dans le fichier XLSX.');
-        }
-
-        $dom = new \DOMDocument();
-        $dom->loadXML($sheetRaw, LIBXML_COMPACT | LIBXML_NOWARNING);
-        $xpath = new \DOMXPath($dom);
-        $xpath->registerNamespace('s', $ns);
-
-        $header = null;
+        $header    = null;
         $columnMap = null;
         $insertRows = [];
 
-        foreach ($xpath->query('//s:sheetData/s:row') as $xmlRow) {
-            $rowData = [];
-            $cellIndex = 0;
-
-            foreach ($xpath->query('s:c', $xmlRow) as $cell) {
-                if (! $cell instanceof \DOMElement) {
-                    continue;
-                }
-
-                $ref = $cell->getAttribute('r');
-                if (! empty($ref) && preg_match('/^([A-Z]+)/', $ref, $m)) {
-                    $colIdx = $this->colLetterToIndex($m[1]);
-                } else {
-                    // Certains fichiers XLSX n'incluent pas l'attribut "r" sur les cellules.
-                    // Dans ce cas, on retombe sur l'ordre naturel des cellules de la ligne.
-                    $colIdx = $cellIndex;
-                }
-
-                $type = $cell->getAttribute('t');
-                $vNode = $xpath->query('s:v', $cell)->item(0);
-                $vRaw = $vNode ? $vNode->nodeValue : '';
-
-                if ($type === 's') {
-                    $val = $sharedStrings[(int) $vRaw] ?? '';
-                } elseif ($type === 'inlineStr') {
-                    $tNode = $xpath->query('s:is/s:t', $cell)->item(0);
-                    $val = $tNode ? $tNode->nodeValue : '';
-                } else {
-                    $val = $vRaw;
-                }
-
-                $rowData[$colIdx] = $val;
-                $cellIndex = $colIdx + 1;
-            }
-
-            if (empty($rowData)) {
-                continue;
-            }
-
-            $maxCol = max(array_keys($rowData));
-            for ($i = 0; $i <= $maxCol; $i++) {
-                if (! isset($rowData[$i])) {
-                    $rowData[$i] = '';
-                }
-            }
-            ksort($rowData);
-            $rowValues = array_values($rowData);
-
+        $this->parseXlsx($path, function (array $rowValues) use (&$header, &$columnMap, &$insertRows) {
             if ($header === null) {
-                $header = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
+                $header    = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rowValues);
                 $columnMap = $this->buildColumnMap($header);
-                continue;
+
+                return;
             }
 
             if (empty($columnMap)) {
-                continue;
+                return;
             }
 
             $data = [];
             foreach ($columnMap as $dbCol => $idx) {
                 $val = (string) ($rowValues[$idx] ?? '');
-                if ($dbCol === 'event_date') {
-                    $data[$dbCol] = $this->normalizeEventDate($val);
-                    continue;
-                }
-
-                $data[$dbCol] = $val !== '' ? $val : null;
+                $data[$dbCol] = ($dbCol === 'event_date')
+                    ? $this->normalizeEventDate($val)
+                    : ($val !== '' ? $val : null);
             }
 
             if (array_filter($data) === []) {
-                continue;
+                return;
             }
 
             $insertRows[] = $data;
@@ -263,23 +175,13 @@ class RapportController extends Controller
                 SuiviVide::query()->insert($insertRows);
                 $insertRows = [];
             }
-        }
+        });
 
         if (! empty($insertRows)) {
             SuiviVide::query()->insert($insertRows);
         }
 
         return SuiviVide::query()->count();
-    }
-
-    private function colLetterToIndex(string $col): int
-    {
-        $index = 0;
-        for ($i = 0, $len = strlen($col); $i < $len; $i++) {
-            $index = $index * 26 + (ord($col[$i]) - 64);
-        }
-
-        return $index - 1;
     }
 
     private function normalizeHeader(string $header): string
