@@ -61,7 +61,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-                PDO::MYSQL_ATTR_LOCAL_INFILE => env('MYSQL_ATTR_LOCAL_INFILE', true),
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_LOCAL_INFILE : PDO::MYSQL_ATTR_LOCAL_INFILE) => env('MYSQL_ATTR_LOCAL_INFILE', true),
             ]) : [],
         ],
 
@@ -82,7 +82,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-                PDO::MYSQL_ATTR_LOCAL_INFILE => env('MYSQL_ATTR_LOCAL_INFILE', true),
+                (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_LOCAL_INFILE : PDO::MYSQL_ATTR_LOCAL_INFILE) => env('MYSQL_ATTR_LOCAL_INFILE', true),
             ]) : [],
         ],
 
