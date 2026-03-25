@@ -83,9 +83,9 @@
             <div class="cv-meta">Importé le {{ $codification->created_at->format('d/m/Y à H:i') }}</div>
         </div>
         <div class="cv-dl-row">
-            <a href="{{ route('planification.codification.download.xlsx', $codification) }}" class="cv-btn cv-btn-xlsx">
+            <a href="{{ route('planification.codification.download.xls', $codification) }}" class="cv-btn cv-btn-xlsx">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Télécharger XLSX
+                Télécharger XLS
             </a>
             <a href="{{ route('planification.codification.download.iftmin', $codification) }}" class="cv-btn cv-btn-iftmin">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -105,7 +105,7 @@
     {{-- TABS --}}
     <div class="cv-tabs">
         <button class="cv-tab active" onclick="switchTab('xlsx', this)">
-            📊 Prévisualisation XLSX
+            📊 Prévisualisation XLS
             <span id="xlsx-tab-count" style="background:rgba(99,102,241,.12);color:var(--indigo);border-radius:20px;padding:1px 8px;font-size:.72rem;margin-left:.4rem;font-weight:700;">
                 {{ count($xlsxRows) }} lignes
             </span>
@@ -121,7 +121,7 @@
             <div class="cv-card-head">
                 <h3>
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="3"/></svg>
-                    Données XLSX — {{ $codification->call_number }}
+                    Données XLS — {{ $codification->call_number }}
                 </h3>
                 <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
                     <span class="cv-count" id="xlsx-row-count">{{ count($xlsxRows) }} enregistrements · {{ count($xlsxHeaders) }} colonnes</span>
@@ -158,7 +158,7 @@
                     </table>
                 </div>
             @else
-                <div class="cv-empty">Aucune donnée à afficher dans le fichier XLSX.</div>
+                <div class="cv-empty">Aucune donnée à afficher dans le fichier XLS.</div>
             @endif
         </div>
     </div>

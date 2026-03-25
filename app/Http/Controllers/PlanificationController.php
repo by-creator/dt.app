@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Codification;
 use App\Services\EdiExporter;
 use App\Services\EdiParser;
-use App\Services\XlsxExporter;
+use App\Services\XlsExporter;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class PlanificationController extends Controller
 {
     public function __construct(
-        private readonly EdiParser     $parser,
-        private readonly EdiExporter   $exporter,
-        private readonly XlsxExporter  $xlsxExporter,
+        private readonly EdiParser    $parser,
+        private readonly EdiExporter  $exporter,
+        private readonly XlsExporter  $xlsExporter,
     ) {}
 
     public function showUpload(Request $request): View
@@ -68,11 +68,11 @@ class PlanificationController extends Controller
         $manifestStoreName = "{$timestamp}_{$uploadedFile->getClientOriginalName()}";
         $uploadedFile->storeAs('codifications', $manifestStoreName, 'local');
 
-        // Générer le fichier XLSX
-        $xlsxName    = "{$timestamp}_{$baseName}.xlsx";
-        $xlsxAbsPath = "{$dir}/{$xlsxName}";
-        $headers     = $this->parser->getHeaders();
-        $this->xlsxExporter->export($records, $headers, $xlsxAbsPath);
+        // Générer le fichier XLS
+        $xlsName    = "{$timestamp}_{$baseName}.xls";
+        $xlsAbsPath = "{$dir}/{$xlsName}";
+        $headers    = $this->parser->getHeaders();
+        $this->xlsExporter->export($records, $headers, $xlsAbsPath);
 
         // Générer le fichier IFTMIN
         $iftminName    = "{$timestamp}_{$baseName}.iftmin";
@@ -83,7 +83,7 @@ class PlanificationController extends Controller
         $codification = Codification::create([
             'call_number' => $callNumber,
             'manifest'    => "codifications/{$manifestStoreName}",
-            'xlsx'        => "codifications/{$xlsxName}",
+            'xls'         => "codifications/{$xlsName}",
             'iftmin'      => "codifications/{$iftminName}",
         ]);
 
@@ -94,9 +94,9 @@ class PlanificationController extends Controller
 
     public function preview(Codification $codification): View
     {
-        // Prévisualisation XLSX → tableau HTML
-        $xlsxPath   = storage_path("app/{$codification->xlsx}");
-        $xlsxRows   = [];
+        // Prévisualisation XLS → tableau HTML
+        $xlsxPath    = storage_path("app/{$codification->xls}");
+        $xlsxRows    = [];
         $xlsxHeaders = [];
 
         if (file_exists($xlsxPath)) {
@@ -122,14 +122,14 @@ class PlanificationController extends Controller
         ));
     }
 
-    public function downloadXlsx(Codification $codification): BinaryFileResponse
+    public function downloadXls(Codification $codification): BinaryFileResponse
     {
-        $path = storage_path("app/{$codification->xlsx}");
+        $path = storage_path("app/{$codification->xls}");
 
-        abort_unless(file_exists($path), 404, 'Fichier XLSX introuvable.');
+        abort_unless(file_exists($path), 404, 'Fichier XLS introuvable.');
 
         return response()->download($path, basename($path), [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Type' => 'application/vnd.ms-excel',
         ]);
     }
 

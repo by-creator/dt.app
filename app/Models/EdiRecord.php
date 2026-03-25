@@ -31,6 +31,7 @@ class EdiRecord
         'bl_volume'                     => [293, 12],   // conteneurs
         'bl_volume_roro'                => [1308, 12],  // véhicules RORO
         'bl_weight'                     => [281, 12],
+        'bl_weight_alt'                 => [1296, 12], // poids alternatif (certains RORO / conteneurs)
         'incoterm'                      => [null, 0],
         'port_of_loading'               => [31,   5],
         'reception_location'            => [46,   5],
@@ -57,7 +58,7 @@ class EdiRecord
         'blitem_custom_number'          => [null, 0],
         'blitem_seal_number_1'          => [351, 70],   // 70 chars pour capturer les deux sceaux séparés par |
         'blitem_seal_number_2'          => [null, 0],   // déduit du champ 1
-        'blitem_hazardous_class'        => [null, 0],
+        'blitem_commodity_hazardous_class' => [null, 0],
         'blitem_barcode'                => [126, 20],
         'blitem_vehicle_model'          => [221, 35],
         'blitem_chassis_number'         => [126, 20],
@@ -83,7 +84,7 @@ class EdiRecord
 
     public array $data = [];
 
-    public static function fromLine(string $line): self
+    public static function fromLine(string $line, string $srcEncoding = 'UTF-8'): self
     {
         $record = new self();
 
@@ -92,19 +93,32 @@ class EdiRecord
                 $record->data[$field] = '';
                 continue;
             }
+            // substr() works on raw bytes — correct for fixed-width single-byte encodings.
             $value = $offset < strlen($line) ? substr($line, $offset, $length) : '';
+            // Convert to UTF-8 per field so byte offsets stay accurate for all fields.
+            if ($srcEncoding !== 'UTF-8' && $value !== '') {
+                $value = mb_convert_encoding($value, 'UTF-8', $srcEncoding);
+            }
             $record->data[$field] = trim($value);
         }
 
         // ── BL Number : conserver tel quel ───────────────────────────────────
         $record->data['bl_number'] = trim($record->data['bl_number']);
 
-        // ── Poids : diviser par 1 000 000 ────────────────────────────────────
-        $rawWeight = ltrim($record->data['bl_weight'], '0') ?: '0';
-        $weight    = is_numeric($rawWeight) ? round((float)$rawWeight / 1_000_000, 3) : 0;
+        // ── Poids : offset 281 (principal), fallback offset 1296 ─────────────
+        $rawWeight281 = ltrim($record->data['bl_weight']     ?? '', '0') ?: '0';
+        $rawWeight296 = ltrim($record->data['bl_weight_alt'] ?? '', '0') ?: '0';
+        if (is_numeric($rawWeight281) && (int)$rawWeight281 > 0) {
+            $weight = round((float)$rawWeight281 / 1_000_000, 6);
+        } elseif (is_numeric($rawWeight296) && (int)$rawWeight296 > 0) {
+            $weight = round((float)$rawWeight296 / 1_000_000, 6);
+        } else {
+            $weight = 0;
+        }
         $weightStr = $weight > 0 ? (string)$weight : '';
         $record->data['bl_weight']               = $weightStr;
         $record->data['blitem_commodity_weight'] = $weightStr;
+        unset($record->data['bl_weight_alt']);
 
         // ── Volume : offset 293 (conteneurs) ou 1308 (véhicules RORO) ────────
         $rawVol293  = ltrim($record->data['bl_volume']      ?? '', '0') ?: '0';
@@ -163,11 +177,31 @@ class EdiRecord
             $record->data['blitem_commodity'] = '';
         }
 
-        // ── Sceaux : un seul champ avec deux valeurs séparées par | ───────────
-        $sealRaw   = trim($record->data['blitem_seal_number_1'] ?? '');
-        $sealParts = array_values(array_filter(array_map('trim', explode('|', $sealRaw))));
-        $record->data['blitem_seal_number_1'] = isset($sealParts[0]) ? $sealParts[0] . '|' : '';
-        $record->data['blitem_seal_number_2'] = isset($sealParts[1]) ? $sealParts[1] . '|' : '';
+        // ── Sceaux : format différent selon le type de transport ─────────────
+        // RORO (mode R/M) : le champ 70-chars contient deux sceaux séparés par |
+        //   → on split : seal1 = premier sceau + '|', seal2 = second sceau + '|'
+        // Conteneurs (autres modes) : le champ contient la valeur complète avec |
+        //   → on garde tel quel dans seal1, seal2 = seal1 (BUG-E)
+        $sealRaw = trim($record->data['blitem_seal_number_1'] ?? '');
+        if (in_array($mode, ['R', 'M'])) {
+            // RORO : split at |
+            $sealParts = array_values(array_filter(array_map('trim', explode('|', $sealRaw))));
+            $record->data['blitem_seal_number_1'] = isset($sealParts[0]) ? $sealParts[0] . '|' : '';
+            $record->data['blitem_seal_number_2'] = isset($sealParts[1]) ? $sealParts[1] . '|' : '';
+        } else {
+            // Conteneurs : garder la valeur brute complète
+            $record->data['blitem_seal_number_1'] = $sealRaw;
+            $record->data['blitem_seal_number_2'] = $sealRaw;
+        }
+
+        // ── New template fields (always empty – no source offset available) ──
+        $record->data['blitem_hs_code']           = '';
+        $record->data['blitem_gross_weight']      = '';
+        $record->data['freight_prepaid_collect']  = '';
+        $record->data['shipping_line_export_bl']  = '';
+        $record->data['is_transfer']              = '';
+        $record->data['blitem_hazardous_class']   = '';
+        $record->data['attach_to_bl']             = '';
 
         return $record;
     }

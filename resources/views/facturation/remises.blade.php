@@ -198,6 +198,8 @@
                     <option value="Dossier incomplet">Dossier incomplet</option>
                     <option value="Non paiement de la facture d'acconage">Non paiement de la facture d'acconage</option>
                     <option value="Frais de stationnement inferieurs au seuil requis">Frais de stationnement inferieurs au seuil requis</option>
+                    <option value="Dossier en cours de traitement">Dossier en cours de traitement</option>
+                    <option value="Dossier deja traite">Dossier deja traite</option>
                 </select>
                 <textarea id="motif-input" style="display:none" placeholder="Saisissez le motif du rejet..."></textarea>
                 <div class="modal-actions">
@@ -364,7 +366,10 @@
                 const statut = document.getElementById('filter-statut').value;
                 const url = '/facturation/api/remises' + (statut ? '?statut=' + encodeURIComponent(statut) : '');
                 try {
-                    const res = await fetch(url);
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status);
+                    }
                     const data = await res.json();
                     allData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     renderPage(1);
@@ -498,7 +503,7 @@
                     m.dataset.bound = 'true';
                 });
 
-                renderPage(1);
+                loadRemises();
             }
 
             initRemisesPage();

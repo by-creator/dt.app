@@ -176,9 +176,9 @@
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                                 Prévisualiser
                                             </a>
-                                            <a href="{{ route('planification.codification.download.xlsx', $cod) }}" class="um-btn-sm um-btn-xlsx" title="Télécharger XLSX">
+                                            <a href="{{ route('planification.codification.download.xls', $cod) }}" class="um-btn-sm um-btn-xlsx" title="Télécharger XLS">
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                                XLSX
+                                                XLS
                                             </a>
                                             <a href="{{ route('planification.codification.download.iftmin', $cod) }}" class="um-btn-sm um-btn-iftmin" title="Télécharger IFTMIN">
                                                 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>

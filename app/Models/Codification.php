@@ -9,7 +9,7 @@ class Codification extends Model
     protected $fillable = [
         'call_number',
         'manifest',
-        'xlsx',
+        'xls',
         'iftmin',
     ];
 }

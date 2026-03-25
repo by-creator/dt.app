@@ -37,7 +37,7 @@
 
 <div class="pm-card">
     <h3><i class="fas fa-file-arrow-up"></i> Import du manifeste (.txt)</h3>
-    <p class="pm-muted">Chargez un fichier manifeste au format <strong>.txt</strong>. Le système génèrera automatiquement les fichiers <strong>XLSX</strong> et <strong>IFTMIN</strong>.</p>
+    <p class="pm-muted">Chargez un fichier manifeste au format <strong>.txt</strong>. Le système génèrera automatiquement les fichiers <strong>XLS</strong> et <strong>IFTMIN</strong>.</p>
 
     @if(session('success'))
         <div class="pm-status-ok">
@@ -50,9 +50,9 @@
                     Call Number enregistré
                 </div>
                 <div class="pm-dl-row">
-                    <a href="{{ route('planification.codification.download.xlsx', session('codification_id')) }}"
+                    <a href="{{ route('planification.codification.download.xls', session('codification_id')) }}"
                        class="pm-btn-dl pm-btn-xlsx">
-                        <i class="fas fa-file-excel"></i> Télécharger XLSX
+                        <i class="fas fa-file-excel"></i> Télécharger XLS
                     </a>
                     <a href="{{ route('planification.codification.download.iftmin', session('codification_id')) }}"
                        class="pm-btn-dl pm-btn-edi">

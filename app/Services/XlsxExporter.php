@@ -47,11 +47,16 @@ class XlsxExporter
             // POIDS : EdiRecord stocke les poids en tonnes.
             // bl_weight = total du BL (agrégé) → ×1000 → kg
             // blitem_commodity_weight = poids individuel de l'item → ×1000 → kg
+            // On préserve 1 décimale pour les valeurs non entières (ex: 1175.2 kg).
             $rawWeight = (float)($data['bl_weight'] ?? 0);
-            $data['bl_weight'] = $rawWeight > 0 ? (string)(int)round($rawWeight * 1000) : '';
+            $data['bl_weight'] = $rawWeight > 0
+                ? rtrim(rtrim(number_format($rawWeight * 1000, 1, '.', ''), '0'), '.')
+                : '';
 
             $rawItemWeight = (float)($data['blitem_commodity_weight'] ?? 0);
-            $data['blitem_commodity_weight'] = $rawItemWeight > 0 ? (string)(int)round($rawItemWeight * 1000) : '';
+            $data['blitem_commodity_weight'] = $rawItemWeight > 0
+                ? rtrim(rtrim(number_format($rawItemWeight * 1000, 1, '.', ''), '0'), '.')
+                : '';
 
             // VOLUMES : EdiRecord stocke les volumes directement en m³.
             // bl_volume = total du BL (agrégé).
@@ -73,25 +78,28 @@ class XlsxExporter
 
             // CATÉGORIE VEHICULE : recalcul sur le poids individuel de l'item (blitem_commodity_weight),
             // déjà converti en kg ci-dessus. On ne se base pas sur bl_weight (total multi-items).
+            // Les tranches correspondent exactement à celles d'EdiRecord (en kg ici, en tonnes là-bas).
             $itemWeightKg = (float)($data['blitem_commodity_weight'] ?? 0);
             if (str_starts_with(trim($data['blitem_commodity'] ?? ''), 'VEH ') && $itemWeightKg > 0) {
-                if ($itemWeightKg <= 1500) {
-                    $data['blitem_commodity'] = 'VEH 0-1500Kgs';
-                } elseif ($itemWeightKg <= 3000) {
-                    $data['blitem_commodity'] = 'VEH 1501-3000Kgs';
-                } elseif ($itemWeightKg <= 5000) {
-                    $data['blitem_commodity'] = 'VEH 3001-5000Kgs';
-                } else {
-                    $data['blitem_commodity'] = 'VEH +5000Kgs';
-                }
+                $data['blitem_commodity'] = match (true) {
+                    $itemWeightKg <= 1500  => 'VEH 0-1500Kgs',
+                    $itemWeightKg <= 3000  => 'VEH 1501-3000Kgs',
+                    $itemWeightKg <= 6000  => 'VEH 3001-6000Kgs',
+                    $itemWeightKg <= 9000  => 'VEH 6001-9000Kgs',
+                    $itemWeightKg <= 30000 => 'VEH 9001-30000Kgs',
+                    default                => 'VEH +30000Kgs',
+                };
             }
 
-            // BUG-08 : 'consignee' doit être vide dans le XLSX (le fichier attendu
-            // ne l'exporte pas). La valeur reste disponible dans $data pour EdiExporter.
+            // BUG-08 : 'consignee' doit être vide dans le XLSX.
             $data['consignee'] = '';
 
             // BUG-09 : 'shipper_name' idem — vide dans le XLSX.
             $data['shipper_name'] = '';
+
+            // BUG-11 : 'final_destination_country' doit être vide dans le XLSX.
+            // Le fichier de référence n'exporte jamais ce champ.
+            $data['final_destination_country'] = '';
 
             // BUG-07 : Les ports de transbordement ne doivent pas figurer dans le XLSX.
             $data['transshipment_port_1'] = '';
