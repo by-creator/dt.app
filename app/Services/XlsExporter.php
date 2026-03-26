@@ -19,47 +19,46 @@ class XlsExporter
     public function export(Collection $records, array $headers, string $outputPath): string
     {
         $spreadsheet = IOFactory::load($this->templatePath);
-        $sheet       = $spreadsheet->getSheet(0);
+
+        // Supprimer tous les onglets sauf le premier ("Bl importer")
+        while ($spreadsheet->getSheetCount() > 1) {
+            $spreadsheet->removeSheetByIndex($spreadsheet->getSheetCount() - 1);
+        }
+        $spreadsheet->setActiveSheetIndex(0);
+        $sheet = $spreadsheet->getActiveSheet();
 
         // ── Write data rows (starting at row 2, row 1 = template header) ──
         $row = 2;
         foreach ($records as $record) {
             $data = $record->toArray();
 
-            // ── Weight conversion: tonnes → kg ────────────────────────────
+            // ── Weight conversion: tonnes → kg (stored as float for XLS compatibility) ──
             $rawWeight = (float)($data['bl_weight'] ?? 0);
-            $data['bl_weight'] = $rawWeight > 0
-                ? rtrim(rtrim(number_format($rawWeight * 1000, 2, '.', ''), '0'), '.')
-                : '';
+            $data['bl_weight'] = $rawWeight > 0 ? round($rawWeight * 1000, 2) : null;
 
             $rawItemWeight = (float)($data['blitem_commodity_weight'] ?? 0);
             $isVehicle = ($data['blitem_yard_item_type'] ?? '') === 'VEHICULE';
             if ($rawItemWeight > 0) {
-                $data['blitem_commodity_weight'] = rtrim(rtrim(number_format($rawItemWeight * 1000, 2, '.', ''), '0'), '.');
+                $itemWeightKg = round($rawItemWeight * 1000, 2);
+                $data['blitem_commodity_weight'] = $itemWeightKg;
             } else {
-                // Reference always shows 0 for zero-weight vehicles
-                $data['blitem_commodity_weight'] = $isVehicle ? '0' : '';
+                $itemWeightKg = 0;
+                $data['blitem_commodity_weight'] = $isVehicle ? 0 : null;
             }
 
-            // ── Volume conversion: internal m³ → formatted m³ ─────────────
+            // ── Volume conversion: internal m³ → float ────────────────────
             $rawVolume = (float)($data['bl_volume'] ?? 0);
-            if ($rawVolume > 0) {
-                $data['bl_volume'] = rtrim(rtrim(number_format($rawVolume, 3, '.', ''), '0'), '.');
-            } else {
-                $data['bl_volume'] = (($data['yard_item_type'] ?? '') === 'CONTENEUR') ? '0' : '';
-            }
+            $data['bl_volume'] = $rawVolume > 0 ? round($rawVolume, 3) : 0;
 
             $rawItemVol = (float)($data['blitem_commodity_volume'] ?? 0);
             if ($rawItemVol > 0) {
-                $data['blitem_commodity_volume'] = rtrim(rtrim(number_format($rawItemVol, 3, '.', ''), '0'), '.');
+                $data['blitem_commodity_volume'] = round($rawItemVol, 3);
             } else {
-                // Show '0' for structured item types (containers and vehicles), '' otherwise
                 $itemType = $data['blitem_yard_item_type'] ?? '';
-                $data['blitem_commodity_volume'] = in_array($itemType, ['CONTENEUR', 'VEHICULE']) ? '0' : '';
+                $data['blitem_commodity_volume'] = in_array($itemType, ['CONTENEUR', 'VEHICULE']) ? 0 : null;
             }
 
             // ── Vehicle commodity category (recalculate from individual item weight) ─
-            $itemWeightKg = (float)($data['blitem_commodity_weight'] ?? 0);
             if ($isVehicle) {
                 $data['blitem_commodity'] = match (true) {
                     $itemWeightKg <= 0     => 'VEH 0-1500Kgs',
@@ -83,7 +82,13 @@ class XlsExporter
             $col = 1;
             foreach (array_keys($headers) as $key) {
                 $colLetter = Coordinate::stringFromColumnIndex($col);
-                $sheet->getCell("{$colLetter}{$row}")->setValue($data[$key] ?? '');
+                $value = $data[$key] ?? null;
+                // Write null as truly empty cell (no value), string '' as empty cell too
+                if ($value === null || $value === '') {
+                    $sheet->getCell("{$colLetter}{$row}")->setValue(null);
+                } else {
+                    $sheet->getCell("{$colLetter}{$row}")->setValue($value);
+                }
                 $col++;
             }
 
